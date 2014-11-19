@@ -24,3 +24,8 @@ DerivedData
 # http://guides.cocoapods.org/using/using-cocoapods.html#should-i-ignore-the-pods-directory-in-source-control
 #
 # Pods/
+*.log
+openssl-*S.tar.gz
+openssl-*X.tar.gz
+openssl/dist
+openssl-*.tar.gz

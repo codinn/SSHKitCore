@@ -1,0 +1,92 @@
+#ifndef SSHKit_Protected_h
+#define SSHKit_Protected_h
+
+#import <CoreFoundation/CoreFoundation.h>
+#import <netinet/in.h>
+#import <sys/socket.h>
+#import <arpa/inet.h>
+#import <libssh/libssh.h>
+#import "SSHKitSession.h"
+#import "SSHKitChannel.h"
+
+NSString * SSHKitGetBase64FromHostKey(ssh_key key);
+
+#define SSHKit_CHANNEL_MAX_PACKET        32768
+#define SSHKit_SESSION_DEFAULT_TIMEOUT   120 // two minutes
+#define SSHKit_SESSION_MIN_TIMEOUT       5
+
+/**
+ * Seeing a return statements within an inner block
+ * can sometimes be mistaken for a return point of the enclosing method.
+ * This makes inline blocks a bit easier to read.
+ **/
+#ifndef return_from_block
+#define return_from_block  return
+#endif
+
+/*
+ * 1. Session Queue could not dispatch write queue sync
+ */
+
+typedef NS_ENUM(NSInteger, SSHKitChannelState) {
+    SSHKitChannelInvalid,        // channel has not been inited correctly
+    SSHKitChannelCreated,        // channel has been created
+    SSHKitChannelOpening,        // the channel is opening
+    SSHKitChannelReadWrite,      // the channel has been opened, we can read / write from the channel
+    SSHKitChannelClosed,         // the channel has been closed
+};
+
+typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
+    SSHKitChannelStdoutData  = 0,
+    SSHKitChannelStderrData,
+};
+
+@interface SSHKitSession ()
+
+/** Raw libssh session instance. */
+@property (nonatomic, readonly) ssh_session rawSession;
+
+/** Raw session socket. */
+@property (nonatomic, readonly) socket_t rawSocket;
+
+- (void)_addChannel:(SSHKitChannel *)channel;
+- (void)_removeChannel:(SSHKitChannel *)channel;
+
+@end
+
+@interface SSHKitChannel () {
+    @protected
+    struct {
+        unsigned int didReadStdoutData : 1;
+        unsigned int didReadStderrData : 1;
+        unsigned int didWriteData : 1;
+        unsigned int didOpen : 1;
+        unsigned int didCloseWithError : 1;
+    } _delegateFlags;
+    
+    ssh_channel _rawChannel;
+    SSHKitChannelState _state;
+}
+
+@property (readwrite) SSHKitChannelType type;
+
+- (void)_doRead;
+- (void)_doOpen;
+
+/**
+ Create a new SSHKitChannel instance.
+ 
+ @param session A valid, connected, SSHKitSession instance
+ @returns New SSHKitChannel instance
+ */
+- (instancetype)initWithSession:(SSHKitSession *)session;
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
+@end
+
+@interface SSHKitDirectTCPIPChannel ()
+
+- (void)_openWithHost:(NSString *)host onPort:(uint16_t)port;
+
+@end
+
+#endif
