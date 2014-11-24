@@ -47,7 +47,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @property (nonatomic, readonly) ssh_session rawSession;
 
 /** Raw session socket. */
-@property (nonatomic, readonly) socket_t rawSocket;
+@property (nonatomic, readonly) socket_t socketFD;
 
 - (void)_addChannel:(SSHKitChannel *)channel;
 - (void)_removeChannel:(SSHKitChannel *)channel;

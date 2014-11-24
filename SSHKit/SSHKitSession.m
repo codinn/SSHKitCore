@@ -379,8 +379,6 @@
     if (_delegateFlags.didDisconnectWithError) {
         [self.delegate session:self didDisconnectWithError:error];
     }
-    
-    _rawSocket = -1;
 }
 
 - (void)disconnectWithError:(NSError *)error
@@ -682,7 +680,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         dispatch_source_cancel(_readSource);
     }
     
-    _readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, _rawSocket, 0, _sessionQueue);
+    _readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self.socketFD, 0, _sessionQueue);
     
     __weak SSHKitSession *weakSelf = self;
     dispatch_source_set_event_handler(_readSource, ^{ @autoreleasepool {
@@ -815,17 +813,20 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }
 }
 
+- (int)socketFD
+{
+    return ssh_get_fd(_rawSession);
+}
+
 - (void)_resolveHostIP
 {
     if (_isConnectOverSocket) {
         return;
     }
     
-    _rawSocket = ssh_get_fd(_rawSession);
-    
     struct sockaddr_storage addr;
     socklen_t addr_len=sizeof(addr);
-    int err=getpeername(_rawSocket,(struct sockaddr*)&addr,&addr_len);
+    int err=getpeername(self.socketFD, (struct sockaddr*)&addr, &addr_len);
     
     if (err!=0) {
         return;

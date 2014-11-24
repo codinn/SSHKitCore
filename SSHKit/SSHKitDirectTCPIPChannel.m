@@ -18,7 +18,7 @@
     }
     
     int result = ssh_channel_open_forward(_rawChannel, self.host.UTF8String, (int)self.port, "127.0.0.1", 22);
-    
+        
     switch (result) {
         case SSH_AGAIN:
             _state = SSHKitChannelOpening;
