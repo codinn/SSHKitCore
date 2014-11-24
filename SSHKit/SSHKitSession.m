@@ -27,7 +27,7 @@
     // make sure disconnect only once
     BOOL _alreadyDidDisconnect;
     
-    BOOL _isConnectOverSocket;
+    SSHKitGetSocketFDBlock _socketFDBlock;
 }
 
 @property (nonatomic, strong) NSString      *host;
@@ -67,17 +67,29 @@
 
 - (instancetype)init
 {
-	return [self initWithDelegate:nil sessionQueue:NULL];
+	return [self initWithDelegate:nil sessionQueue:NULL socketFDBlock:NULL];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate
 {
-	return [self initWithDelegate:aDelegate sessionQueue:NULL];
+	return [self initWithDelegate:aDelegate sessionQueue:NULL socketFDBlock:NULL];
+}
+
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock
+{
+    return [self initWithDelegate:aDelegate sessionQueue:NULL socketFDBlock:socketFDBlock];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq
 {
+    return [self initWithDelegate:aDelegate sessionQueue:sq socketFDBlock:NULL];
+}
+
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock
+{
     if ((self = [super init])) {
+        _socketFDBlock = socketFDBlock;
+        
         _rawSession = ssh_new();
         
         if (!_rawSession) {
@@ -255,33 +267,6 @@
     }
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user viaSocket:(int)socket
-{
-    [self connectToHost:host onPort:port withUser:user viaSocket:socket timeout:0.0];
-}
-
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user viaSocket:(int)socket timeout:(NSTimeInterval)timeout
-{
-    self.host = host;
-    self.port = port;
-    self.username = user;
-    _timeout = (long)timeout;
-    _isConnectOverSocket = YES;
-    
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        // set to blocking mode
-        ssh_set_blocking(_rawSession, 1);
-        
-        // libssh will close this fd automatically
-        socket_t socket_fd = dup(socket);
-        
-        ssh_options_set(_rawSession, SSH_OPTIONS_FD, &socket_fd);
-        ssh_options_set(_rawSession, SSH_OPTIONS_USER, self.username.UTF8String);
-        
-        [self _doConnect];
-    }}];
-}
-
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user
 {
     [self connectToHost:host onPort:port withUser:(NSString*)user timeout:0.0];
@@ -294,13 +279,21 @@
     self.username = user;
     _timeout = (long)timeout;
     
+//    __weak SSHKitSession *weakSelf = self;
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+//        __strong SSHKitSession *strongSelf = weakSelf;
         // set to blocking mode
         ssh_set_blocking(_rawSession, 1);
         
-        ssh_options_set(_rawSession, SSH_OPTIONS_HOST, self.host.UTF8String);
+        if (_socketFDBlock) {
+            // libssh will close this fd automatically
+            socket_t socket_fd =_socketFDBlock(_host, _port);
+            ssh_options_set(_rawSession, SSH_OPTIONS_FD, &socket_fd);
+        }
+        
+        ssh_options_set(_rawSession, SSH_OPTIONS_HOST, _host.UTF8String);
         ssh_options_set(_rawSession, SSH_OPTIONS_PORT, &_port);
-        ssh_options_set(_rawSession, SSH_OPTIONS_USER, self.username.UTF8String);
+        ssh_options_set(_rawSession, SSH_OPTIONS_USER, _username.UTF8String);
         
         [self _doConnect];
     }}];
@@ -823,7 +816,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 
 - (void)_resolveHostIP
 {
-    if (_isConnectOverSocket) {
+    if (_socketFDBlock) {
         return;
     }
     

@@ -45,7 +45,9 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
  **/
 - (instancetype)init;
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate;
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock;
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock;
 
 
 // -----------------------------------------------------------------------------
@@ -131,19 +133,6 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
  *
  **/
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
-
-/**
- * Connect to the server using the default timeout (TCP default timeout)
- *
- * This method invokes connectToSocket:withUser:viaSocket:timeout: and uses the default interface, and no timeout.
- **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user viaSocket:(int)socket;
-
-/**
- * Connects to the given host and port with an optional timeout via specified socket.
- *
- **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user viaSocket:(int)socket timeout:(NSTimeInterval)timeout;
 
 // -----------------------------------------------------------------------------
 #pragma mark Disconnecting

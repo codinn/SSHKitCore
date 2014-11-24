@@ -22,6 +22,8 @@ typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     SSHKitErrorCodeFatal,
 };
 
+typedef int (^ SSHKitGetSocketFDBlock)(NSString *host, uint16_t port);
+
 #import "SSHKitSession.h"
 #import "SSHKitChannel.h"
 #import "SSHKitDirectTCPIPChannel.h"
