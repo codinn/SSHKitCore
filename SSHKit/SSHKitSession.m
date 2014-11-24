@@ -279,15 +279,23 @@
     self.username = user;
     _timeout = (long)timeout;
     
-//    __weak SSHKitSession *weakSelf = self;
+    __weak SSHKitSession *weakSelf = self;
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-//        __strong SSHKitSession *strongSelf = weakSelf;
+        __strong SSHKitSession *strongSelf = weakSelf;
         // set to blocking mode
         ssh_set_blocking(_rawSession, 1);
         
         if (_socketFDBlock) {
+            NSError *error;
+            
             // libssh will close this fd automatically
-            socket_t socket_fd =_socketFDBlock(_host, _port);
+            socket_t socket_fd =_socketFDBlock(_host, _port, &error);
+            
+            if (error) {
+                [strongSelf disconnectWithError:error];
+                return_from_block;
+            }
+            
             ssh_options_set(_rawSession, SSH_OPTIONS_FD, &socket_fd);
         }
         
@@ -295,7 +303,7 @@
         ssh_options_set(_rawSession, SSH_OPTIONS_PORT, &_port);
         ssh_options_set(_rawSession, SSH_OPTIONS_USER, _username.UTF8String);
         
-        [self _doConnect];
+        [strongSelf _doConnect];
     }}];
 }
 
