@@ -272,7 +272,10 @@
         // set to blocking mode
         ssh_set_blocking(_rawSession, 1);
         
-        ssh_options_set(_rawSession, SSH_OPTIONS_FD, &socket);
+        // libssh will close this fd automatically
+        socket_t socket_fd = dup(socket);
+        
+        ssh_options_set(_rawSession, SSH_OPTIONS_FD, &socket_fd);
         ssh_options_set(_rawSession, SSH_OPTIONS_USER, self.username.UTF8String);
         
         [self _doConnect];
