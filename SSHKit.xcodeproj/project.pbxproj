@@ -218,9 +218,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 				4AEF726019FFE2AE009B0CC7 /* exec */,
 				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
@@ -383,10 +383,9 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh.dylib;
 			path = libssh.4.4.1.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -398,10 +397,9 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh_threads.dylib;
 			path = libssh_threads.4.4.1.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -573,6 +571,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -605,6 +604,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
