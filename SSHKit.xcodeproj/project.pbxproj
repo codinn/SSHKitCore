@@ -142,14 +142,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 0FD7BE88659E44D9800A6D97;
+			remoteGlobalIDString = 4A3D2350C3694E5EB70B894A;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = CC3A3B2394B44E89A08A466F;
+			remoteGlobalIDString = 9C002B1B52AA4E55B409EAAD;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -168,13 +168,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4A07C4F319D0927300D0F47B /* libz.1.2.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.2.5.dylib; path = usr/lib/libz.1.2.5.dylib; sourceTree = SDKROOT; };
-		4A07C4F519D094AA00D0F47B /* libssl.0.9.8.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.0.9.8.dylib; path = usr/lib/libssl.0.9.8.dylib; sourceTree = SDKROOT; };
-		4A07C4F719D094B100D0F47B /* libcrypto.0.9.8.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.0.9.8.dylib; path = usr/lib/libcrypto.0.9.8.dylib; sourceTree = SDKROOT; };
-		4A652E9019AD86EA00FAEB28 /* CocoaLumberjack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CocoaLumberjack.framework; path = "../../../../Library/Developer/Xcode/DerivedData/sshproxy-assdckdjuskurggmzftpfhgkqqcv/Build/Products/Debug/CocoaLumberjack.framework"; sourceTree = "<group>"; };
 		4A652E9219AD891400FAEB28 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		4ABBEAC319D07297005B73CC /* libssl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libssl.dylib; path = usr/lib/libssl.dylib; sourceTree = SDKROOT; };
-		4ABBEAC519D072A7005B73CC /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		4AECD0D21A13BCF900458991 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "openssl/dist/openssl-1.0.1j-MacOSX/lib/libcrypto.a"; sourceTree = "<group>"; };
 		4AECD0D31A13BCF900458991 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "openssl/dist/openssl-1.0.1j-MacOSX/lib/libssl.a"; sourceTree = "<group>"; };
 		4AECD11B1A15EE8100458991 /* SSHKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKit.m; sourceTree = "<group>"; };
@@ -218,9 +212,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 				4AEF726019FFE2AE009B0CC7 /* exec */,
 				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
@@ -261,13 +255,7 @@
 			children = (
 				4AECD0D21A13BCF900458991 /* libcrypto.a */,
 				4AECD0D31A13BCF900458991 /* libssl.a */,
-				4A07C4F719D094B100D0F47B /* libcrypto.0.9.8.dylib */,
-				4A07C4F519D094AA00D0F47B /* libssl.0.9.8.dylib */,
-				4A07C4F319D0927300D0F47B /* libz.1.2.5.dylib */,
-				4ABBEAC519D072A7005B73CC /* libcrypto.dylib */,
-				4ABBEAC319D07297005B73CC /* libssl.dylib */,
 				4A652E9219AD891400FAEB28 /* Security.framework */,
-				4A652E9019AD86EA00FAEB28 /* CocoaLumberjack.framework */,
 				E4E96D87158E10FD002E6E0A /* Cocoa.framework */,
 				E4D99AA315DE15B300EB5615 /* libz.dylib */,
 				E4E96D89158E10FD002E6E0A /* Other Frameworks */,
@@ -383,9 +371,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
+			name = libssh.dylib;
 			path = libssh.4.4.1.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -397,9 +386,10 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
+			name = libssh_threads.dylib;
 			path = libssh_threads.4.4.1.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
