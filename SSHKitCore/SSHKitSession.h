@@ -1,4 +1,4 @@
-#import "SSHKit.h"
+#import "SSHKitCore.h"
 
 NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
     SSHKitSessionUserAuthUnknown     = 0,

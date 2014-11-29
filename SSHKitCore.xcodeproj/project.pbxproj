@@ -14,13 +14,13 @@
 		4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */; };
 		4AECD0D41A13BCF900458991 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECD0D21A13BCF900458991 /* libcrypto.a */; };
 		4AECD0D51A13BCF900458991 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECD0D31A13BCF900458991 /* libssl.a */; };
-		4AECD11C1A15EE8100458991 /* SSHKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECD11B1A15EE8100458991 /* SSHKit.m */; };
+		4AECD11C1A15EE8100458991 /* SSHKitCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECD11B1A15EE8100458991 /* SSHKitCore.m */; };
 		4AEF72C31A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4AEF72C41A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m */; };
 		4AFD803C19FF91D000D9E48B /* SSHKit+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKit+Protected.h */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
-		E42815FE15962B7600CF680C /* SSHKit.h in Headers */ = {isa = PBXBuildFile; fileRef = E4E96D94158E10FD002E6E0A /* SSHKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */ = {isa = PBXBuildFile; fileRef = E4E96D94158E10FD002E6E0A /* SSHKitCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E4E96D88158E10FD002E6E0A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E96D87158E10FD002E6E0A /* Cocoa.framework */; };
 		E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
@@ -171,7 +171,7 @@
 		4A652E9219AD891400FAEB28 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4AECD0D21A13BCF900458991 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "openssl/dist/openssl-1.0.1j-MacOSX/lib/libcrypto.a"; sourceTree = "<group>"; };
 		4AECD0D31A13BCF900458991 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "openssl/dist/openssl-1.0.1j-MacOSX/lib/libssl.a"; sourceTree = "<group>"; };
-		4AECD11B1A15EE8100458991 /* SSHKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKit.m; sourceTree = "<group>"; };
+		4AECD11B1A15EE8100458991 /* SSHKitCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitCore.m; sourceTree = "<group>"; };
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitDirectTCPIPChannel.h; sourceTree = "<group>"; };
 		4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitDirectTCPIPChannel.m; sourceTree = "<group>"; };
@@ -186,7 +186,7 @@
 		E4E96D8C158E10FD002E6E0A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		E4E96D8F158E10FD002E6E0A /* SSHKitCore-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SSHKitCore-Info.plist"; sourceTree = "<group>"; };
 		E4E96D93158E10FD002E6E0A /* SSHKitCore-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore-Prefix.pch"; sourceTree = "<group>"; };
-		E4E96D94158E10FD002E6E0A /* SSHKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SSHKit.h; sourceTree = "<group>"; };
+		E4E96D94158E10FD002E6E0A /* SSHKitCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SSHKitCore.h; sourceTree = "<group>"; };
 		E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitChannel.h; sourceTree = "<group>"; };
 		E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitChannel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -277,8 +277,8 @@
 			isa = PBXGroup;
 			children = (
 				E4E96D8E158E10FD002E6E0A /* Supporting Files */,
-				E4E96D94158E10FD002E6E0A /* SSHKit.h */,
-				4AECD11B1A15EE8100458991 /* SSHKit.m */,
+				E4E96D94158E10FD002E6E0A /* SSHKitCore.h */,
+				4AECD11B1A15EE8100458991 /* SSHKitCore.m */,
 				E42815C01593D95200CF680C /* SSHKitSession.h */,
 				E42815C11593D95200CF680C /* SSHKitSession.m */,
 				E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */,
@@ -307,7 +307,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E42815FE15962B7600CF680C /* SSHKit.h in Headers */,
+				E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */,
 				4AFD803C19FF91D000D9E48B /* SSHKit+Protected.h in Headers */,
 				E42815C21593D95200CF680C /* SSHKitSession.h in Headers */,
 				E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */,
@@ -504,7 +504,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */,
-				4AECD11C1A15EE8100458991 /* SSHKit.m in Sources */,
+				4AECD11C1A15EE8100458991 /* SSHKitCore.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,
 				4AEF72C41A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m in Sources */,
 			);

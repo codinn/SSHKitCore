@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <libssh/libssh.h>
-#import "SSHKit.h"
+#import "SSHKitCore.h"
 
 
 NSString * SSHKitGetNameOfHostKeyType(SSHKitHostKeyType keyType)
