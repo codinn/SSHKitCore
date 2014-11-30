@@ -13,7 +13,6 @@
 		unsigned int didAuthenticateUser            : 1;
 		unsigned int didFailToAuthenticateUser      : 1;
         unsigned int passphraseForPrivateKey        : 1;
-        unsigned int didFailToDecryptPrivateKey     : 1;
         unsigned int needAuthenticateUser           : 1;
 	} _delegateFlags;
     
@@ -164,7 +163,6 @@
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
 		_delegateFlags.shouldConnectWithHostKeyType = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:keyType:)];
 		_delegateFlags.passphraseForPrivateKey = [delegate respondsToSelector:@selector(session:passphraseForPrivateKey:)];
-        _delegateFlags.didFailToDecryptPrivateKey = [delegate respondsToSelector:@selector(session:didFailToDecryptPrivateKey:)];
 	}
 }
 
@@ -629,9 +627,6 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
                 error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                             code:SSHKitErrorCodeAuthError
                                         userInfo:@{ NSLocalizedDescriptionKey : @"Could not load and parse private key file" }];
-                if (_delegateFlags.didFailToDecryptPrivateKey) {
-                    [self.delegate session:self didFailToDecryptPrivateKey:privateKeyPath];
-                }
             }
             
             [strongSelf _failedToAuthenticateWithError:error];

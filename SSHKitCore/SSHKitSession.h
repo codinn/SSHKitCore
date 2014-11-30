@@ -226,8 +226,4 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 
 // public key auth
 - (NSString *)session:(SSHKitSession *)session passphraseForPrivateKey:(NSString *)privateKeyPath;
-
-// todo: this is a temporary solution, should be deleted after megered with SSH Tunnel
-- (void)session:(SSHKitSession *)session didFailToDecryptPrivateKey:(NSString *)privateKeyPath;
-
 @end
