@@ -664,6 +664,29 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }}];
 }
 
++ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler
+{
+    ssh_key rawPrivateKey = NULL;
+    
+    // import private key
+    int ret = ssh_pki_import_privkey_file(privateKeyPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(handler), &rawPrivateKey);
+    
+    if (rawPrivateKey) {
+        ssh_key_free(rawPrivateKey);
+    }
+    
+    switch (ret) {
+        case SSH_OK:
+            return SSHKitPrivateKeyTestResultSuccess;
+        
+        case SSH_EOF:
+            return SSHKitPrivateKeyTestResultMissingFile;
+            
+        default:
+            return SSHKitPrivateKeyTestResultFailed;
+    }
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark - CALLBACKS
 // -----------------------------------------------------------------------------

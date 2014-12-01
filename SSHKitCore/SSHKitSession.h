@@ -173,6 +173,8 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
  */
 - (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler;
 
++ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler;
+
 #pragma mark - Open Channels
 
 - (SSHKitDirectTCPIPChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate;

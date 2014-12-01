@@ -10,6 +10,15 @@ typedef NS_ENUM(NSInteger, SSHKitHostKeyType) {
     SSHKitHostKeyTypeECDSA,
 };
 
+/**
+ * Seeing a return statements within an inner block
+ * can sometimes be mistaken for a return point of the enclosing method.
+ * This makes inline blocks a bit easier to read.
+ **/
+#ifndef return_from_block
+#define return_from_block  return
+#endif
+
 #define SSHKitLibsshErrorDomain  @"SSHKit.libssh"
 #define SSHKitSessionErrorDomain @"SSHKit.Session"
 #define SSHKitChannelErrorDomain @"SSHKit.Channel"
@@ -22,6 +31,13 @@ typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     SSHKitErrorCodeAuthError,
     SSHKitErrorCodeRetry,
     SSHKitErrorCodeFatal,
+};
+
+typedef NS_ENUM(NSInteger, SSHKitPrivateKeyTestResult) {
+    SSHKitPrivateKeyTestResultSuccess,
+    SSHKitPrivateKeyTestResultFailed,
+    SSHKitPrivateKeyTestResultMissingFile,
+    SSHKitPrivateKeyTestResultUnknownError,
 };
 
 typedef int (^ SSHKitGetSocketFDBlock)(NSString *host, uint16_t port, NSError **err);

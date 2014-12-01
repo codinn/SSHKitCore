@@ -15,15 +15,6 @@ NSString * SSHKitGetBase64FromHostKey(ssh_key key);
 #define SSHKit_SESSION_DEFAULT_TIMEOUT   120 // two minutes
 #define SSHKit_SESSION_MIN_TIMEOUT       5
 
-/**
- * Seeing a return statements within an inner block
- * can sometimes be mistaken for a return point of the enclosing method.
- * This makes inline blocks a bit easier to read.
- **/
-#ifndef return_from_block
-#define return_from_block  return
-#endif
-
 /*
  * 1. Session Queue could not dispatch write queue sync
  */
