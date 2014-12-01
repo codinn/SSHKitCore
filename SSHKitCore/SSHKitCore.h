@@ -26,6 +26,8 @@ typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
 
 typedef int (^ SSHKitGetSocketFDBlock)(NSString *host, uint16_t port, NSError **err);
 
+typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
+
 #import "SSHKitSession.h"
 #import "SSHKitChannel.h"
 #import "SSHKitDirectTCPIPChannel.h"

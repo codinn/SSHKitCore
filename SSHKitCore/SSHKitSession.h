@@ -166,12 +166,12 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 /**
  Authenticate by private key pair
 
- Use password:nil when the key is unencrypted
+ Use passphraseHandle:nil when the key is unencrypted
 
- @param privateKey Filepath to private key
- @param passphrase Password for encrypted private key
+ @param privateKeyPath Filepath to private key
+ @param passphraseHandle Password handle for encrypted private key
  */
-- (void)authenticateByPrivateKey:(NSString *)privateKeyPath;
+- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler;
 
 #pragma mark - Open Channels
 
@@ -223,7 +223,4 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 - (void)session:(SSHKitSession *)session needAuthenticateUser:(NSString *)username;
 - (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 - (void)session:(SSHKitSession *)session didFailToAuthenticateUser:(NSString *)username withError:(NSError *)error;
-
-// public key auth
-- (NSString *)session:(SSHKitSession *)session passphraseForPrivateKey:(NSString *)privateKeyPath;
 @end

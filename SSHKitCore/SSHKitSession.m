@@ -12,7 +12,6 @@
 		unsigned int shouldConnectWithHostKeyType   : 1;
 		unsigned int didAuthenticateUser            : 1;
 		unsigned int didFailToAuthenticateUser      : 1;
-        unsigned int passphraseForPrivateKey        : 1;
         unsigned int needAuthenticateUser           : 1;
 	} _delegateFlags;
     
@@ -162,7 +161,6 @@
 		_delegateFlags.didFailToAuthenticateUser = [delegate respondsToSelector:@selector(session:didFailToAuthenticateUser:withError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
 		_delegateFlags.shouldConnectWithHostKeyType = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:keyType:)];
-		_delegateFlags.passphraseForPrivateKey = [delegate respondsToSelector:@selector(session:passphraseForPrivateKey:)];
 	}
 }
 
@@ -572,13 +570,13 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         return SSH_ERROR;
     }
     
-    SSHKitSession *session = (__bridge SSHKitSession *) userdata;
+    SSHKitAskPassphrasePrivateKeyBlock handler = (__bridge SSHKitAskPassphrasePrivateKeyBlock)userdata;
     
-    if (!session->_delegateFlags.passphraseForPrivateKey) {
+    if (!handler) {
         return SSH_ERROR;
     }
     
-    NSString *password = [session.delegate session:session passphraseForPrivateKey:session.privateKeyPath];
+    NSString *password = handler();
     if (password.length && password.length<len) {
         strcpy(buf, password.UTF8String);
         return SSH_OK;
@@ -587,7 +585,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     return SSH_ERROR;
 }
 
-- (void)authenticateByPrivateKey:(NSString *)privateKeyPath
+- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler
 {
     if ( !(self.authMethods & SSHKitSessionUserAuthPublickey) ) {
         NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
@@ -614,7 +612,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         ssh_key rawPublicKey = NULL;
         
         // import private key
-        int ret = ssh_pki_import_privkey_file(strongSelf.privateKeyPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(strongSelf), &rawPrivateKey);
+        int ret = ssh_pki_import_privkey_file(strongSelf.privateKeyPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(handler), &rawPrivateKey);
         
         if (ret!=SSH_OK) {
             NSError *error;
