@@ -22,18 +22,7 @@
 {
     if ((self = [super init])) {
         _session = session;
-        // Make sure we were provided a valid session
-        if (![_session isKindOfClass:[SSHKitSession class]]) {
-            return nil;
-        }
-        
-        [_session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
-            _rawChannel = ssh_channel_new(_session.rawSession);
-            [_session _addChannel:self];
-        }}];
-        
 		self.delegate = aDelegate;
-        
         _state = SSHKitChannelCreated;
     }
 

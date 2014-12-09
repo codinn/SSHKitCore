@@ -11,6 +11,18 @@
 
 @implementation SSHKitDirectChannel
 
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate
+{
+    if ((self = [super initWithSession:session delegate:aDelegate])) {
+        [self.session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
+            _rawChannel = ssh_channel_new(self.session.rawSession);
+            [self.session _addChannel:self];
+        }}];
+    }
+    
+    return self;
+}
+
 - (void)_doOpen
 {
     if (_state == SSHKitChannelClosed) {

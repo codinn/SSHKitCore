@@ -78,5 +78,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @end
 
 @interface SSHKitForwardChannel ()
-- (instancetype)initWithSession:(SSHKitSession *)session;
+- (instancetype)initWithSession:(SSHKitSession *)session rawChannel:(ssh_channel)rawChannel destinationPort:(NSInteger)destinationPort;
+
+@property (readwrite) NSInteger destinationPort;
 @end

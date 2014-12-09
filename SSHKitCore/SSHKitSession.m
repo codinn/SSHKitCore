@@ -15,6 +15,7 @@
         unsigned int needAuthenticateUser           : 1;
         unsigned int didBindToAddressPortBoundPort  : 1;
         unsigned int didFailToBindToAddressPortWithError : 1;
+        unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
     
 	dispatch_source_t _readSource;
@@ -773,8 +774,18 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         // probe forward channel from accepted forward
         if (_acceptedForwards.count > 0) {
             int destination_port = 0;
-            ssh_channel channel = ssh_channel_accept_forward(self.rawSession, 0, &destination_port);
-            NSError *err = self.lastError;
+            ssh_channel channel = ssh_channel_accept_forward(strongSelf.rawSession, 0, &destination_port);
+            
+            if (!channel) {
+                return_from_block;
+            }
+            
+            SSHKitForwardChannel *forwardChannel = [[SSHKitForwardChannel alloc] initWithSession:strongSelf rawChannel:channel destinationPort:destination_port];
+            [_channels addObject:forwardChannel];
+            
+            if (_delegateFlags.didAcceptForwardChannel) {
+                [_delegate session:strongSelf didAcceptForwardChannel:forwardChannel];
+            }
         }
     }});
     
@@ -937,7 +948,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     return channel;
 }
 
-- (BOOL)requestBindToAddress:(NSString *)address onPort:(uint16_t)port
+- (void)requestBindToAddress:(NSString *)address onPort:(uint16_t)port
 {
     __weak SSHKitSession *weakSelf = self;
     
@@ -970,7 +981,6 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
                 break;
         }
     }}];
-    
 }
 
 @end

@@ -10,4 +10,6 @@
 
 @interface SSHKitForwardChannel : SSHKitChannel
 
+@property (readonly) NSInteger destinationPort;
+
 @end
