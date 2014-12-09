@@ -1,15 +1,15 @@
 //
-//  SSHKitDirectTCPIPChannel.m
+//  SSHKitDirectChannel.m
 //  SSHKit
 //
 //  Created by Brant Young on 10/29/14.
 //
 //
 
-#import "SSHKitDirectTCPIPChannel.h"
+#import "SSHKitDirectChannel.h"
 #import "SSHKit+Protected.h"
 
-@implementation SSHKitDirectTCPIPChannel
+@implementation SSHKitDirectChannel
 
 - (void)_doOpen
 {

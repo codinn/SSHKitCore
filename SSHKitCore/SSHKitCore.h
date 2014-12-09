@@ -46,7 +46,8 @@ typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
 
 #import "SSHKitSession.h"
 #import "SSHKitChannel.h"
-#import "SSHKitDirectTCPIPChannel.h"
+#import "SSHKitDirectChannel.h"
+#import "SSHKitForwardChannel.h"
 
 NSString * SSHKitGetNameOfHostKeyType(SSHKitHostKeyType keyType);
 NSString * SSHKitGetMD5HashFromHostKey(NSString *hostKey, SSHKitHostKeyType keyType);

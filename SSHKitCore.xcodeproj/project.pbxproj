@@ -12,11 +12,13 @@
 		4A729ABA1A295E8D0014CB03 /* libssh_threads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */; };
 		4A729ABB1A295E8D0014CB03 /* libssh.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725A19FFE2AE009B0CC7 /* libssh.a */; };
 		4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */; };
+		4ADCA2471A32E26000DC8FF1 /* SSHKitForwardChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4ADCA2451A32E26000DC8FF1 /* SSHKitForwardChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4ADCA2481A32E26000DC8FF1 /* SSHKitForwardChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ADCA2461A32E26000DC8FF1 /* SSHKitForwardChannel.m */; };
 		4AECD0D41A13BCF900458991 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECD0D21A13BCF900458991 /* libcrypto.a */; };
 		4AECD0D51A13BCF900458991 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AECD0D31A13BCF900458991 /* libssl.a */; };
 		4AECD11C1A15EE8100458991 /* SSHKitCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AECD11B1A15EE8100458991 /* SSHKitCore.m */; };
-		4AEF72C31A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4AEF72C41A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m */; };
+		4AEF72C31A00B6BD009B0CC7 /* SSHKitDirectChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4AEF72C41A00B6BD009B0CC7 /* SSHKitDirectChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectChannel.m */; };
 		4AFD803C19FF91D000D9E48B /* SSHKit+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKit+Protected.h */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
@@ -142,14 +144,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 60782247118248DD996EB491;
+			remoteGlobalIDString = D8196D0DDB284A5C8CD17111;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 1EF14D00F39744D88224FDF7;
+			remoteGlobalIDString = 796A2A9D81B548B18EB1ECAA;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -169,12 +171,14 @@
 
 /* Begin PBXFileReference section */
 		4A652E9219AD891400FAEB28 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		4ADCA2451A32E26000DC8FF1 /* SSHKitForwardChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitForwardChannel.h; sourceTree = "<group>"; };
+		4ADCA2461A32E26000DC8FF1 /* SSHKitForwardChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitForwardChannel.m; sourceTree = "<group>"; };
 		4AECD0D21A13BCF900458991 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "openssl/dist/openssl-1.0.1j-MacOSX/lib/libcrypto.a"; sourceTree = "<group>"; };
 		4AECD0D31A13BCF900458991 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "openssl/dist/openssl-1.0.1j-MacOSX/lib/libssl.a"; sourceTree = "<group>"; };
 		4AECD11B1A15EE8100458991 /* SSHKitCore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitCore.m; sourceTree = "<group>"; };
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
-		4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitDirectTCPIPChannel.h; sourceTree = "<group>"; };
-		4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitDirectTCPIPChannel.m; sourceTree = "<group>"; };
+		4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitDirectChannel.h; sourceTree = "<group>"; };
+		4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitDirectChannel.m; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKit+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKit+Protected.h"; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
 		E42815C11593D95200CF680C /* SSHKitSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSession.m; sourceTree = "<group>"; };
@@ -212,9 +216,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 				4AEF726019FFE2AE009B0CC7 /* exec */,
 				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
@@ -279,13 +283,15 @@
 				E4E96D8E158E10FD002E6E0A /* Supporting Files */,
 				E4E96D94158E10FD002E6E0A /* SSHKitCore.h */,
 				4AECD11B1A15EE8100458991 /* SSHKitCore.m */,
+				4AFD803B19FF91D000D9E48B /* SSHKit+Protected.h */,
 				E42815C01593D95200CF680C /* SSHKitSession.h */,
 				E42815C11593D95200CF680C /* SSHKitSession.m */,
 				E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */,
 				E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */,
-				4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h */,
-				4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m */,
-				4AFD803B19FF91D000D9E48B /* SSHKit+Protected.h */,
+				4AEF72C11A00B6BD009B0CC7 /* SSHKitDirectChannel.h */,
+				4AEF72C21A00B6BD009B0CC7 /* SSHKitDirectChannel.m */,
+				4ADCA2451A32E26000DC8FF1 /* SSHKitForwardChannel.h */,
+				4ADCA2461A32E26000DC8FF1 /* SSHKitForwardChannel.m */,
 			);
 			name = SSHKit;
 			path = SSHKitCore;
@@ -308,10 +314,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */,
+				4ADCA2471A32E26000DC8FF1 /* SSHKitForwardChannel.h in Headers */,
 				4AFD803C19FF91D000D9E48B /* SSHKit+Protected.h in Headers */,
 				E42815C21593D95200CF680C /* SSHKitSession.h in Headers */,
 				E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */,
-				4AEF72C31A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.h in Headers */,
+				4AEF72C31A00B6BD009B0CC7 /* SSHKitDirectChannel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -372,10 +379,9 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh.dylib;
 			path = libssh.4.4.1.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -387,10 +393,9 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh_threads.dylib;
 			path = libssh_threads.4.4.1.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -504,9 +509,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */,
+				4ADCA2481A32E26000DC8FF1 /* SSHKitForwardChannel.m in Sources */,
 				4AECD11C1A15EE8100458991 /* SSHKitCore.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,
-				4AEF72C41A00B6BD009B0CC7 /* SSHKitDirectTCPIPChannel.m in Sources */,
+				4AEF72C41A00B6BD009B0CC7 /* SSHKitDirectChannel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

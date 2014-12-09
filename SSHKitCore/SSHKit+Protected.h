@@ -1,6 +1,3 @@
-#ifndef SSHKit_Protected_h
-#define SSHKit_Protected_h
-
 #import <CoreFoundation/CoreFoundation.h>
 #import <netinet/in.h>
 #import <sys/socket.h>
@@ -74,10 +71,12 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
 @end
 
-@interface SSHKitDirectTCPIPChannel ()
+@interface SSHKitDirectChannel ()
 
 - (void)_openWithHost:(NSString *)host onPort:(uint16_t)port;
 
 @end
 
-#endif
+@interface SSHKitForwardChannel ()
+- (instancetype)initWithSession:(SSHKitSession *)session;
+@end

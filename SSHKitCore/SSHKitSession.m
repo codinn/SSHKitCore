@@ -13,12 +13,16 @@
 		unsigned int didAuthenticateUser            : 1;
 		unsigned int didFailToAuthenticateUser      : 1;
         unsigned int needAuthenticateUser           : 1;
+        unsigned int didBindToAddressPortBoundPort  : 1;
+        unsigned int didFailToBindToAddressPortWithError : 1;
 	} _delegateFlags;
     
 	dispatch_source_t _readSource;
     dispatch_source_t _diagnosesTimer;
     NSInteger _keepAliveCounter;
     NSMutableArray *_channels;
+    NSMutableArray *_forwardRequests;
+    NSMutableArray *_acceptedForwards;
     
     void *_isOnSessionQueueKey;
     
@@ -95,6 +99,8 @@
         }
         
         _channels = [@[] mutableCopy];
+        _forwardRequests = [@[] mutableCopy];
+        _acceptedForwards = [@[] mutableCopy];
         
 		self.delegate = aDelegate;
 		
@@ -160,7 +166,9 @@
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.didFailToAuthenticateUser = [delegate respondsToSelector:@selector(session:didFailToAuthenticateUser:withError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
-		_delegateFlags.shouldConnectWithHostKeyType = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:keyType:)];
+        _delegateFlags.shouldConnectWithHostKeyType = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:keyType:)];
+        _delegateFlags.didBindToAddressPortBoundPort = [delegate respondsToSelector:@selector(session:didBindToAddress:port:boundPort:)];
+        _delegateFlags.didFailToBindToAddressPortWithError = [delegate respondsToSelector:@selector(session:didFailToBindToAddress:port:withError:)];
 	}
 }
 
@@ -456,6 +464,7 @@
 
 - (void)_didAuthenticate
 {
+    
     // enabling non-blocking mode
     ssh_set_blocking(_rawSession, 0);
     
@@ -726,6 +735,47 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
             ssh_channel_read(fakeChannel, buffer, sizeof(buffer), 0);
             ssh_channel_free(fakeChannel);
         }
+        
+        // try again forward-tcpip requests
+        for (NSArray *forwardRequest in _forwardRequests) {
+            NSString *address = forwardRequest[0];
+            int port = [forwardRequest[1] intValue];
+            int boundport = 0;
+            
+            BOOL rc = ssh_forward_listen(strongSelf.rawSession, address.UTF8String, port, &boundport);
+            
+            switch (rc) {
+                case SSH_OK:
+                    [_forwardRequests removeObject:@[address, @(port)]];
+                    [_acceptedForwards addObject:@[address, @(boundport)]];
+                    
+                    if (_delegateFlags.didBindToAddressPortBoundPort) {
+                        [_delegate session:strongSelf didBindToAddress:address port:port boundPort:boundport];
+                    }
+                    
+                    break;
+                    
+                case SSH_AGAIN:
+                    // try again next time
+                    break;
+                    
+                case SSH_ERROR:
+                default:
+                    [_forwardRequests removeObject:@[address, @(port)]];
+                    if (_delegateFlags.didFailToBindToAddressPortWithError) {
+                        [_delegate session:strongSelf didFailToBindToAddress:address port:port withError:strongSelf.lastError];
+                    }
+                    
+                    break;
+            }
+        }
+        
+        // probe forward channel from accepted forward
+        if (_acceptedForwards.count > 0) {
+            int destination_port = 0;
+            ssh_channel channel = ssh_channel_accept_forward(self.rawSession, 0, &destination_port);
+            NSError *err = self.lastError;
+        }
     }});
     
     dispatch_resume(_readSource);
@@ -879,12 +929,48 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     [_channels removeObject:channel];
 }
 
-- (SSHKitDirectTCPIPChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate
+- (SSHKitDirectChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
-    SSHKitDirectTCPIPChannel *channel = [[SSHKitDirectTCPIPChannel alloc] initWithSession:self delegate:aDelegate];
+    SSHKitDirectChannel *channel = [[SSHKitDirectChannel alloc] initWithSession:self delegate:aDelegate];
     [channel _openWithHost:host onPort:port];
     
     return channel;
+}
+
+- (BOOL)requestBindToAddress:(NSString *)address onPort:(uint16_t)port
+{
+    __weak SSHKitSession *weakSelf = self;
+    
+    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+        SSHKitSession *strongSelf = weakSelf;
+        
+        int boundport = 0;
+        BOOL rc = ssh_forward_listen(strongSelf.rawSession, address.UTF8String, port, &boundport);
+        
+        
+        switch (rc) {
+            case SSH_OK:
+                [_acceptedForwards addObject:@[address, @(boundport)]];
+                if (_delegateFlags.didBindToAddressPortBoundPort) {
+                    [_delegate session:strongSelf didBindToAddress:address port:port boundPort:boundport];
+                }
+                
+                break;
+                
+            case SSH_AGAIN:
+                [_forwardRequests addObject:@[address, @(port)]];
+                break;
+                
+            case SSH_ERROR:
+            default:
+                if (_delegateFlags.didFailToBindToAddressPortWithError) {
+                    [_delegate session:strongSelf didFailToBindToAddress:address port:port withError:strongSelf.lastError];
+                }
+                
+                break;
+        }
+    }}];
+    
 }
 
 @end
