@@ -162,7 +162,6 @@
 	if (_delegate != delegate) {
 		_delegate = delegate;
         _delegateFlags.needAuthenticateUser = [delegate respondsToSelector:@selector(session:needAuthenticateUser:)];
-		_delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
 		_delegateFlags.didConnectToHostPort = [delegate respondsToSelector:@selector(session:didConnectToHost:port:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.didFailToAuthenticateUser = [delegate respondsToSelector:@selector(session:didFailToAuthenticateUser:withError:)];
@@ -246,10 +245,6 @@
         if (error) {
             [self disconnectWithError:error];
             return;
-        }
-        
-        if (_delegateFlags.didConnectToHostPort) {
-            [self.delegate session:self didConnectToHost:self.host port:self.port];
         }
         
         // must call this method before next auth method, or libssh will be failed
@@ -474,8 +469,8 @@
     
     [self _doEndlessRead];
     
-    if (_delegateFlags.didAuthenticateUser) {
-        [self.delegate session:self didAuthenticateUser:self.username];
+    if (_delegateFlags.didConnectToHostPort) {
+        [self.delegate session:self didConnectToHost:self.host port:self.port];
     }
 }
 

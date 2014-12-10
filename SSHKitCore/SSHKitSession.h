@@ -225,7 +225,6 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
  */
 - (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(NSString *)hostKey keyType:(SSHKitHostKeyType)keyType;
 - (void)session:(SSHKitSession *)session needAuthenticateUser:(NSString *)username;
-- (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 - (void)session:(SSHKitSession *)session didFailToAuthenticateUser:(NSString *)username withError:(NSError *)error;
 
 /**
