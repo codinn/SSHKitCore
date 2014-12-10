@@ -2,7 +2,7 @@
 //  SSHKit.m
 //  SSHKit
 //
-//  Created by Brant Young on 11/14/14.
+//  Created by Yang Yubo on 11/14/14.
 //
 //
 

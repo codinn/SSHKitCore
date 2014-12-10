@@ -2,7 +2,7 @@
 //  SSHKitDirectChannel.m
 //  SSHKit
 //
-//  Created by Brant Young on 10/29/14.
+//  Created by Yang Yubo on 10/29/14.
 //
 //
 
