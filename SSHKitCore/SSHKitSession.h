@@ -179,7 +179,7 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 
 - (SSHKitDirectChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
-- (void)requestBindToAddress:(NSString *)address onPort:(uint16_t)port;
+- (void)requestBindToAddress:(NSString *)address onPort:(uint16_t)port completionBlock:(SSHKitRemotePortForwardBoundBlock)completionBlock;
 
 @end
 
@@ -225,12 +225,6 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
  */
 - (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(NSString *)hostKey keyType:(SSHKitHostKeyType)keyType;
 - (void)session:(SSHKitSession *)session needAuthenticateUser:(NSString *)username;
-
-/**
- * Called when ssh server has handled forward-tcpip request.
- **/
-- (void)session:(SSHKitSession *)session didBindToAddress:(NSString *)address port:(uint16_t)port boundPort:(uint16_t)boundPort;
-- (void)session:(SSHKitSession *)session didFailToBindToAddress:(NSString *)address port:(uint16_t)port withError:(NSError *)error;
 
 /**
  * Called when ssh server has forward a connection.

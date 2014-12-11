@@ -44,6 +44,8 @@ typedef int (^ SSHKitGetSocketFDBlock)(NSString *host, uint16_t port, NSError **
 
 typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
 
+typedef void (^ SSHKitRemotePortForwardBoundBlock)(BOOL success, uint16_t boundPort, NSError *error);
+
 #import "SSHKitSession.h"
 #import "SSHKitChannel.h"
 #import "SSHKitDirectChannel.h"

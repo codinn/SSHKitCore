@@ -12,8 +12,6 @@
 		unsigned int shouldConnectWithHostKeyType   : 1;
 		unsigned int didAuthenticateUser            : 1;
         unsigned int needAuthenticateUser           : 1;
-        unsigned int didBindToAddressPortBoundPort  : 1;
-        unsigned int didFailToBindToAddressPortWithError : 1;
         unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
     
@@ -165,8 +163,6 @@
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKeyType = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:keyType:)];
-        _delegateFlags.didBindToAddressPortBoundPort = [delegate respondsToSelector:@selector(session:didBindToAddress:port:boundPort:)];
-        _delegateFlags.didFailToBindToAddressPortWithError = [delegate respondsToSelector:@selector(session:didFailToBindToAddress:port:withError:)];
 	}
 }
 
@@ -721,22 +717,23 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
             ssh_channel_free(fakeChannel);
         }
         
+        NSArray *forwardRequests = [_forwardRequests copy];
         // try again forward-tcpip requests
-        for (NSArray *forwardRequest in _forwardRequests) {
-            NSString *address = forwardRequest[0];
-            int port = [forwardRequest[1] intValue];
+        for (NSArray *forwardRequest in forwardRequests) {
+            NSString *address   = forwardRequest[0];
+            int port            = [forwardRequest[1] intValue];
+            SSHKitRemotePortForwardBoundBlock completionBlock = forwardRequest[2];
+            
             int boundport = 0;
             
             BOOL rc = ssh_forward_listen(strongSelf.rawSession, address.UTF8String, port, &boundport);
             
             switch (rc) {
                 case SSH_OK:
-                    [_forwardRequests removeObject:@[address, @(port)]];
+                    [_forwardRequests removeObject:forwardRequest];
                     [_acceptedForwards addObject:@[address, @(boundport)]];
                     
-                    if (_delegateFlags.didBindToAddressPortBoundPort) {
-                        [_delegate session:strongSelf didBindToAddress:address port:port boundPort:boundport];
-                    }
+                    completionBlock(YES, boundport, nil);
                     
                     break;
                     
@@ -746,10 +743,8 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
                     
                 case SSH_ERROR:
                 default:
-                    [_forwardRequests removeObject:@[address, @(port)]];
-                    if (_delegateFlags.didFailToBindToAddressPortWithError) {
-                        [_delegate session:strongSelf didFailToBindToAddress:address port:port withError:strongSelf.lastError];
-                    }
+                    [_forwardRequests removeObject:forwardRequest];
+                    completionBlock(NO, boundport, strongSelf.lastError);
                     
                     break;
             }
@@ -932,7 +927,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     return channel;
 }
 
-- (void)requestBindToAddress:(NSString *)address onPort:(uint16_t)port
+- (void)requestBindToAddress:(NSString *)address onPort:(uint16_t)port completionBlock:(SSHKitRemotePortForwardBoundBlock)completionBlock;
 {
     __weak SSHKitSession *weakSelf = self;
     
@@ -942,25 +937,20 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         int boundport = 0;
         BOOL rc = ssh_forward_listen(strongSelf.rawSession, address.UTF8String, port, &boundport);
         
-        
         switch (rc) {
             case SSH_OK:
                 [_acceptedForwards addObject:@[address, @(boundport)]];
-                if (_delegateFlags.didBindToAddressPortBoundPort) {
-                    [_delegate session:strongSelf didBindToAddress:address port:port boundPort:boundport];
-                }
+                completionBlock(YES, boundport, nil);
                 
                 break;
                 
             case SSH_AGAIN:
-                [_forwardRequests addObject:@[address, @(port)]];
+                [_forwardRequests addObject:@[address, @(port), completionBlock]];
                 break;
                 
             case SSH_ERROR:
             default:
-                if (_delegateFlags.didFailToBindToAddressPortWithError) {
-                    [_delegate session:strongSelf didFailToBindToAddress:address port:port withError:strongSelf.lastError];
-                }
+                completionBlock(NO, port, strongSelf.lastError);
                 
                 break;
         }
