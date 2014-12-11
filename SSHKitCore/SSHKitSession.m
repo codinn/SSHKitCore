@@ -11,7 +11,6 @@
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKeyType   : 1;
 		unsigned int didAuthenticateUser            : 1;
-		unsigned int didFailToAuthenticateUser      : 1;
         unsigned int needAuthenticateUser           : 1;
         unsigned int didBindToAddressPortBoundPort  : 1;
         unsigned int didFailToBindToAddressPortWithError : 1;
@@ -164,7 +163,6 @@
         _delegateFlags.needAuthenticateUser = [delegate respondsToSelector:@selector(session:needAuthenticateUser:)];
 		_delegateFlags.didConnectToHostPort = [delegate respondsToSelector:@selector(session:didConnectToHost:port:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
-		_delegateFlags.didFailToAuthenticateUser = [delegate respondsToSelector:@selector(session:didFailToAuthenticateUser:withError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKeyType = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:keyType:)];
         _delegateFlags.didBindToAddressPortBoundPort = [delegate respondsToSelector:@selector(session:didBindToAddress:port:boundPort:)];
@@ -449,15 +447,6 @@
 #pragma mark Authentication
 // -----------------------------------------------------------------------------
 
-- (void)_failedToAuthenticateWithError:(NSError *)error
-{
-    [self disconnectWithError:error];
-    
-    if (_delegateFlags.didFailToAuthenticateUser) {
-        [self.delegate session:self didFailToAuthenticateUser:self.username withError:error];
-    }
-}
-
 - (void)_didAuthenticate
 {
     
@@ -478,11 +467,11 @@
 {
     switch (result) {
         case SSH_AUTH_DENIED:
-            [self _failedToAuthenticateWithError:self.lastError];
+            [self disconnectWithError:self.lastError];
             return NO;
             
         case SSH_AUTH_ERROR:
-            [self _failedToAuthenticateWithError:self.lastError];
+            [self disconnectWithError:self.lastError];
             return NO;
         case SSH_AUTH_AGAIN: // actually, its timed out
             [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
@@ -496,9 +485,9 @@
             return YES;
             
         case SSH_AUTH_PARTIAL:
-            [self _failedToAuthenticateWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                                     code:SSHKitErrorCodeAuthError
-                                                                 userInfo:@{ NSLocalizedDescriptionKey : @"Multifactor authentication is not supported currently."} ]];
+            [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
+                                                          code:SSHKitErrorCodeAuthError
+                                                      userInfo:@{ NSLocalizedDescriptionKey : @"Multifactor authentication is not supported currently."} ]];
             return NO;
             
         default:
@@ -520,7 +509,7 @@
             NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                                  code:SSHKitErrorCodeAuthError
                                              userInfo:@{ NSLocalizedDescriptionKey : @"Password and interactive auth methods are not supported by SSH server" }];
-            [strongSelf _failedToAuthenticateWithError:error];
+            [strongSelf disconnectWithError:error];
             return;
         }
         
@@ -596,7 +585,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                     code:SSHKitErrorCodeAuthError
                                 userInfo:@{ NSLocalizedDescriptionKey : @"Publickey auth method is not supported by SSH server" }];
-        [self _failedToAuthenticateWithError:error];
+        [self disconnectWithError:error];
         return;
     }
     
@@ -604,7 +593,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                              code:SSHKitErrorCodeAuthError
                                          userInfo:@{ NSLocalizedDescriptionKey : @"Path of private key is not specified" }];
-        [self _failedToAuthenticateWithError:error];
+        [self disconnectWithError:error];
         return;
     }
     
@@ -632,7 +621,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
                                         userInfo:@{ NSLocalizedDescriptionKey : @"Could not load and parse private key file" }];
             }
             
-            [strongSelf _failedToAuthenticateWithError:error];
+            [strongSelf disconnectWithError:error];
             goto _exit_block;
         }
         
@@ -643,7 +632,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
             NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                                  code:SSHKitErrorCodeAuthError
                                              userInfo:@{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not extract public key from \"%@\"", strongSelf.privateKeyPath] }];
-            [strongSelf _failedToAuthenticateWithError:error];
+            [strongSelf disconnectWithError:error];
             goto _exit_block;
         }
         
