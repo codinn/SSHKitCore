@@ -509,10 +509,12 @@
             return;
         }
         
+        int rc = SSH_AUTH_DENIED;
+        
         // try keyboard-interactive method
         if (strongSelf.authMethods & SSHKitSessionUserAuthInteractive)
         {
-            int rc = ssh_userauth_kbdint(_rawSession, NULL, NULL);
+            rc = ssh_userauth_kbdint(_rawSession, NULL, NULL);
             while (rc == SSH_AUTH_INFO)
             {
                 ssh_userauth_kbdint_getname(_rawSession);
@@ -542,15 +544,12 @@
         // continue try "password" method, which is deprecated in SSH 2.0
         if (strongSelf.authMethods & SSHKitSessionUserAuthPassword )
         {
-            int rc = ssh_userauth_password(_rawSession, NULL, password.UTF8String);
+            rc = ssh_userauth_password(_rawSession, NULL, password.UTF8String);
             [strongSelf _checkAuthenticateResult:rc];
             return;
         }
         
-        // never reach here
-        [strongSelf disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                            code:SSHKitErrorCodeAuthError
-                                                        userInfo:@{ NSLocalizedDescriptionKey : @"Unknown error while authenticate user"} ]];
+        [strongSelf _checkAuthenticateResult:rc];
     }}];
 }
 
