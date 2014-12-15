@@ -14,9 +14,13 @@
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
     if ((self = [super initWithSession:session delegate:aDelegate])) {
+        __weak SSHKitDirectChannel *weakSelf = self;
+        
         [self.session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
-            _rawChannel = ssh_channel_new(self.session.rawSession);
-            [self.session _addChannel:self];
+            __strong SSHKitDirectChannel *strongSelf = weakSelf;
+            
+            strongSelf->_rawChannel = ssh_channel_new(strongSelf.session.rawSession);
+            [self.session _addChannel:strongSelf];
         }}];
     }
     

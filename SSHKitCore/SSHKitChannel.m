@@ -38,8 +38,11 @@
 {
     __block BOOL flag;
     
+    __weak SSHKitChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
-        flag = _rawChannel && (ssh_channel_is_open(_rawChannel)!=0);
+        __strong SSHKitChannel *strongSelf = weakSelf;
+        
+        flag = strongSelf->_rawChannel && (ssh_channel_is_open(strongSelf->_rawChannel)!=0);
     }}];
     
     return flag;
@@ -52,29 +55,33 @@
 
 - (void)closeWithError:(NSError *) error
 {
+    __weak SSHKitChannel *weakSelf = self;
+    
     [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
-        if (_state == SSHKitChannelClosed) { // already closed
+        __strong SSHKitChannel *strongSelf = weakSelf;
+        
+        if (strongSelf->_state == SSHKitChannelClosed) { // already closed
             return;
         }
         
-        _state = SSHKitChannelClosed;
+        strongSelf->_state = SSHKitChannelClosed;
         
         // SSH_OK or SSH_ERROR, never return SSH_AGAIN
         
         // prevent server receive more then one close message
-        if (self.isOpened) {
-            ssh_channel_close(_rawChannel);
+        if (strongSelf.isOpened) {
+            ssh_channel_close(strongSelf->_rawChannel);
         }
         
-        ssh_channel_free(_rawChannel);
+        ssh_channel_free(strongSelf->_rawChannel);
         
-        _rawChannel = NULL;
+        strongSelf->_rawChannel = NULL;
         
-        if (_delegateFlags.didCloseWithError) {
-            [self.delegate channelDidClose:self withError:error];
+        if (strongSelf->_delegateFlags.didCloseWithError) {
+            [strongSelf.delegate channelDidClose:strongSelf withError:error];
         }
         
-        [self.session _removeChannel:self];
+        [strongSelf.session _removeChannel:strongSelf];
     }}];
 }
 
@@ -153,16 +160,17 @@
     __weak SSHKitChannel *weakSelf = self;
     
     [self.session dispatchAsyncOnSessionQueue:^{ @autoreleasepool {
-        if (_state != SSHKitChannelReadWrite) {
+        __strong SSHKitChannel *strongSelf = weakSelf;
+        
+        if (strongSelf->_state != SSHKitChannelReadWrite) {
             return_from_block;
         }
         
-        __strong SSHKitChannel *strongSelf = weakSelf;
         
         uint32_t wrote = 0;
         
         do {
-            ssize_t i = ssh_channel_write(_rawChannel, &[data bytes][wrote], (uint32_t)data.length-wrote);
+            ssize_t i = ssh_channel_write(strongSelf->_rawChannel, &[data bytes][wrote], (uint32_t)data.length-wrote);
             
             if (i < 0) {
                 [strongSelf closeWithError:strongSelf.session.lastError];
@@ -170,9 +178,9 @@
             }
             
             wrote += i;
-        } while (wrote < data.length && _rawChannel);
+        } while (wrote < data.length && strongSelf->_rawChannel);
         
-        if (_delegateFlags.didWriteData) {
+        if (strongSelf->_delegateFlags.didWriteData) {
             [strongSelf.delegate channelDidWriteData:strongSelf];
         }
     }}];

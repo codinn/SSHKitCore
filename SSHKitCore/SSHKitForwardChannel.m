@@ -14,9 +14,13 @@
 - (instancetype)initWithSession:(SSHKitSession *)session rawChannel:(ssh_channel)rawChannel destinationPort:(NSInteger)destinationPort
 {
     if (self=[super initWithSession:session]) {
+        __weak SSHKitForwardChannel *weakSelf = self;
+        
         [self.session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
+            __strong SSHKitForwardChannel *strongSelf = weakSelf;
+            
             self.destinationPort = destinationPort;
-            _rawChannel = rawChannel;
+            strongSelf->_rawChannel = rawChannel;
         }}];
         
         _state = SSHKitChannelReadWrite;
