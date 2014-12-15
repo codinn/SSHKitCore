@@ -152,6 +152,11 @@
 	}];
 }
 
+-(NSString *)description
+{
+    return [NSString stringWithFormat:@"%@@%@:%d", self.username, self.host, self.port];
+}
+
 #pragma mark Configuration
 
 - (void)setDelegate:(id<SSHKitSessionDelegate>)delegate
