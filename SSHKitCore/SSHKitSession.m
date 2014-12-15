@@ -145,13 +145,10 @@
 
 - (void)dealloc
 {
-    __weak SSHKitSession *weakSelf = self;
     [self dispatchSyncOnSessionQueue: ^{
-        __strong SSHKitSession *strongSelf = weakSelf;
-        
-        [strongSelf disconnect];
-        ssh_free(strongSelf->_rawSession);
-        strongSelf->_rawSession= NULL;
+        [self disconnect];
+        ssh_free(self->_rawSession);
+        self->_rawSession= NULL;
 	}];
 }
 
