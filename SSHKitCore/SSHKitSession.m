@@ -986,4 +986,46 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }}];
 }
 
+#pragma mark - remote infomation
+
+- (NSString *)remoteBanner
+{
+    // for performance reason, not waiting on session queue
+    const char *banner = ssh_get_issue_banner(self.rawSession);
+    
+    if (banner) {
+        return @(banner);
+    }
+    
+    return nil;
+}
+
+- (NSString *)opensshVersion
+{
+    // for performance reason, not waiting ssh_get_openssh_version on session queue
+    int ver = ssh_get_openssh_version(self.rawSession);
+    
+    if (ver>0) {
+        NSNumber *a = @( (ver & 0x00ff0000) >> 16 );
+        NSNumber *b = @( (ver & 0x0000ff00) >> 8 );
+        NSNumber *c = @( (ver & 0x000000ff) );
+        
+        return [NSString stringWithFormat:@"%@.%@.%@", a, b, c];
+    }
+    
+    return nil;
+}
+
+- (NSString *)protocolVersion
+{
+    // for performance reason, not waiting on session queue
+    int ver = ssh_get_version(self.rawSession);
+    
+    if (ver>0) {
+        return @(ver).stringValue;
+    }
+    
+    return nil;
+}
+
 @end

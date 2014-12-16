@@ -92,6 +92,12 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 /** The remote host banner. */
 @property (nonatomic, readonly) NSString *remoteBanner;
 
+/** Get the version of the OpenSSH server, if it is not an OpenSSH server then nil will be returned. */
+@property (nonatomic, readonly) NSString *opensshVersion;
+
+/** Get the protocol version of remote host. */
+@property (nonatomic, readonly) NSString *protocolVersion;
+
 /**
  A Boolean value indicating whether the session connected successfully
  (read-only).
