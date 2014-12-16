@@ -30,16 +30,22 @@
     SSHKitGetSocketFDBlock _socketFDBlock;
 }
 
-@property (nonatomic, strong) NSString      *host;
-@property (nonatomic, readwrite) uint16_t   port;
-@property (nonatomic, strong) NSString      *username;
-@property (nonatomic, readwrite) NSString   *privateKeyPath;
+@property (nonatomic, readwrite)  NSString    *host;
+@property (nonatomic, readwrite)  NSString    *hostIP;
+@property (nonatomic, readwrite)  uint16_t    port;
+@property (nonatomic, readwrite)  NSString    *username;
+@property (nonatomic, readwrite)  NSString    *privateKeyPath;
 
-@property (nonatomic, readonly) long        timeout;
+@property (nonatomic, readwrite)  NSString    *clientBanner;
+@property (nonatomic, readwrite)  NSString    *issueBanner;
+@property (nonatomic, readwrite)  NSString    *serverBanner;
+@property (nonatomic, readwrite)  NSString    *protocolVersion;
+
+@property (nonatomic, readonly) long          timeout;
 
 @property (nonatomic, readwrite) NSInteger authMethods;
 
-@property (atomic, strong, readwrite) dispatch_queue_t sessionQueue;
+@property (atomic, readwrite) dispatch_queue_t sessionQueue;
 @end
 
 #pragma mark -
@@ -238,6 +244,18 @@
     int result = ssh_connect(_rawSession);
     
     if ( SSH_OK == result ) {
+        const char *clientbanner = ssh_get_clientbanner(self.rawSession);
+        if (clientbanner) self.clientBanner = @(clientbanner);
+        
+        const char *serverbanner = ssh_get_serverbanner(self.rawSession);
+        if (serverbanner) self.serverBanner = @(serverbanner);
+        
+        int ver = ssh_get_version(self.rawSession);
+        
+        if (ver>0) {
+            self.protocolVersion = @(ver).stringValue;
+        }
+        
         [self _resolveHostIP];
         NSError *error = [self _checkHostKey];
         
@@ -248,6 +266,13 @@
         
         // must call this method before next auth method, or libssh will be failed
         int rc = ssh_userauth_none(_rawSession, NULL);
+        
+        /*
+         *** Does not work without calling ssh_userauth_none() first ***
+         *** That will be fixed ***
+         */
+        const char *banner = ssh_get_issue_banner(self.rawSession);
+        if (banner) self.issueBanner = @(banner);
         
         if (rc==SSH_AUTH_DENIED) {
             self.authMethods = ssh_userauth_list(_rawSession, NULL);
@@ -273,9 +298,9 @@
 
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout
 {
-    self.host = host;
+    self.host = [host copy];
     self.port = port;
-    self.username = user;
+    self.username = [user copy];
     _timeout = (long)timeout;
     
     __weak SSHKitSession *weakSelf = self;
@@ -286,25 +311,25 @@
         }
         
         // set to blocking mode
-        ssh_set_blocking(strongSelf->_rawSession, 1);
+        ssh_set_blocking(strongSelf.rawSession, 1);
         
         if (strongSelf->_socketFDBlock) {
             NSError *error;
             
             // libssh will close this fd automatically
-            socket_t socket_fd = strongSelf->_socketFDBlock(strongSelf->_host, strongSelf->_port, &error);
+            socket_t socket_fd = strongSelf->_socketFDBlock(strongSelf.host, strongSelf.port, &error);
             
             if (error) {
                 [strongSelf disconnectWithError:error];
                 return_from_block;
             }
             
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_FD, &socket_fd);
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket_fd);
         }
         
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_HOST, strongSelf->_host.UTF8String);
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_PORT, &strongSelf->_port);
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_USER, strongSelf->_username.UTF8String);
+        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_HOST, strongSelf.host.UTF8String);
+        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_PORT, &strongSelf->_port);
+        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
         
         [strongSelf _doConnect];
     }}];
@@ -422,7 +447,7 @@
         __strong SSHKitSession *strongSelf = weakSelf;
         
         SSHKitErrorCode code = SSHKitErrorCodeNoError;
-        int errorCode = ssh_get_error_code(strongSelf->_rawSession);
+        int errorCode = ssh_get_error_code(strongSelf.rawSession);
         
         // convert to SSHKit error code
         switch (errorCode) {
@@ -438,7 +463,7 @@
                 break;
         }
         
-        const char* errorStr = ssh_get_error(strongSelf->_rawSession);
+        const char* errorStr = ssh_get_error(strongSelf.rawSession);
         if (!errorStr) {
             error = [NSError errorWithDomain:SSHKitLibsshErrorDomain
                                        code:SSHKitErrorCodeFatal
@@ -459,9 +484,8 @@
 
 - (void)_didAuthenticate
 {
-    
     // enabling non-blocking mode
-    ssh_set_blocking(_rawSession, 0);
+    ssh_set_blocking(self.rawSession, 0);
     
     // start diagnoses timer
     [self _fireDiagnosesTimer];
@@ -531,22 +555,22 @@
         // try keyboard-interactive method
         if (strongSelf.authMethods & SSHKitSessionUserAuthInteractive)
         {
-            rc = ssh_userauth_kbdint(strongSelf->_rawSession, NULL, NULL);
+            rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
             while (rc == SSH_AUTH_INFO)
             {
-                ssh_userauth_kbdint_getname(strongSelf->_rawSession);
-                ssh_userauth_kbdint_getinstruction(strongSelf->_rawSession);
-                int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf->_rawSession);
+                ssh_userauth_kbdint_getname(strongSelf.rawSession);
+                ssh_userauth_kbdint_getinstruction(strongSelf.rawSession);
+                int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf.rawSession);
                 
                 for (int i = 0; i < nprompts; i++) {
                     char echo;
-                    ssh_userauth_kbdint_getprompt(strongSelf->_rawSession, i, &echo);
+                    ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
                     
-                    if (ssh_userauth_kbdint_setanswer(strongSelf->_rawSession, i, password.UTF8String) < 0) {
+                    if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, password.UTF8String) < 0) {
                         break;
                     }
                 }
-                rc = ssh_userauth_kbdint(strongSelf->_rawSession, NULL, NULL);
+                rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
             }
             
             
@@ -561,7 +585,7 @@
         // continue try "password" method, which is deprecated in SSH 2.0
         if (strongSelf.authMethods & SSHKitSessionUserAuthPassword )
         {
-            rc = ssh_userauth_password(strongSelf->_rawSession, NULL, password.UTF8String);
+            rc = ssh_userauth_password(strongSelf.rawSession, NULL, password.UTF8String);
             [strongSelf _checkAuthenticateResult:rc];
             return_from_block;
         }
@@ -653,14 +677,14 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         }
         
         // try public key
-        ret = ssh_userauth_try_publickey(strongSelf->_rawSession, NULL, rawPublicKey);
+        ret = ssh_userauth_try_publickey(strongSelf.rawSession, NULL, rawPublicKey);
         if (ret!=SSH_AUTH_SUCCESS) {
             [strongSelf _checkAuthenticateResult:ret];
             goto _exit_block;
         }
         
         // authenticate using private key
-        ret = ssh_userauth_publickey(strongSelf->_rawSession, NULL, rawPrivateKey);
+        ret = ssh_userauth_publickey(strongSelf.rawSession, NULL, rawPrivateKey);
         [strongSelf _checkAuthenticateResult:ret];
         
     _exit_block:
@@ -797,6 +821,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 // -----------------------------------------------------------------------------
 #pragma mark - Extra Options
 // -----------------------------------------------------------------------------
+
 - (BOOL)extraOptionCompression
 {
     char* value = NULL;
@@ -926,7 +951,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         return;
     }
     
-    _hostIP = @(buffer);
+    self.hostIP = @(buffer);
 }
 
 #pragma mark - Open Channels
@@ -984,48 +1009,6 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
                 break;
         }
     }}];
-}
-
-#pragma mark - remote infomation
-
-- (NSString *)remoteBanner
-{
-    // for performance reason, not waiting on session queue
-    const char *banner = ssh_get_issue_banner(self.rawSession);
-    
-    if (banner) {
-        return @(banner);
-    }
-    
-    return nil;
-}
-
-- (NSString *)opensshVersion
-{
-    // for performance reason, not waiting ssh_get_openssh_version on session queue
-    int ver = ssh_get_openssh_version(self.rawSession);
-    
-    if (ver>0) {
-        NSNumber *a = @( (ver & 0x00ff0000) >> 16 );
-        NSNumber *b = @( (ver & 0x0000ff00) >> 8 );
-        NSNumber *c = @( (ver & 0x000000ff) );
-        
-        return [NSString stringWithFormat:@"%@.%@.%@", a, b, c];
-    }
-    
-    return nil;
-}
-
-- (NSString *)protocolVersion
-{
-    // for performance reason, not waiting on session queue
-    int ver = ssh_get_version(self.rawSession);
-    
-    if (ver>0) {
-        return @(ver).stringValue;
-    }
-    
-    return nil;
 }
 
 @end

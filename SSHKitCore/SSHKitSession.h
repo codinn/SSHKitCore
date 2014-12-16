@@ -86,17 +86,17 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 /** Last session error. */
 @property (nonatomic, readonly) NSError *lastError;
 
-/** The banner that will be sent to the remote host when the SSH session is started. */
-@property (nonatomic, strong) NSString *banner;
+/** The client version string */
+@property (nonatomic, readonly)  NSString *clientBanner;
 
 /** The remote host banner. */
-@property (nonatomic, readonly) NSString *remoteBanner;
+@property (nonatomic, readonly) NSString  *issueBanner;
 
-/** Get the version of the OpenSSH server, if it is not an OpenSSH server then nil will be returned. */
-@property (nonatomic, readonly) NSString *opensshVersion;
+/** Get the software version of the remote server. */
+@property (nonatomic, readonly) NSString  *serverBanner;
 
 /** Get the protocol version of remote host. */
-@property (nonatomic, readonly) NSString *protocolVersion;
+@property (nonatomic, readonly) NSString  *protocolVersion;
 
 /**
  A Boolean value indicating whether the session connected successfully
