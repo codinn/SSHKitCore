@@ -166,21 +166,28 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 /**
  Authenticate by password
 
- @param password Password for connected user
+ @param passwordHandler Password handler for get password
  */
-- (void)authenticateByPassword:(NSString *)password;
+- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler;
 
 /**
  Authenticate by private key pair
 
- Use passphraseHandle:nil when the key is unencrypted
+ Use passphraseHandler:nil when the key is unencrypted
 
  @param privateKeyPath Filepath to private key
- @param passphraseHandle Password handle for encrypted private key
+ @param passphraseHandler Password handle for encrypted private key
  */
-- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler;
+- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler;
 
-+ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler;
++ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler;
+
+/**
+ Authenticate by keyboard-interactive
+ 
+ @param interactiveHandler Interactive handler for connected user
+ */
+- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
 
 #pragma mark - Open Channels
 

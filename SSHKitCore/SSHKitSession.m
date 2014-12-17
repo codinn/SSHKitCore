@@ -533,7 +533,7 @@
 }
 
 
-- (void)authenticateByInteractiveBlock:(NSString *)password
+- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler
 {
     if ( !(self.authMethods & SSHKitSessionUserAuthInteractive) )
     {
@@ -557,15 +557,27 @@
         while (rc == SSH_AUTH_INFO)
         {
             
-            ssh_userauth_kbdint_getname(strongSelf.rawSession);
-            ssh_userauth_kbdint_getinstruction(strongSelf.rawSession);
+            const char* name = ssh_userauth_kbdint_getname(strongSelf.rawSession);
+            NSString *nameString = name ? @(name) : nil;
+            
+            const char* instruction = ssh_userauth_kbdint_getinstruction(strongSelf.rawSession);
+            NSString *instructionString = instruction ? @(instruction) : nil;
+            
             int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf.rawSession);
             
+            NSMutableArray *prompts = [@[] mutableCopy];
             for (int i = 0; i < nprompts; i++) {
-                char echo;
-                ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
+                char echo = NO;
+                const char *prompt = ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
                 
-                if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, password.UTF8String) < 0) {
+                NSString *promptString = prompt ? @(prompt) : @"";
+                [prompts addObject:@[promptString, @(echo)]];
+            }
+            
+            NSArray *answers = interactiveHandler(index, nameString, instructionString, prompts);
+            
+            for (int i = 0; i < nprompts; i++) {
+                if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, [answers[i] UTF8String]) < 0) {
                     break;
                 }
             }
@@ -578,7 +590,7 @@
     }}];
 }
 
-- (void)authenticateByPassword:(NSString *)password
+- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler;
 {
     if ( !(self.authMethods & SSHKitSessionUserAuthPassword) ) {
         NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
@@ -587,6 +599,8 @@
         [self disconnectWithError:error];
         return;
     }
+    
+    NSString *password = passwordHandler();
     
     __weak SSHKitSession *weakSelf = self;
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
@@ -622,7 +636,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     return SSH_ERROR;
 }
 
-- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler
+- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler
 {
     if ( !(self.authMethods & SSHKitSessionUserAuthPublickey) ) {
         NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
@@ -705,7 +719,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }}];
 }
 
-+ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandle:(SSHKitAskPassphrasePrivateKeyBlock)handler
++ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler
 {
     ssh_key rawPrivateKey = NULL;
     
