@@ -532,8 +532,18 @@
     }
 }
 
-- (void)authenticateByPassword:(NSString *)password
+
+- (void)authenticateByInteractiveBlock:(NSString *)password
 {
+    if ( !(self.authMethods & SSHKitSessionUserAuthInteractive) )
+    {
+        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                             code:SSHKitErrorCodeAuthError
+                                         userInfo:@{ NSLocalizedDescriptionKey : @"Keyboard-Interactive authentication method is not supported by SSH server" }];
+        [self disconnectWithError:error];
+        return;
+    }
+    
     __weak SSHKitSession *weakSelf = self;
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         __strong SSHKitSession *strongSelf = weakSelf;
@@ -541,55 +551,52 @@
             return_from_block;
         }
         
-        if ( ! ( (strongSelf.authMethods & SSHKitSessionUserAuthInteractive) || (strongSelf.authMethods & SSHKitSessionUserAuthPassword) ) )
-        {
-            NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                 code:SSHKitErrorCodeAuthError
-                                             userInfo:@{ NSLocalizedDescriptionKey : @"Password and interactive auth methods are not supported by SSH server" }];
-            [strongSelf disconnectWithError:error];
-            return_from_block;
-        }
-        
-        int rc = SSH_AUTH_DENIED;
-        
         // try keyboard-interactive method
-        if (strongSelf.authMethods & SSHKitSessionUserAuthInteractive)
+        NSInteger index = 0;
+        int rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
+        while (rc == SSH_AUTH_INFO)
         {
-            rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
-            while (rc == SSH_AUTH_INFO)
-            {
-                ssh_userauth_kbdint_getname(strongSelf.rawSession);
-                ssh_userauth_kbdint_getinstruction(strongSelf.rawSession);
-                int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf.rawSession);
+            
+            ssh_userauth_kbdint_getname(strongSelf.rawSession);
+            ssh_userauth_kbdint_getinstruction(strongSelf.rawSession);
+            int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf.rawSession);
+            
+            for (int i = 0; i < nprompts; i++) {
+                char echo;
+                ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
                 
-                for (int i = 0; i < nprompts; i++) {
-                    char echo;
-                    ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
-                    
-                    if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, password.UTF8String) < 0) {
-                        break;
-                    }
+                if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, password.UTF8String) < 0) {
+                    break;
                 }
-                rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
             }
             
-            
-            if (rc!=SSH_AUTH_DENIED) {
-                [strongSelf _checkAuthenticateResult:rc];
-                return_from_block;
-            }
-            
-            // try next - password method
+            index ++;
+            rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
         }
         
-        // continue try "password" method, which is deprecated in SSH 2.0
-        if (strongSelf.authMethods & SSHKitSessionUserAuthPassword )
-        {
-            rc = ssh_userauth_password(strongSelf.rawSession, NULL, password.UTF8String);
-            [strongSelf _checkAuthenticateResult:rc];
+        [strongSelf _checkAuthenticateResult:rc];
+    }}];
+}
+
+- (void)authenticateByPassword:(NSString *)password
+{
+    if ( !(self.authMethods & SSHKitSessionUserAuthPassword) ) {
+        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                             code:SSHKitErrorCodeAuthError
+                                         userInfo:@{ NSLocalizedDescriptionKey : @"Password authentication method is not supported by SSH server" }];
+        [self disconnectWithError:error];
+        return;
+    }
+    
+    __weak SSHKitSession *weakSelf = self;
+    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+        __strong SSHKitSession *strongSelf = weakSelf;
+        if (!strongSelf) {
             return_from_block;
         }
         
+        // try "password" method, which is deprecated in SSH 2.0
+        int rc = ssh_userauth_password(strongSelf.rawSession, NULL, password.UTF8String);
         [strongSelf _checkAuthenticateResult:rc];
     }}];
 }
@@ -989,6 +996,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         }
         
         int boundport = 0;
+        // todo: listening to ipv4 and ipv6 address respectively
         BOOL rc = ssh_forward_listen(strongSelf.rawSession, address.UTF8String, port, &boundport);
         
         switch (rc) {

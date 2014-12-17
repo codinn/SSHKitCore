@@ -1,5 +1,6 @@
 #import "SSHKitCore.h"
 
+/** equal with libssh SSH_AUTH_METHOD_xxx flags */
 NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
     SSHKitSessionUserAuthUnknown     = 0,
     SSHKitSessionUserAuthNone        = 1 << 0,
