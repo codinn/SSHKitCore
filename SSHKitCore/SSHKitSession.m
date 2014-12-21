@@ -509,8 +509,8 @@
             return NO;
         case SSH_AUTH_AGAIN: // actually, its timed out
             [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                                code:SSHKitErrorCodeTimeout
-                                                            userInfo:@{ NSLocalizedDescriptionKey : @"Timeout, server not responding"} ]];
+                                                          code:SSHKitErrorCodeTimeout
+                                                      userInfo:@{ NSLocalizedDescriptionKey : @"Timeout, server not responding"} ]];
             return NO;
             
             
@@ -526,8 +526,8 @@
             
         default:
             [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                                code:SSHKitErrorCodeAuthError
-                                                            userInfo:@{ NSLocalizedDescriptionKey : @"Unknown error while authenticate user"} ]];
+                                                          code:SSHKitErrorCodeAuthError
+                                                      userInfo:@{ NSLocalizedDescriptionKey : @"Unknown error while authenticate user"} ]];
             return NO;
     }
 }
@@ -556,7 +556,6 @@
         int rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
         while (rc == SSH_AUTH_INFO)
         {
-            
             const char* name = ssh_userauth_kbdint_getname(strongSelf.rawSession);
             NSString *nameString = name ? @(name) : nil;
             
@@ -565,20 +564,23 @@
             
             int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf.rawSession);
             
-            NSMutableArray *prompts = [@[] mutableCopy];
-            for (int i = 0; i < nprompts; i++) {
-                char echo = NO;
-                const char *prompt = ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
+            if (nprompts>0) { // getnprompts may return zero
+                NSMutableArray *prompts = [@[] mutableCopy];
+                for (int i = 0; i < nprompts; i++) {
+                    char echo = NO;
+                    const char *prompt = ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
+                    
+                    NSString *promptString = prompt ? @(prompt) : @"";
+                    [prompts addObject:@[promptString, @(echo)]];
+                }
                 
-                NSString *promptString = prompt ? @(prompt) : @"";
-                [prompts addObject:@[promptString, @(echo)]];
-            }
-            
-            NSArray *answers = interactiveHandler(index, nameString, instructionString, prompts);
-            
-            for (int i = 0; i < nprompts; i++) {
-                if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, [answers[i] UTF8String]) < 0) {
-                    break;
+                NSArray *information = interactiveHandler(index, nameString, instructionString, prompts);
+                
+                for (int i = 0; i < information.count; i++) {
+                    if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, [information[i] UTF8String]) < 0)
+                    {
+                        break;
+                    }
                 }
             }
             
