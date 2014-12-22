@@ -16,7 +16,7 @@
 	} _delegateFlags;
     
 	dispatch_source_t _readSource;
-    dispatch_source_t _diagnosesTimer;
+    dispatch_source_t _keepAliveTimer;
     NSInteger _keepAliveCounter;
     NSMutableArray *_channels;
     NSMutableArray *_forwardRequests;
@@ -379,7 +379,7 @@
 - (void)disconnectAsync
 {
     @synchronized(self) {    // lock
-        [self _invalidateDiagnosesTimer];
+        [self _invalidateKeepAliveTimer];
         
         if (!_alreadyDidDisconnect) { // not run yet?
             // do stuff once
@@ -418,7 +418,7 @@
 - (void)disconnectWithError:(NSError *)error
 {
     @synchronized(self) {    // lock
-        [self _invalidateDiagnosesTimer];
+        [self _invalidateKeepAliveTimer];
         
         if (!_alreadyDidDisconnect) { // not run yet?
             // do stuff once
@@ -488,9 +488,9 @@
     ssh_set_blocking(self.rawSession, 0);
     
     // start diagnoses timer
-    [self _fireDiagnosesTimer];
+    [self _fireKeepAliveTimer];
     
-    [self _doEndlessRead];
+    [self _startSessionLoop];
     
     if (_delegateFlags.didConnectToHostPort) {
         [self.delegate session:self didConnectToHost:self.host port:self.port];
@@ -751,7 +751,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 /**
  * Reads the first available bytes that become available on the channel.
  **/
-- (void)_doEndlessRead
+- (void)_startSessionLoop
 {
     if (_readSource) {
         dispatch_source_cancel(_readSource);
@@ -891,9 +891,9 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 
 #pragma mark - Internal Helpers
 
-- (void)_fireDiagnosesTimer
+- (void)_fireKeepAliveTimer
 {
-    _diagnosesTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
+    _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
     _keepAliveCounter = 3;
     
     uint64_t interval = SSHKit_SESSION_DEFAULT_TIMEOUT;
@@ -903,12 +903,12 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         interval = SSHKit_SESSION_MIN_TIMEOUT;
     }
     
-    if (_diagnosesTimer)
+    if (_keepAliveTimer)
     {
-        dispatch_source_set_timer(_diagnosesTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
+        dispatch_source_set_timer(_keepAliveTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
         
         __weak SSHKitSession *weakSelf = self;
-        dispatch_source_set_event_handler(_diagnosesTimer, ^{
+        dispatch_source_set_event_handler(_keepAliveTimer, ^{
             __strong SSHKitSession *strongSelf = weakSelf;
             if (!strongSelf) {
                 return_from_block;
@@ -935,15 +935,15 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
             strongSelf->_keepAliveCounter--;
         });
         
-        dispatch_resume(_diagnosesTimer);
+        dispatch_resume(_keepAliveTimer);
     }
 }
 
-- (void)_invalidateDiagnosesTimer
+- (void)_invalidateKeepAliveTimer
 {
-    if (_diagnosesTimer) {
-        dispatch_source_cancel(_diagnosesTimer);
-        _diagnosesTimer = nil;
+    if (_keepAliveTimer) {
+        dispatch_source_cancel(_keepAliveTimer);
+        _keepAliveTimer = nil;
     }
 }
 
