@@ -611,52 +611,73 @@
         return;
     }
     
+    self.currentStage = SSHKitSessionStageAuthenticating;
+
+    __block NSInteger index = 0;
+    __block int rc = SSH_AUTH_AGAIN;
+    
     __weak SSHKitSession *weakSelf = self;
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+    _authBlock = ^{ @autoreleasepool {
         __strong SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
             return_from_block;
         }
         
         // try keyboard-interactive method
-        NSInteger index = 0;
-        int rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
-        while (rc == SSH_AUTH_INFO)
-        {
-            const char* name = ssh_userauth_kbdint_getname(strongSelf.rawSession);
-            NSString *nameString = name ? @(name) : nil;
-            
-            const char* instruction = ssh_userauth_kbdint_getinstruction(strongSelf.rawSession);
-            NSString *instructionString = instruction ? @(instruction) : nil;
-            
-            int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf.rawSession);
-            
-            if (nprompts>0) { // getnprompts may return zero
-                NSMutableArray *prompts = [@[] mutableCopy];
-                for (int i = 0; i < nprompts; i++) {
-                    char echo = NO;
-                    const char *prompt = ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
-                    
-                    NSString *promptString = prompt ? @(prompt) : @"";
-                    [prompts addObject:@[promptString, @(echo)]];
-                }
-                
-                NSArray *information = interactiveHandler(index, nameString, instructionString, prompts);
-                
-                for (int i = 0; i < information.count; i++) {
-                    if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, [information[i] UTF8String]) < 0)
-                    {
-                        break;
-                    }
-                }
-            }
-            
-            index ++;
+        if (rc==SSH_AUTH_AGAIN) {
             rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
         }
         
+        switch (rc) {
+            case SSH_AUTH_AGAIN:
+                // try again
+                return_from_block;
+                
+            case SSH_AUTH_INFO:
+            {
+                const char* name = ssh_userauth_kbdint_getname(strongSelf.rawSession);
+                NSString *nameString = name ? @(name) : nil;
+                
+                const char* instruction = ssh_userauth_kbdint_getinstruction(strongSelf.rawSession);
+                NSString *instructionString = instruction ? @(instruction) : nil;
+                
+                int nprompts = ssh_userauth_kbdint_getnprompts(strongSelf.rawSession);
+                
+                if (nprompts>0) { // getnprompts may return zero
+                    NSMutableArray *prompts = [@[] mutableCopy];
+                    for (int i = 0; i < nprompts; i++) {
+                        char echo = NO;
+                        const char *prompt = ssh_userauth_kbdint_getprompt(strongSelf.rawSession, i, &echo);
+                        
+                        NSString *promptString = prompt ? @(prompt) : @"";
+                        [prompts addObject:@[promptString, @(echo)]];
+                    }
+                    
+                    NSArray *information = interactiveHandler(index, nameString, instructionString, prompts);
+                    
+                    for (int i = 0; i < information.count; i++) {
+                        if (ssh_userauth_kbdint_setanswer(strongSelf.rawSession, i, [information[i] UTF8String]) < 0)
+                        {
+                            // failed
+                            break;
+                        }
+                    }
+                }
+                
+                index ++;
+            }
+                // send and check again
+                rc = ssh_userauth_kbdint(strongSelf.rawSession, NULL, NULL);
+                return_from_block;
+                
+            default:
+                break;
+        }
+        
         [strongSelf _checkAuthenticateResult:rc];
-    }}];
+    }};
+    
+    [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
 - (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler;
