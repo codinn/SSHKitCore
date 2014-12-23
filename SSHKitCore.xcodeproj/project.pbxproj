@@ -7,6 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A49F63B1A491C8400D9BA80 /* CoSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6301A491C8400D9BA80 /* CoSocket.h */; };
+		4A49F63C1A491C8400D9BA80 /* CoSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6311A491C8400D9BA80 /* CoSocket.m */; };
+		4A49F65A1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F64F1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m */; };
+		4A49F65B1A491CD100D9BA80 /* SSHKitConnector+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6501A491CD100D9BA80 /* SSHKitConnector+Protected.h */; };
+		4A49F65C1A491CD100D9BA80 /* SSHKitConnectorProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6511A491CD100D9BA80 /* SSHKitConnectorProxy.h */; };
+		4A49F65D1A491CD100D9BA80 /* SSHKitConnectorProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6521A491CD100D9BA80 /* SSHKitConnectorProxy.m */; };
+		4A49F65E1A491CD100D9BA80 /* SSHKitConnectorSOCKS4.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6531A491CD100D9BA80 /* SSHKitConnectorSOCKS4.m */; };
+		4A49F65F1A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6541A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m */; };
+		4A49F6601A491CD100D9BA80 /* CoHTTPMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6561A491CD100D9BA80 /* CoHTTPMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A49F6611A491CD100D9BA80 /* CoHTTPMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6571A491CD100D9BA80 /* CoHTTPMessage.m */; };
+		4A49F6621A491CD100D9BA80 /* CoSOCKSMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6581A491CD100D9BA80 /* CoSOCKSMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A49F6631A491CD100D9BA80 /* CoSOCKSMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6591A491CD100D9BA80 /* CoSOCKSMessage.m */; };
+		4A49F6661A49282600D9BA80 /* SSHKitConnector.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6641A49282600D9BA80 /* SSHKitConnector.h */; };
+		4A49F6671A49282600D9BA80 /* SSHKitConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6651A49282600D9BA80 /* SSHKitConnector.m */; };
 		4A623BFC1A26F90B0071C135 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E4D99AA315DE15B300EB5615 /* libz.dylib */; };
 		4A652E9319AD891400FAEB28 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A652E9219AD891400FAEB28 /* Security.framework */; };
 		4A729ABA1A295E8D0014CB03 /* libssh_threads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */; };
@@ -144,14 +158,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = AC13BF2EFBED43A8B88FC174;
+			remoteGlobalIDString = 18DE45E5AFAA415EBCCB3268;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 1FEE43259BE3411CAF32EA25;
+			remoteGlobalIDString = B732C26E493941D5BE56278B;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -170,6 +184,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4A49F6301A491C8400D9BA80 /* CoSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoSocket.h; sourceTree = "<group>"; };
+		4A49F6311A491C8400D9BA80 /* CoSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CoSocket.m; sourceTree = "<group>"; };
+		4A49F64F1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitConnectorHTTPS.m; sourceTree = "<group>"; };
+		4A49F6501A491CD100D9BA80 /* SSHKitConnector+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitConnector+Protected.h"; sourceTree = "<group>"; };
+		4A49F6511A491CD100D9BA80 /* SSHKitConnectorProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitConnectorProxy.h; sourceTree = "<group>"; };
+		4A49F6521A491CD100D9BA80 /* SSHKitConnectorProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitConnectorProxy.m; sourceTree = "<group>"; };
+		4A49F6531A491CD100D9BA80 /* SSHKitConnectorSOCKS4.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitConnectorSOCKS4.m; sourceTree = "<group>"; };
+		4A49F6541A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitConnectorSOCKS5.m; sourceTree = "<group>"; };
+		4A49F6561A491CD100D9BA80 /* CoHTTPMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoHTTPMessage.h; sourceTree = "<group>"; };
+		4A49F6571A491CD100D9BA80 /* CoHTTPMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CoHTTPMessage.m; sourceTree = "<group>"; };
+		4A49F6581A491CD100D9BA80 /* CoSOCKSMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoSOCKSMessage.h; sourceTree = "<group>"; };
+		4A49F6591A491CD100D9BA80 /* CoSOCKSMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CoSOCKSMessage.m; sourceTree = "<group>"; };
+		4A49F6641A49282600D9BA80 /* SSHKitConnector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitConnector.h; sourceTree = "<group>"; };
+		4A49F6651A49282600D9BA80 /* SSHKitConnector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitConnector.m; sourceTree = "<group>"; };
 		4A652E9219AD891400FAEB28 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4ADCA2451A32E26000DC8FF1 /* SSHKitForwardChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitForwardChannel.h; sourceTree = "<group>"; };
 		4ADCA2461A32E26000DC8FF1 /* SSHKitForwardChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitForwardChannel.m; sourceTree = "<group>"; };
@@ -213,12 +241,56 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A49F61B1A491C6E00D9BA80 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				4A49F62E1A491C8400D9BA80 /* CoSocket */,
+				4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */,
+			);
+			name = Vendor;
+			sourceTree = "<group>";
+		};
+		4A49F62E1A491C8400D9BA80 /* CoSocket */ = {
+			isa = PBXGroup;
+			children = (
+				4A49F6301A491C8400D9BA80 /* CoSocket.h */,
+				4A49F6311A491C8400D9BA80 /* CoSocket.m */,
+			);
+			path = CoSocket;
+			sourceTree = "<group>";
+		};
+		4A49F64E1A491CD100D9BA80 /* Connector */ = {
+			isa = PBXGroup;
+			children = (
+				4A49F6641A49282600D9BA80 /* SSHKitConnector.h */,
+				4A49F6651A49282600D9BA80 /* SSHKitConnector.m */,
+				4A49F6511A491CD100D9BA80 /* SSHKitConnectorProxy.h */,
+				4A49F6521A491CD100D9BA80 /* SSHKitConnectorProxy.m */,
+				4A49F6531A491CD100D9BA80 /* SSHKitConnectorSOCKS4.m */,
+				4A49F6541A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m */,
+				4A49F64F1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m */,
+				4A49F6501A491CD100D9BA80 /* SSHKitConnector+Protected.h */,
+			);
+			path = Connector;
+			sourceTree = "<group>";
+		};
+		4A49F6551A491CD100D9BA80 /* CoMessage */ = {
+			isa = PBXGroup;
+			children = (
+				4A49F6561A491CD100D9BA80 /* CoHTTPMessage.h */,
+				4A49F6571A491CD100D9BA80 /* CoHTTPMessage.m */,
+				4A49F6581A491CD100D9BA80 /* CoSOCKSMessage.h */,
+				4A49F6591A491CD100D9BA80 /* CoSOCKSMessage.m */,
+			);
+			path = CoMessage;
+			sourceTree = "<group>";
+		};
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 				4AEF726019FFE2AE009B0CC7 /* exec */,
 				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
@@ -239,8 +311,8 @@
 		E4E96D78158E10FD002E6E0A = {
 			isa = PBXGroup;
 			children = (
-				4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */,
-				E4E96D8D158E10FD002E6E0A /* SSHKit */,
+				4A49F61B1A491C6E00D9BA80 /* Vendor */,
+				E4E96D8D158E10FD002E6E0A /* SSHKitCore */,
 				E4E96D86158E10FD002E6E0A /* Frameworks */,
 				E4E96D85158E10FD002E6E0A /* Products */,
 			);
@@ -277,9 +349,11 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
-		E4E96D8D158E10FD002E6E0A /* SSHKit */ = {
+		E4E96D8D158E10FD002E6E0A /* SSHKitCore */ = {
 			isa = PBXGroup;
 			children = (
+				4A49F64E1A491CD100D9BA80 /* Connector */,
+				4A49F6551A491CD100D9BA80 /* CoMessage */,
 				E4E96D8E158E10FD002E6E0A /* Supporting Files */,
 				E4E96D94158E10FD002E6E0A /* SSHKitCore.h */,
 				4AECD11B1A15EE8100458991 /* SSHKitCore.m */,
@@ -293,7 +367,6 @@
 				4ADCA2451A32E26000DC8FF1 /* SSHKitForwardChannel.h */,
 				4ADCA2461A32E26000DC8FF1 /* SSHKitForwardChannel.m */,
 			);
-			name = SSHKit;
 			path = SSHKitCore;
 			sourceTree = "<group>";
 		};
@@ -313,12 +386,18 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A49F6601A491CD100D9BA80 /* CoHTTPMessage.h in Headers */,
 				E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */,
+				4A49F6621A491CD100D9BA80 /* CoSOCKSMessage.h in Headers */,
 				4ADCA2471A32E26000DC8FF1 /* SSHKitForwardChannel.h in Headers */,
+				4A49F65C1A491CD100D9BA80 /* SSHKitConnectorProxy.h in Headers */,
 				4AFD803C19FF91D000D9E48B /* SSHKit+Protected.h in Headers */,
+				4A49F65B1A491CD100D9BA80 /* SSHKitConnector+Protected.h in Headers */,
 				E42815C21593D95200CF680C /* SSHKitSession.h in Headers */,
 				E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */,
 				4AEF72C31A00B6BD009B0CC7 /* SSHKitDirectChannel.h in Headers */,
+				4A49F6661A49282600D9BA80 /* SSHKitConnector.h in Headers */,
+				4A49F63B1A491C8400D9BA80 /* CoSocket.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,10 +458,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh.4.4.1.dylib;
+			path = libssh.4.5.0.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -393,10 +472,10 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh_threads.4.4.1.dylib;
+			path = libssh_threads.4.5.0.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -508,10 +587,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A49F63C1A491C8400D9BA80 /* CoSocket.m in Sources */,
+				4A49F6631A491CD100D9BA80 /* CoSOCKSMessage.m in Sources */,
+				4A49F6671A49282600D9BA80 /* SSHKitConnector.m in Sources */,
+				4A49F65D1A491CD100D9BA80 /* SSHKitConnectorProxy.m in Sources */,
+				4A49F65F1A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m in Sources */,
+				4A49F65A1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m in Sources */,
 				4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */,
+				4A49F6611A491CD100D9BA80 /* CoHTTPMessage.m in Sources */,
 				4ADCA2481A32E26000DC8FF1 /* SSHKitForwardChannel.m in Sources */,
 				4AECD11C1A15EE8100458991 /* SSHKitCore.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,
+				4A49F65E1A491CD100D9BA80 /* SSHKitConnectorSOCKS4.m in Sources */,
 				4AEF72C41A00B6BD009B0CC7 /* SSHKitDirectChannel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

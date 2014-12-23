@@ -55,10 +55,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
  **/
 - (instancetype)init;
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock;
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFD:(int)socketFD;
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock;
-
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFD:(int)socketFD;
 
 // -----------------------------------------------------------------------------
 #pragma mark Configuration
@@ -132,6 +131,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 // -----------------------------------------------------------------------------
 #pragma mark Advanced Options
 // -----------------------------------------------------------------------------
+
+@property (nonatomic)       SSHKitProxyType  proxyType;
+@property (nonatomic, copy) NSString  *proxyHost;
+@property (nonatomic)       uint16_t  proxyPort;
+@property (nonatomic, copy) NSString  *proxyUsername;
+@property (nonatomic, copy) NSString  *proxyPassword;
 
 @property BOOL      extraOptionCompression;
 @property NSString  *extraOptionProxyCommand;

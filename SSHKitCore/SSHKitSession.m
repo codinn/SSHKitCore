@@ -3,6 +3,8 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
+#import "SSHKitConnector.h"
+#import "SSHKitConnectorProxy.h"
 
 @interface SSHKitSession () {
 	struct {
@@ -17,7 +19,6 @@
     
 	dispatch_source_t _readSource;
     dispatch_source_t _keepAliveTimer;
-    dispatch_source_t _connectTimer;
     NSInteger _keepAliveCounter;
     NSMutableArray *_channels;
     NSMutableArray *_forwardRequests;
@@ -30,7 +31,9 @@
     // make sure disconnect only once
     BOOL _alreadyDidDisconnect;
     
-    SSHKitGetSocketFDBlock _socketFDBlock;
+    int _customSocketFD;
+    
+    SSHKitConnector *_connector;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage currentStage;
@@ -77,29 +80,27 @@
 
 - (instancetype)init
 {
-	return [self initWithDelegate:nil sessionQueue:NULL socketFDBlock:NULL];
+	return [self initWithDelegate:nil sessionQueue:NULL socketFD:0];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate
 {
-	return [self initWithDelegate:aDelegate sessionQueue:NULL socketFDBlock:NULL];
+	return [self initWithDelegate:aDelegate sessionQueue:NULL socketFD:0];
 }
 
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFD:(int)socketFD
 {
-    return [self initWithDelegate:aDelegate sessionQueue:NULL socketFDBlock:socketFDBlock];
+    return [self initWithDelegate:aDelegate sessionQueue:NULL socketFD:socketFD];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq
 {
-    return [self initWithDelegate:aDelegate sessionQueue:sq socketFDBlock:NULL];
+    return [self initWithDelegate:aDelegate sessionQueue:sq socketFD:0];
 }
 
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFDBlock:(SSHKitGetSocketFDBlock)socketFDBlock
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFD:(int)socketFD
 {
     if ((self = [super init])) {
-        _socketFDBlock = socketFDBlock;
-        
         _rawSession = ssh_new();
         
         if (!_rawSession) {
@@ -110,6 +111,8 @@
         _channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
         _acceptedForwards = [@[] mutableCopy];
+        _customSocketFD = socketFD;
+        self.proxyType = SSHKitProxyTypeDirect;
         
 		self.delegate = aDelegate;
 		
@@ -225,11 +228,8 @@
     
     switch (result) {
         case SSH_OK:
-            // authenticated
+            // connection established
         {
-            [self _invalidateConnectTimer];
-            [self _startSessionLoop];
-            
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
@@ -288,22 +288,56 @@
         // set to non-blocking mode
         ssh_set_blocking(strongSelf.rawSession, 0);
         
-        if (strongSelf->_socketFDBlock) {
-            NSError *error;
-            
+        if (strongSelf->_customSocketFD) {
             // libssh will close this fd automatically
-            socket_t socket_fd = strongSelf->_socketFDBlock(strongSelf.host, strongSelf.port, &error);
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &strongSelf->_customSocketFD);
+        } else {
+            if (self.proxyType > SSHKitProxyTypeDirect) {
+                // connect over a proxy server
+                
+                id ConnectProxyClass = SSHKitConnectorProxy.class;
+                
+                switch (self.proxyType) {
+                    case SSHKitProxyTypeHTTPS:
+                        ConnectProxyClass = SSHKitConnectorHTTPS.class;
+                        break;
+                        
+                    case SSHKitProxyTypeSOCKS4:
+                        ConnectProxyClass = SSHKitConnectorSOCKS4.class;
+                        break;
+                        
+                    case SSHKitProxyTypeSOCKS4A:
+                        ConnectProxyClass = SSHKitConnectorSOCKS4A.class;
+                        break;
+                        
+                    case SSHKitProxyTypeSOCKS5:
+                    default:
+                        ConnectProxyClass = SSHKitConnectorSOCKS5.class;
+                        break;
+                }
+                
+                if (strongSelf.proxyUsername.length) {
+                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxy:strongSelf.proxyHost onPort:strongSelf.proxyPort username:strongSelf.proxyUsername password:strongSelf.proxyPassword timeout:timeout];
+                } else {
+                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxy:strongSelf.proxyHost onPort:strongSelf.proxyPort timeout:strongSelf.timeout];
+                }
+            } else {
+                // connect directly
+                strongSelf->_connector = [[SSHKitConnector alloc] initWithTimeout:timeout];
+            }
+            
+            NSError *error = nil;
+            [strongSelf->_connector connectToTarget:host onPort:port error:&error];
             
             if (error) {
                 [strongSelf disconnectWithError:error];
-                return_from_block;
+                return;
             }
             
+            socket_t socket_fd = [strongSelf->_connector dupSocketFD];
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket_fd);
         }
         
-        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_HOST, strongSelf.host.UTF8String);
-        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_PORT, &strongSelf->_port);
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
 #if DEBUG
         int verbosity = SSH_LOG_FUNCTIONS;
@@ -331,7 +365,8 @@
         }
         
         strongSelf.currentStage = SSHKitSessionStageConnecting;
-        [strongSelf _fireConnectTimer];
+        [strongSelf _doConnect];
+        [strongSelf _startSessionLoop];
     }}];
 }
 
@@ -960,38 +995,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 
 #pragma mark - Internal Helpers
 
-- (void)_fireConnectTimer
-{
-    _connectTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
-    
-    NSTimeInterval interval = 0.5;
-    
-    if (_connectTimer)
-    {
-        dispatch_source_set_timer(_connectTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
-        
-        __weak SSHKitSession *weakSelf = self;
-        dispatch_source_set_event_handler(_connectTimer, ^{
-            __strong SSHKitSession *strongSelf = weakSelf;
-            if (!strongSelf) {
-                return_from_block;
-            }
-            
-            [strongSelf _doConnect];
-        });
-        
-        dispatch_resume(_connectTimer);
-    }
-}
-
-- (void)_invalidateConnectTimer
-{
-    if (_connectTimer) {
-        dispatch_source_cancel(_connectTimer);
-        _connectTimer = nil;
-    }
-}
-
+// todo: dropbear do not support keepalive message
 - (void)_fireKeepAliveTimer
 {
     _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
@@ -1055,7 +1059,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 
 - (void)_resolveHostIP
 {
-    if (_socketFDBlock) {
+    if (_customSocketFD) {
         return;
     }
     
