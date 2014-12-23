@@ -11,6 +11,15 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
     SSHKitSessionUserAuthGSSAPIMic   = 1 << 5,
 };
 
+typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
+    SSHKitSessionStageUnknown   = 0,
+    SSHKitSessionStageNotConnected,
+    SSHKitSessionStageConnecting,
+    SSHKitSessionStagePreAuthenticating,
+    SSHKitSessionStageAuthenticating,
+    SSHKitSessionStageConnected,
+};
+
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
 @class SSHKitDirectChannel, SSHKitForwardChannel;
 
@@ -65,6 +74,9 @@ NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
 // -----------------------------------------------------------------------------
 #pragma mark Diagnostics
 // -----------------------------------------------------------------------------
+
+/** current stage */
+@property (nonatomic, readonly) SSHKitSessionStage currentStage;
 
 /** supported authentication methods */
 @property (nonatomic, readonly) NSInteger authMethods;

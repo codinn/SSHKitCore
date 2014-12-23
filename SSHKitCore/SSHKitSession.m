@@ -17,10 +17,13 @@
     
 	dispatch_source_t _readSource;
     dispatch_source_t _keepAliveTimer;
+    dispatch_source_t _connectTimer;
     NSInteger _keepAliveCounter;
     NSMutableArray *_channels;
     NSMutableArray *_forwardRequests;
     NSMutableArray *_acceptedForwards;
+    
+    dispatch_block_t    _authBlock;
     
     void *_isOnSessionQueueKey;
     
@@ -30,6 +33,7 @@
     SSHKitGetSocketFDBlock _socketFDBlock;
 }
 
+@property (nonatomic, readwrite)  SSHKitSessionStage currentStage;
 @property (nonatomic, readwrite)  NSString    *host;
 @property (nonatomic, readwrite)  NSString    *hostIP;
 @property (nonatomic, readwrite)  uint16_t    port;
@@ -102,6 +106,7 @@
             return nil;
         }
         
+        self.currentStage = SSHKitSessionStageNotConnected;
         _channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
         _acceptedForwards = [@[] mutableCopy];
@@ -216,78 +221,48 @@
 
 - (void)_doConnect
 {
-#if DEBUG
-    int verbosity = SSH_LOG_FUNCTIONS;
-#else
-    int verbosity = SSH_LOG_NOLOG;
-#endif
-    ssh_options_set(_rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
-    
-    ssh_options_set(_rawSession, SSH_OPTIONS_HOSTKEYS,
-                    "ssh-rsa,ssh-dss,"
-                    "ecdsa-sha2-nistp256-cert-v01@openssh.com,"
-                    "ecdsa-sha2-nistp384-cert-v01@openssh.com,"
-                    "ecdsa-sha2-nistp521-cert-v01@openssh.com,"
-                    "ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,"
-                    "ssh-rsa-cert-v00@openssh.com,ssh-dss-cert-v00@openssh.com,"
-                    "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521"
-                    );
-    if (_timeout > 0) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_TIMEOUT, &_timeout);
-    }
-    
-    // disconnect if connected
-    if (self.isConnected) {
-        [self disconnect];
-    }
-    
     int result = ssh_connect(_rawSession);
     
-    if ( SSH_OK == result ) {
-        const char *clientbanner = ssh_get_clientbanner(self.rawSession);
-        if (clientbanner) self.clientBanner = @(clientbanner);
-        
-        const char *serverbanner = ssh_get_serverbanner(self.rawSession);
-        if (serverbanner) self.serverBanner = @(serverbanner);
-        
-        int ver = ssh_get_version(self.rawSession);
-        
-        if (ver>0) {
-            self.protocolVersion = @(ver).stringValue;
-        }
-        
-        [self _resolveHostIP];
-        NSError *error = [self _checkHostKey];
-        
-        if (error) {
-            [self disconnectWithError:error];
-            return;
-        }
-        
-        // must call this method before next auth method, or libssh will be failed
-        int rc = ssh_userauth_none(_rawSession, NULL);
-        
-        /*
-         *** Does not work without calling ssh_userauth_none() first ***
-         *** That will be fixed ***
-         */
-        const char *banner = ssh_get_issue_banner(self.rawSession);
-        if (banner) self.issueBanner = @(banner);
-        
-        if (rc==SSH_AUTH_DENIED) {
-            self.authMethods = ssh_userauth_list(_rawSession, NULL);
+    switch (result) {
+        case SSH_OK:
+            // authenticated
+        {
+            [self _invalidateConnectTimer];
+            [self _startSessionLoop];
             
-            if (_delegateFlags.needAuthenticateUser) {
-                [self.delegate session:self needAuthenticateUser:nil];
-                
-                // Handoff to next auth method
+            const char *clientbanner = ssh_get_clientbanner(self.rawSession);
+            if (clientbanner) self.clientBanner = @(clientbanner);
+            
+            const char *serverbanner = ssh_get_serverbanner(self.rawSession);
+            if (serverbanner) self.serverBanner = @(serverbanner);
+            
+            int ver = ssh_get_version(self.rawSession);
+            
+            if (ver>0) {
+                self.protocolVersion = @(ver).stringValue;
+            }
+            
+            [self _resolveHostIP];
+            NSError *error = [self _checkHostKey];
+            
+            if (error) {
+                [self disconnectWithError:error];
                 return;
             }
+            
+            self.currentStage = SSHKitSessionStagePreAuthenticating;
+            [self _preAuthenticate];
         }
-        
-        [self _checkAuthenticateResult:rc];
-    } else {
-        [self disconnectWithError:self.lastError];
+            break;
+            
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        default:
+            [self disconnectWithError:self.lastError];
+            break;
+            
     }
 }
 
@@ -310,8 +285,8 @@
             return_from_block;
         }
         
-        // set to blocking mode
-        ssh_set_blocking(strongSelf.rawSession, 1);
+        // set to non-blocking mode
+        ssh_set_blocking(strongSelf.rawSession, 0);
         
         if (strongSelf->_socketFDBlock) {
             NSError *error;
@@ -330,8 +305,33 @@
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_HOST, strongSelf.host.UTF8String);
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_PORT, &strongSelf->_port);
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
+#if DEBUG
+        int verbosity = SSH_LOG_FUNCTIONS;
+#else
+        int verbosity = SSH_LOG_NOLOG;
+#endif
+        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
+        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_HOSTKEYS,
+                        "ssh-rsa,ssh-dss,"
+                        "ecdsa-sha2-nistp256-cert-v01@openssh.com,"
+                        "ecdsa-sha2-nistp384-cert-v01@openssh.com,"
+                        "ecdsa-sha2-nistp521-cert-v01@openssh.com,"
+                        "ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,"
+                        "ssh-rsa-cert-v00@openssh.com,ssh-dss-cert-v00@openssh.com,"
+                        "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521"
+                        );
         
-        [strongSelf _doConnect];
+        if (strongSelf->_timeout > 0) {
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_TIMEOUT, &strongSelf->_timeout);
+        }
+        
+        // disconnect if connected
+        if (strongSelf.isConnected) {
+            [strongSelf disconnect];
+        }
+        
+        strongSelf.currentStage = SSHKitSessionStageConnecting;
+        [strongSelf _fireConnectTimer];
     }}];
 }
 
@@ -482,15 +482,47 @@
 #pragma mark Authentication
 // -----------------------------------------------------------------------------
 
+- (void)_preAuthenticate
+{
+    // must call this method before next auth method, or libssh will be failed
+    int rc = ssh_userauth_none(_rawSession, NULL);
+    
+    /*
+     *** Does not work without calling ssh_userauth_none() first ***
+     *** That will be fixed ***
+     */
+    const char *banner = ssh_get_issue_banner(self.rawSession);
+    if (banner) self.issueBanner = @(banner);
+    
+    switch (rc) {
+        case SSH_AUTH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_AUTH_DENIED:
+            // pre auth success
+            
+            self.authMethods = ssh_userauth_list(_rawSession, NULL);
+            
+            if (_delegateFlags.needAuthenticateUser) {
+                [self.delegate session:self needAuthenticateUser:nil];
+                
+                // Handoff to next auth method
+                return;
+            }
+            
+        default:
+            [self _checkAuthenticateResult:rc];
+            break;
+    }
+}
+
 - (void)_didAuthenticate
 {
-    // enabling non-blocking mode
-    ssh_set_blocking(self.rawSession, 0);
-    
     // start diagnoses timer
     [self _fireKeepAliveTimer];
     
-    [self _startSessionLoop];
+    self.currentStage = SSHKitSessionStageConnected;
     
     if (_delegateFlags.didConnectToHostPort) {
         [self.delegate session:self didConnectToHost:self.host port:self.port];
@@ -604,8 +636,10 @@
     
     NSString *password = passwordHandler();
     
+    self.currentStage = SSHKitSessionStageAuthenticating;
+    
     __weak SSHKitSession *weakSelf = self;
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+    _authBlock = ^{ @autoreleasepool {
         __strong SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
             return_from_block;
@@ -613,8 +647,16 @@
         
         // try "password" method, which is deprecated in SSH 2.0
         int rc = ssh_userauth_password(strongSelf.rawSession, NULL, password.UTF8String);
+        
+        if (rc == SSH_AUTH_AGAIN) {
+            // try again
+            return;
+        }
+        
         [strongSelf _checkAuthenticateResult:rc];
-    }}];
+    }};
+    
+    [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
 static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, int verify, void *userdata)
@@ -748,6 +790,80 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 #pragma mark - CALLBACKS
 // -----------------------------------------------------------------------------
 
+- (void)_doReadWrite
+{
+    _keepAliveCounter = 3;
+    
+    if (!self.isConnected) {
+        [self disconnectWithError:self.lastError];
+    }
+    
+    if (self.channels.count) {
+        NSArray *channels = [self.channels copy];
+        
+        for (SSHKitChannel *channel in channels) {
+            [channel _doRead];
+        }
+    } else {
+        // prevent wild data trigger dispatch souce again and again
+        char buffer[SSHKit_CHANNEL_MAX_PACKET];
+        ssh_channel fakeChannel = ssh_channel_new(_rawSession);
+        // check channel package
+        ssh_channel_read(fakeChannel, buffer, sizeof(buffer), 0);
+        ssh_channel_free(fakeChannel);
+    }
+    
+    NSArray *forwardRequests = [_forwardRequests copy];
+    // try again forward-tcpip requests
+    for (NSArray *forwardRequest in forwardRequests) {
+        NSString *address   = forwardRequest[0];
+        int port            = [forwardRequest[1] intValue];
+        SSHKitRemotePortForwardBoundBlock completionBlock = forwardRequest[2];
+        
+        int boundport = 0;
+        
+        BOOL rc = ssh_forward_listen(self.rawSession, address.UTF8String, port, &boundport);
+        
+        switch (rc) {
+            case SSH_OK:
+                [_forwardRequests removeObject:forwardRequest];
+                [_acceptedForwards addObject:@[address, @(boundport)]];
+                
+                completionBlock(YES, boundport, nil);
+                
+                break;
+                
+            case SSH_AGAIN:
+                // try again next time
+                break;
+                
+            case SSH_ERROR:
+            default:
+                [_forwardRequests removeObject:forwardRequest];
+                completionBlock(NO, boundport, self.lastError);
+                
+                break;
+        }
+    }
+    
+    // probe forward channel from accepted forward
+    if (_acceptedForwards.count > 0) {
+        int destination_port = 0;
+        ssh_channel channel = ssh_channel_accept_forward(self.rawSession, 0, &destination_port);
+        
+        if (!channel) {
+            return_from_block;
+        }
+        
+        SSHKitForwardChannel *forwardChannel = [[SSHKitForwardChannel alloc] initWithSession:self rawChannel:channel destinationPort:destination_port];
+        [_channels addObject:forwardChannel];
+        
+        if (_delegateFlags.didAcceptForwardChannel) {
+            [_delegate session:self didAcceptForwardChannel:forwardChannel];
+        }
+    }
+}
+
 /**
  * Reads the first available bytes that become available on the channel.
  **/
@@ -766,75 +882,28 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
             return_from_block;
         }
         
-        strongSelf->_keepAliveCounter = 3;
-        
-        if (!strongSelf.isConnected) {
-            [strongSelf disconnectWithError:strongSelf.lastError];
-        }
-        
-        if (strongSelf.channels.count) {
-            NSArray *channels = [strongSelf.channels copy];
-            
-            for (SSHKitChannel *channel in channels) {
-                [channel _doRead];
-            }
-        } else {
-            // prevent wild data trigger dispatch souce again and again
-            char buffer[SSHKit_CHANNEL_MAX_PACKET];
-            ssh_channel fakeChannel = ssh_channel_new(strongSelf->_rawSession);
-            // check channel package
-            ssh_channel_read(fakeChannel, buffer, sizeof(buffer), 0);
-            ssh_channel_free(fakeChannel);
-        }
-        
-        NSArray *forwardRequests = [strongSelf->_forwardRequests copy];
-        // try again forward-tcpip requests
-        for (NSArray *forwardRequest in forwardRequests) {
-            NSString *address   = forwardRequest[0];
-            int port            = [forwardRequest[1] intValue];
-            SSHKitRemotePortForwardBoundBlock completionBlock = forwardRequest[2];
-            
-            int boundport = 0;
-            
-            BOOL rc = ssh_forward_listen(strongSelf.rawSession, address.UTF8String, port, &boundport);
-            
-            switch (rc) {
-                case SSH_OK:
-                    [strongSelf->_forwardRequests removeObject:forwardRequest];
-                    [strongSelf->_acceptedForwards addObject:@[address, @(boundport)]];
-                    
-                    completionBlock(YES, boundport, nil);
-                    
-                    break;
-                    
-                case SSH_AGAIN:
-                    // try again next time
-                    break;
-                    
-                case SSH_ERROR:
-                default:
-                    [strongSelf->_forwardRequests removeObject:forwardRequest];
-                    completionBlock(NO, boundport, strongSelf.lastError);
-                    
-                    break;
-            }
-        }
-        
-        // probe forward channel from accepted forward
-        if (strongSelf->_acceptedForwards.count > 0) {
-            int destination_port = 0;
-            ssh_channel channel = ssh_channel_accept_forward(strongSelf.rawSession, 0, &destination_port);
-            
-            if (!channel) {
-                return_from_block;
-            }
-            
-            SSHKitForwardChannel *forwardChannel = [[SSHKitForwardChannel alloc] initWithSession:strongSelf rawChannel:channel destinationPort:destination_port];
-            [strongSelf->_channels addObject:forwardChannel];
-            
-            if (strongSelf->_delegateFlags.didAcceptForwardChannel) {
-                [strongSelf->_delegate session:strongSelf didAcceptForwardChannel:forwardChannel];
-            }
+        switch (strongSelf.currentStage) {
+            case SSHKitSessionStageNotConnected:
+                break;
+            case SSHKitSessionStageConnecting:
+                [strongSelf _doConnect];
+                break;
+            case SSHKitSessionStagePreAuthenticating:
+                [strongSelf _preAuthenticate];
+                break;
+            case SSHKitSessionStageAuthenticating:
+                if (strongSelf->_authBlock) {
+                    strongSelf->_authBlock();
+                }
+                
+                break;
+            case SSHKitSessionStageConnected:
+                [strongSelf _doReadWrite];
+                break;
+            case SSHKitSessionStageUnknown:
+                // should never comes to here
+                // todo: add a assert protection?
+                break;
         }
     }});
     
@@ -890,6 +959,38 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 }
 
 #pragma mark - Internal Helpers
+
+- (void)_fireConnectTimer
+{
+    _connectTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
+    
+    NSTimeInterval interval = 0.5;
+    
+    if (_connectTimer)
+    {
+        dispatch_source_set_timer(_connectTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
+        
+        __weak SSHKitSession *weakSelf = self;
+        dispatch_source_set_event_handler(_connectTimer, ^{
+            __strong SSHKitSession *strongSelf = weakSelf;
+            if (!strongSelf) {
+                return_from_block;
+            }
+            
+            [strongSelf _doConnect];
+        });
+        
+        dispatch_resume(_connectTimer);
+    }
+}
+
+- (void)_invalidateConnectTimer
+{
+    if (_connectTimer) {
+        dispatch_source_cancel(_connectTimer);
+        _connectTimer = nil;
+    }
+}
 
 - (void)_fireKeepAliveTimer
 {
