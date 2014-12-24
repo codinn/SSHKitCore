@@ -197,8 +197,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
  */
 - (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler;
 
-+ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler;
-
 /**
  Authenticate by keyboard-interactive
  

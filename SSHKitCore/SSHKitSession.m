@@ -5,6 +5,7 @@
 #import <libssh/server.h>
 #import "SSHKitConnector.h"
 #import "SSHKitConnectorProxy.h"
+#import "SSHKitIdentityParser.h"
 
 @interface SSHKitSession () {
 	struct {
@@ -715,27 +716,6 @@
     [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
-static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, int verify, void *userdata)
-{
-    if (!userdata) {
-        return SSH_ERROR;
-    }
-    
-    SSHKitAskPassphrasePrivateKeyBlock handler = (__bridge SSHKitAskPassphrasePrivateKeyBlock)userdata;
-    
-    if (!handler) {
-        return SSH_ERROR;
-    }
-    
-    NSString *password = handler();
-    if (password.length && password.length<len) {
-        strcpy(buf, password.UTF8String);
-        return SSH_OK;
-    }
-    
-    return SSH_ERROR;
-}
-
 - (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler
 {
     if ( !(self.authMethods & SSHKitSessionUserAuthPublickey) ) {
@@ -746,100 +726,60 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         return;
     }
     
-    if (!privateKeyPath) {
-        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                             code:SSHKitErrorCodeAuthError
-                                         userInfo:@{ NSLocalizedDescriptionKey : @"Path of private key is not specified" }];
+    SSHKitIdentityParser *identity = [[SSHKitIdentityParser alloc] initWithIdentityPath:privateKeyPath passphraseHandler:handler];
+    
+    NSError *error = [identity parse];
+    
+    if (error) {
         [self disconnectWithError:error];
         return;
     }
     
     self.privateKeyPath = privateKeyPath;
+    
+    __block BOOL publicKeySuccess = NO;
     __weak SSHKitSession *weakSelf = self;
     
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+    _authBlock = ^{ @autoreleasepool {
         __strong SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
             return_from_block;
         }
         
-        ssh_key rawPrivateKey = NULL;
-        ssh_key rawPublicKey = NULL;
-        
-        // import private key
-        int ret = ssh_pki_import_privkey_file(strongSelf.privateKeyPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(handler), &rawPrivateKey);
-        
-        if (ret!=SSH_OK) {
-            NSError *error;
-            
-            if (ret==SSH_EOF) {
-                error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                            code:SSHKitErrorCodeAuthError
-                                        userInfo:@{ NSLocalizedDescriptionKey : @"Private key file doesn't exist or permission denied" }];
-            } else {
-                error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                            code:SSHKitErrorCodeAuthError
-                                        userInfo:@{ NSLocalizedDescriptionKey : @"Could not load and parse private key file" }];
+        if (!publicKeySuccess) {
+            // try public key
+            int ret = ssh_userauth_try_publickey(strongSelf.rawSession, NULL, identity.publicKey);
+            switch (ret) {
+                case SSH_AUTH_AGAIN:
+                    // try again
+                    return;
+                    
+                case SSH_AUTH_SUCCESS:
+                    // try private key
+                    break;
+                    
+                default:
+                    [strongSelf _checkAuthenticateResult:ret];
+                    return_from_block;
             }
-            
-            [strongSelf disconnectWithError:error];
-            goto _exit_block;
         }
         
-        // extract public key from private key
-        ret = ssh_pki_export_privkey_to_pubkey(rawPrivateKey, &rawPublicKey);
-        
-        if (ret!=SSH_OK) {
-            NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                 code:SSHKitErrorCodeAuthError
-                                             userInfo:@{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not extract public key from \"%@\"", strongSelf.privateKeyPath] }];
-            [strongSelf disconnectWithError:error];
-            goto _exit_block;
-        }
-        
-        // try public key
-        ret = ssh_userauth_try_publickey(strongSelf.rawSession, NULL, rawPublicKey);
-        if (ret!=SSH_AUTH_SUCCESS) {
-            [strongSelf _checkAuthenticateResult:ret];
-            goto _exit_block;
-        }
+        publicKeySuccess = YES;
         
         // authenticate using private key
-        ret = ssh_userauth_publickey(strongSelf.rawSession, NULL, rawPrivateKey);
-        [strongSelf _checkAuthenticateResult:ret];
-        
-    _exit_block:
-        if (rawPrivateKey) {
-            ssh_key_free(rawPrivateKey);
+        int ret = ssh_userauth_publickey(strongSelf.rawSession, NULL, identity.privateKey);
+        switch (ret) {
+            case SSH_AUTH_AGAIN:
+                // try again
+                return;
+                
+            default:
+                [strongSelf _checkAuthenticateResult:ret];
+                return_from_block;
         }
-        
-        if (rawPublicKey) {
-            ssh_key_free(rawPublicKey);
-        }
-    }}];
-}
-
-+ (SSHKitPrivateKeyTestResult)testPrivateKeyPath:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler
-{
-    ssh_key rawPrivateKey = NULL;
+    }};
     
-    // import private key
-    int ret = ssh_pki_import_privkey_file(privateKeyPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(handler), &rawPrivateKey);
-    
-    if (rawPrivateKey) {
-        ssh_key_free(rawPrivateKey);
-    }
-    
-    switch (ret) {
-        case SSH_OK:
-            return SSHKitPrivateKeyTestResultSuccess;
-        
-        case SSH_EOF:
-            return SSHKitPrivateKeyTestResultMissingFile;
-            
-        default:
-            return SSHKitPrivateKeyTestResultFailed;
-    }
+    [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
 // -----------------------------------------------------------------------------

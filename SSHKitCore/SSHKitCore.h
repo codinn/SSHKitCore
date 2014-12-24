@@ -33,13 +33,6 @@ typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     SSHKitErrorCodeFatal,
 };
 
-typedef NS_ENUM(NSInteger, SSHKitPrivateKeyTestResult) {
-    SSHKitPrivateKeyTestResultSuccess,
-    SSHKitPrivateKeyTestResultFailed,
-    SSHKitPrivateKeyTestResultMissingFile,
-    SSHKitPrivateKeyTestResultUnknownError,
-};
-
 typedef NS_ENUM(NSInteger, SSHKitProxyType) {
     SSHKitProxyTypeDirect = -1,
     SSHKitProxyTypeSOCKS5 = 0,
@@ -56,6 +49,7 @@ typedef void (^ SSHKitRemotePortForwardBoundBlock)(BOOL success, uint16_t boundP
 #import "SSHKitChannel.h"
 #import "SSHKitDirectChannel.h"
 #import "SSHKitForwardChannel.h"
+#import "SSHKitIdentityParser.h"
 #import "CoSOCKSMessage.h"
 
 NSString * SSHKitGetNameOfHostKeyType(SSHKitHostKeyType keyType);
