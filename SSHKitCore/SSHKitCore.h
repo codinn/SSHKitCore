@@ -50,7 +50,5 @@ typedef void (^ SSHKitRemotePortForwardBoundBlock)(BOOL success, uint16_t boundP
 #import "SSHKitDirectChannel.h"
 #import "SSHKitForwardChannel.h"
 #import "SSHKitIdentityParser.h"
+#import "SSHKitHostKeyParser.h"
 #import "CoSOCKSMessage.h"
-
-NSString * SSHKitGetNameOfHostKeyType(SSHKitHostKeyType keyType);
-NSString * SSHKitGetMD5HashFromHostKey(NSString *hostKey, SSHKitHostKeyType keyType);

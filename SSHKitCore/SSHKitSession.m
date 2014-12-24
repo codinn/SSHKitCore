@@ -12,7 +12,7 @@
 		unsigned int keyboardInteractiveRequest     : 1;
 		unsigned int didConnectToHostPort           : 1;
 		unsigned int didDisconnectWithError         : 1;
-		unsigned int shouldConnectWithHostKeyType   : 1;
+		unsigned int shouldConnectWithHostKey       : 1;
 		unsigned int didAuthenticateUser            : 1;
         unsigned int needAuthenticateUser           : 1;
         unsigned int didAcceptForwardChannel        : 1;
@@ -182,46 +182,13 @@
 		_delegateFlags.didConnectToHostPort = [delegate respondsToSelector:@selector(session:didConnectToHost:port:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
-        _delegateFlags.shouldConnectWithHostKeyType = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:keyType:)];
+        _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
 	}
 }
 
 // -----------------------------------------------------------------------------
 #pragma mark Connecting
 // -----------------------------------------------------------------------------
-
-- (NSError *)_checkHostKey
-{
-    ssh_key host_key;
-    int rc = ssh_get_publickey(_rawSession, &host_key);
-    if (rc < 0) {
-        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                             code:SSHKitErrorCodeHostKeyError
-                                         userInfo:@{ NSLocalizedDescriptionKey : @"Cannot decode server host key" }];
-        return error;
-    }
-    
-    NSString *hostKey = SSHKitGetBase64FromHostKey(host_key);
-    SSHKitHostKeyType keyType = (SSHKitHostKeyType)ssh_key_type(host_key);
-    
-    ssh_key_free(host_key);
-    if (!hostKey.length) {
-        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                             code:SSHKitErrorCodeHostKeyError
-                                         userInfo:@{ NSLocalizedDescriptionKey :@"Cannot verify server host key" }];
-        return error;
-    }
-    
-    if (hostKey && _delegateFlags.shouldConnectWithHostKeyType && [self.delegate session:self shouldConnectWithHostKey:hostKey keyType:keyType])
-    {
-        // success
-        return nil;
-    }
-    
-    return [NSError errorWithDomain:SSHKitSessionErrorDomain
-                               code:SSHKitErrorCodeHostKeyError
-                           userInfo:@{ NSLocalizedDescriptionKey : @"Server host key verification failed" }];;
-}
 
 - (void)_doConnect
 {
@@ -244,7 +211,18 @@
             }
             
             [self _resolveHostIP];
-            NSError *error = [self _checkHostKey];
+            
+            // check host key
+            SSHKitHostKeyParser *hostKey = [[SSHKitHostKeyParser alloc] init];
+            NSError *error = [hostKey parseFromSession:self];
+            
+            if ( !error && ! (_delegateFlags.shouldConnectWithHostKey && [self.delegate session:self shouldConnectWithHostKey:hostKey]) )
+            {
+                // failed
+                error = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                            code:SSHKitErrorCodeHostKeyError
+                                        userInfo:@{ NSLocalizedDescriptionKey : @"Server host key verification failed" }];
+            }
             
             if (error) {
                 [self disconnectWithError:error];

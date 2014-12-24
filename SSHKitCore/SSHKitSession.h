@@ -21,7 +21,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 };
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
-@class SSHKitDirectChannel, SSHKitForwardChannel;
+@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -252,7 +252,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
  @param fingerprint The host's fingerprint
  @returns YES if the session should trust the host, otherwise NO.
  */
-- (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(NSString *)hostKey keyType:(SSHKitHostKeyType)keyType;
+- (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(SSHKitHostKeyParser *)hostKey;
 - (void)session:(SSHKitSession *)session needAuthenticateUser:(NSString *)username;
 
 /**
