@@ -80,8 +80,6 @@
         if (strongSelf->_delegateFlags.didCloseWithError) {
             [strongSelf.delegate channelDidClose:strongSelf withError:error];
         }
-        
-        [strongSelf.session _removeChannel:strongSelf];
     }}];
 }
 

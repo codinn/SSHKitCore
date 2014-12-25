@@ -20,7 +20,6 @@
             __strong SSHKitDirectChannel *strongSelf = weakSelf;
             
             strongSelf->_rawChannel = ssh_channel_new(strongSelf.session.rawSession);
-            [self.session _addChannel:strongSelf];
         }}];
     }
     

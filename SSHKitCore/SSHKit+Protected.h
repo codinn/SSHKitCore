@@ -31,9 +31,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 /** Raw session socket. */
 @property (nonatomic, readonly) socket_t socketFD;
 
-- (void)_addChannel:(SSHKitChannel *)channel;
-- (void)_removeChannel:(SSHKitChannel *)channel;
-
 @end
 
 @interface SSHKitChannel () {

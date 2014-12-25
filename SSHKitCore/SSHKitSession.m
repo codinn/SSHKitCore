@@ -766,30 +766,44 @@
 
 - (void)_doReadWrite
 {
-    _keepAliveCounter = 3;
-    
     if (!self.isConnected) {
         [self disconnectWithError:self.lastError];
     }
     
-    if (self.channels.count) {
-        NSArray *channels = [self.channels copy];
-        
-        for (SSHKitChannel *channel in channels) {
-            [channel _doRead];
+    // iterate channels
+    [self.channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
+    {
+        switch (channel.stage) {
+            case SSHKitChannelStageOpening:
+                // todo:
+                //                    [channel _doOpen];
+                break;
+            case SSHKitChannelStageClosed:
+                [self->_channels removeObject:channel];
+                break;
+                
+            case SSHKitChannelStageReadWrite:
+                [channel _doRead];
+                break;
+                
+                
+            default:
+                break;
         }
-    } else {
-        // prevent wild data trigger dispatch souce again and again
-        char buffer[SSHKit_CHANNEL_MAX_PACKET];
+    }];
+    
+    // prevent wild data trigger dispatch souce again and again
+    {
+        char buffer[256];
         ssh_channel fakeChannel = ssh_channel_new(_rawSession);
         // check channel package
         ssh_channel_read(fakeChannel, buffer, sizeof(buffer), 0);
         ssh_channel_free(fakeChannel);
     }
     
-    NSArray *forwardRequests = [_forwardRequests copy];
     // try again forward-tcpip requests
-    for (NSArray *forwardRequest in forwardRequests) {
+    [_forwardRequests enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSArray *forwardRequest, NSUInteger index, BOOL *stop)
+     {
         NSString *address   = forwardRequest[0];
         int port            = [forwardRequest[1] intValue];
         SSHKitRemotePortForwardBoundBlock completionBlock = forwardRequest[2];
@@ -800,8 +814,8 @@
         
         switch (rc) {
             case SSH_OK:
-                [_forwardRequests removeObject:forwardRequest];
-                [_acceptedForwards addObject:@[address, @(boundport)]];
+                [self->_forwardRequests removeObject:forwardRequest];
+                [self->_acceptedForwards addObject:@[address, @(boundport)]];
                 
                 completionBlock(YES, boundport, nil);
                 
@@ -813,12 +827,12 @@
                 
             case SSH_ERROR:
             default:
-                [_forwardRequests removeObject:forwardRequest];
+                [self->_forwardRequests removeObject:forwardRequest];
                 completionBlock(NO, boundport, self.lastError);
                 
                 break;
         }
-    }
+     }];
     
     // probe forward channel from accepted forward
     if (_acceptedForwards.count > 0) {
@@ -826,7 +840,7 @@
         ssh_channel channel = ssh_channel_accept_forward(self.rawSession, 0, &destination_port);
         
         if (!channel) {
-            return_from_block;
+            return;
         }
         
         SSHKitForwardChannel *forwardChannel = [[SSHKitForwardChannel alloc] initWithSession:self rawChannel:channel destinationPort:destination_port];
@@ -855,6 +869,8 @@
         if (!strongSelf) {
             return_from_block;
         }
+        
+        strongSelf->_keepAliveCounter = 3;
         
         switch (strongSelf.currentStage) {
             case SSHKitSessionStageNotConnected:
@@ -1041,6 +1057,17 @@
 {
     SSHKitDirectChannel *channel = [[SSHKitDirectChannel alloc] initWithSession:self delegate:aDelegate];
     [channel _openWithHost:host onPort:port];
+    
+    // add channel to session list
+    __weak SSHKitSession *weakSelf = self;
+    [self dispatchAsyncOnSessionQueue:^{
+        SSHKitSession *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return_from_block;
+        }
+        
+        [strongSelf->_channels addObject:channel];
+    }];
     
     return channel;
 }
