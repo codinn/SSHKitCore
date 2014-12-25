@@ -31,7 +31,9 @@
 /// ----------------------------------------------------------------------------
 
 /** Current channel type */
-@property (readonly) SSHKitChannelType type;
+@property (nonatomic, readonly) SSHKitChannelType type;
+
+@property (nonatomic, readonly) SSHKitChannelStage stage;
 
 /**
  A Boolean value indicating whether the channel is opened successfully

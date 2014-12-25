@@ -23,7 +23,7 @@
     if ((self = [super init])) {
         _session = session;
 		self.delegate = aDelegate;
-        _state = SSHKitChannelStageCreated;
+        self.stage = SSHKitChannelStageCreated;
     }
 
     return self;
@@ -60,11 +60,11 @@
     [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
         __strong SSHKitChannel *strongSelf = weakSelf;
         
-        if (strongSelf->_state == SSHKitChannelStageClosed) { // already closed
+        if (strongSelf.stage == SSHKitChannelStageClosed) { // already closed
             return;
         }
         
-        strongSelf->_state = SSHKitChannelStageClosed;
+        strongSelf.stage = SSHKitChannelStageClosed;
         
         // SSH_OK or SSH_ERROR, never return SSH_AGAIN
         
@@ -138,7 +138,7 @@
  **/
 - (void)_doRead
 {
-    switch (_state) {
+    switch (self.stage) {
         case SSHKitChannelStageClosed:
             break;
         
@@ -162,7 +162,7 @@
     [self.session dispatchAsyncOnSessionQueue:^{ @autoreleasepool {
         __strong SSHKitChannel *strongSelf = weakSelf;
         
-        if (strongSelf->_state != SSHKitChannelStageReadWrite) {
+        if (strongSelf.stage != SSHKitChannelStageReadWrite) {
             return_from_block;
         }
         

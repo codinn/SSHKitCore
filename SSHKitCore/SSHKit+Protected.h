@@ -47,10 +47,10 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     } _delegateFlags;
     
     ssh_channel _rawChannel;
-    SSHKitChannelStage _state;
 }
 
-@property (readwrite) SSHKitChannelType type;
+@property (nonatomic, readwrite) SSHKitChannelType  type;
+@property (nonatomic, readwrite) SSHKitChannelStage stage;
 
 - (void)_doRead;
 - (void)_doOpen;

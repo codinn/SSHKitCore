@@ -29,7 +29,7 @@
 
 - (void)_doOpen
 {
-    if (_state == SSHKitChannelStageClosed) {
+    if (self.stage == SSHKitChannelStageClosed) {
         return;
     }
     
@@ -37,10 +37,10 @@
         
     switch (result) {
         case SSH_AGAIN:
-            _state = SSHKitChannelStageOpening;
+            self.stage = SSHKitChannelStageOpening;
             break;
         case SSH_OK:
-            _state = SSHKitChannelStageReadWrite;
+            self.stage = SSHKitChannelStageReadWrite;
             
             // opened
             
