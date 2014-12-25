@@ -18,14 +18,6 @@ NSString * SSHKitGetBase64FromHostKey(ssh_key key);
  * 1. Session Queue could not dispatch write queue sync
  */
 
-typedef NS_ENUM(NSInteger, SSHKitChannelState) {
-    SSHKitChannelInvalid,        // channel has not been inited correctly
-    SSHKitChannelCreated,        // channel has been created
-    SSHKitChannelOpening,        // the channel is opening
-    SSHKitChannelReadWrite,      // the channel has been opened, we can read / write from the channel
-    SSHKitChannelClosed,         // the channel has been closed
-};
-
 typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     SSHKitChannelStdoutData  = 0,
     SSHKitChannelStderrData,
@@ -55,7 +47,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     } _delegateFlags;
     
     ssh_channel _rawChannel;
-    SSHKitChannelState _state;
+    SSHKitChannelStage _state;
 }
 
 @property (readwrite) SSHKitChannelType type;

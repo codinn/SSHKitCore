@@ -1,15 +1,7 @@
+#import <SSHKitCore/SSHKitCoreCommon.h>
+
 @protocol SSHKitChannelDelegate;
 @class SSHKitSession;
-
-typedef NS_ENUM(NSInteger, SSHKitChannelType)  {
-    SSHKitChannelTypeUnknown = 0,
-    SSHKitChannelTypeDirect,
-    SSHKitChannelTypeForward,
-    SSHKitChannelTypeExec,
-    SSHKitChannelTypeShell,
-    SSHKitChannelTypeSCP,
-    SSHKitChannelTypeSubsystem // Not supported by SSHKit framework
-};
 
 // -----------------------------------------------------------------------------
 #pragma mark -

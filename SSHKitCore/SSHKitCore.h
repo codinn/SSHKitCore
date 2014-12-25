@@ -1,54 +1,11 @@
 #import <Foundation/Foundation.h>
 
-/* some types for keys */
-/* same as ssh_keytypes_e from header libssh.h */
-typedef NS_ENUM(NSInteger, SSHKitHostKeyType) {
-    SSHKitHostKeyTypeUnknown=0,
-    SSHKitHostKeyTypeDSS=1,
-    SSHKitHostKeyTypeRSA,
-    SSHKitHostKeyTypeRSA1,
-    SSHKitHostKeyTypeECDSA,
-};
+#import <SSHKitCore/SSHKitCoreCommon.h>
 
-/**
- * Seeing a return statements within an inner block
- * can sometimes be mistaken for a return point of the enclosing method.
- * This makes inline blocks a bit easier to read.
- **/
-#ifndef return_from_block
-#define return_from_block  return
-#endif
-
-#define SSHKitLibsshErrorDomain  @"SSHKit.libssh"
-#define SSHKitSessionErrorDomain @"SSHKit.Session"
-#define SSHKitChannelErrorDomain @"SSHKit.Channel"
-
-typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
-    SSHKitErrorCodeNoError   = 0,
-    SSHKitErrorCodeTimeout,
-    SSHKitErrorCodeError,
-    SSHKitErrorCodeHostKeyError,
-    SSHKitErrorCodeAuthError,
-    SSHKitErrorCodeRetry,
-    SSHKitErrorCodeFatal,
-};
-
-typedef NS_ENUM(NSInteger, SSHKitProxyType) {
-    SSHKitProxyTypeDirect = -1,
-    SSHKitProxyTypeSOCKS5 = 0,
-    SSHKitProxyTypeSOCKS4,
-    SSHKitProxyTypeHTTPS,
-    SSHKitProxyTypeSOCKS4A,
-};
-
-typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
-
-typedef void (^ SSHKitRemotePortForwardBoundBlock)(BOOL success, uint16_t boundPort, NSError *error);
-
-#import "SSHKitSession.h"
-#import "SSHKitChannel.h"
-#import "SSHKitDirectChannel.h"
-#import "SSHKitForwardChannel.h"
-#import "SSHKitIdentityParser.h"
-#import "SSHKitHostKeyParser.h"
-#import "CoSOCKSMessage.h"
+#import <SSHKitCore/SSHKitSession.h>
+#import <SSHKitCore/SSHKitChannel.h>
+#import <SSHKitCore/SSHKitDirectChannel.h>
+#import <SSHKitCore/SSHKitForwardChannel.h>
+#import <SSHKitCore/SSHKitIdentityParser.h>
+#import <SSHKitCore/SSHKitHostKeyParser.h>
+#import <SSHKitCore/CoSOCKSMessage.h>

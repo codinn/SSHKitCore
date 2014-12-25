@@ -6,7 +6,7 @@
 //
 //
 
-#import "SSHKitChannel.h"
+#import <SSHKitCore/SSHKitChannel.h>
 
 @interface SSHKitForwardChannel : SSHKitChannel
 

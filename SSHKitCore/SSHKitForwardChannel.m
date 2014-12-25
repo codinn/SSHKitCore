@@ -23,7 +23,7 @@
             strongSelf->_rawChannel = rawChannel;
         }}];
         
-        _state = SSHKitChannelReadWrite;
+        _state = SSHKitChannelStageReadWrite;
     }
     
     return self;

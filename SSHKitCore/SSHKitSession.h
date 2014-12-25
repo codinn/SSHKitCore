@@ -1,24 +1,4 @@
-#import "SSHKitCore.h"
-
-/** equal with libssh SSH_AUTH_METHOD_xxx flags */
-NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
-    SSHKitSessionUserAuthUnknown     = 0,
-    SSHKitSessionUserAuthNone        = 1 << 0,
-    SSHKitSessionUserAuthPassword    = 1 << 1,
-    SSHKitSessionUserAuthPublickey   = 1 << 2,
-    SSHKitSessionUserAuthHostbased   = 1 << 3,
-    SSHKitSessionUserAuthInteractive = 1 << 4,
-    SSHKitSessionUserAuthGSSAPIMic   = 1 << 5,
-};
-
-typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
-    SSHKitSessionStageUnknown   = 0,
-    SSHKitSessionStageNotConnected,
-    SSHKitSessionStageConnecting,
-    SSHKitSessionStagePreAuthenticating,
-    SSHKitSessionStageAuthenticating,
-    SSHKitSessionStageConnected,
-};
+#import <SSHKitCore/SSHKitCore.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
 @class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser;
