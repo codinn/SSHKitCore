@@ -21,9 +21,7 @@
 	dispatch_source_t _readSource;
     dispatch_source_t _keepAliveTimer;
     NSInteger _keepAliveCounter;
-    NSMutableArray *_channels;
     NSMutableArray *_forwardRequests;
-    NSMutableArray *_acceptedForwards;
     
     dispatch_block_t    _authBlock;
     
@@ -54,6 +52,8 @@
 @property (nonatomic, readwrite) NSInteger authMethods;
 
 @property (atomic, readwrite) dispatch_queue_t sessionQueue;
+
+@property (nonatomic, readwrite) NSMutableArray *channels;
 @end
 
 #pragma mark -
@@ -109,9 +109,8 @@
         }
         
         self.currentStage = SSHKitSessionStageNotConnected;
-        _channels = [@[] mutableCopy];
+        self.channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
-        _acceptedForwards = [@[] mutableCopy];
         _customSocketFD = socketFD;
         self.proxyType = SSHKitProxyTypeDirect;
         
@@ -153,6 +152,23 @@
 		dispatch_queue_set_specific(_sessionQueue, _isOnSessionQueueKey, nonNullUnusedPointer, NULL);
         
         _alreadyDidDisconnect = NO;
+        
+        // remote forward has requested, remote server responsed the request
+        __weak SSHKitSession *weakSelf = self;
+        [[NSNotificationCenter defaultCenter] addObserverForName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(NSNotification *notification) {
+                                                          __strong SSHKitSession *strongSelf = weakSelf;
+                                                          if (!strongSelf) {
+                                                              return;
+                                                          }
+                                                          
+                                                          // dispatch async, since remote forward request will be removed from array while iterating
+                                                          [strongSelf dispatchAsyncOnSessionQueue:^{
+                                                              [strongSelf->_forwardRequests removeObject:notification.object];
+                                                          }];
+                                                      }];
     }
     
     return self;
@@ -414,11 +430,11 @@
         _readSource = nil;
     }
     
-    NSArray *channels = [_channels copy];
-    
-    for (SSHKitChannel* channel in channels) {
+    for (SSHKitChannel* channel in self.channels) {
         [channel close];
     }
+    
+    [self.channels removeAllObjects];
     
     if (self.isConnected) {
         ssh_disconnect(_rawSession);
@@ -775,80 +791,39 @@
     {
         switch (channel.stage) {
             case SSHKitChannelStageOpening:
-                // todo:
-                //                    [channel _doOpen];
+                [channel _doOpen];
                 break;
             case SSHKitChannelStageClosed:
-                [self->_channels removeObject:channel];
+                [self.channels removeObject:channel];
                 break;
                 
             case SSHKitChannelStageReadWrite:
                 [channel _doRead];
                 break;
                 
-                
             default:
                 break;
         }
     }];
     
-    // prevent wild data trigger dispatch souce again and again
-    {
-        char buffer[256];
-        ssh_channel fakeChannel = ssh_channel_new(_rawSession);
-        // check channel package
-        ssh_channel_read(fakeChannel, buffer, sizeof(buffer), 0);
-        ssh_channel_free(fakeChannel);
-    }
-    
     // try again forward-tcpip requests
-    [_forwardRequests enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSArray *forwardRequest, NSUInteger index, BOOL *stop)
-     {
-        NSString *address   = forwardRequest[0];
-        int port            = [forwardRequest[1] intValue];
-        SSHKitRemotePortForwardBoundBlock completionBlock = forwardRequest[2];
-        
-        int boundport = 0;
-        
-        BOOL rc = ssh_forward_listen(self.rawSession, address.UTF8String, port, &boundport);
-        
-        switch (rc) {
-            case SSH_OK:
-                [self->_forwardRequests removeObject:forwardRequest];
-                [self->_acceptedForwards addObject:@[address, @(boundport)]];
-                
-                completionBlock(YES, boundport, nil);
-                
-                break;
-                
-            case SSH_AGAIN:
-                // try again next time
-                break;
-                
-            case SSH_ERROR:
-            default:
-                [self->_forwardRequests removeObject:forwardRequest];
-                completionBlock(NO, boundport, self.lastError);
-                
-                break;
-        }
-     }];
+    for (SSHKitRemoteForwardRequest *forwardRequest in _forwardRequests) {
+        [forwardRequest request];
+    };
     
     // probe forward channel from accepted forward
-    if (_acceptedForwards.count > 0) {
-        int destination_port = 0;
-        ssh_channel channel = ssh_channel_accept_forward(self.rawSession, 0, &destination_port);
-        
-        if (!channel) {
-            return;
-        }
-        
-        SSHKitForwardChannel *forwardChannel = [[SSHKitForwardChannel alloc] initWithSession:self rawChannel:channel destinationPort:destination_port];
-        [_channels addObject:forwardChannel];
-        
-        if (_delegateFlags.didAcceptForwardChannel) {
-            [_delegate session:self didAcceptForwardChannel:forwardChannel];
-        }
+    // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
+    //       another method is create a temporary channel, and let it consumes the wild data.
+    //       The real cause is unkown, may be it's caused by data arrived while channels already closed
+    SSHKitForwardChannel *forwardChannel = [SSHKitForwardChannel tryAcceptForwardChannelOnSession:self];
+    if (!forwardChannel) {
+        return;
+    }
+    
+    [self.channels addObject:forwardChannel];
+    
+    if (_delegateFlags.didAcceptForwardChannel) {
+        [_delegate session:self didAcceptForwardChannel:forwardChannel];
     }
 }
 
@@ -950,7 +925,7 @@
 
 #pragma mark - Internal Helpers
 
-// todo: dropbear do not support keepalive message
+// todo: dropbear does not support keepalive message
 - (void)_fireKeepAliveTimer
 {
     _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
@@ -1039,20 +1014,6 @@
 
 #pragma mark - Open Channels
 
-- (NSArray *)channels
-{
-    return _channels;
-}
-
-- (void)_addChannel:(SSHKitChannel *)channel
-{
-    [_channels addObject:channel];
-}
-- (void)_removeChannel:(SSHKitChannel *)channel
-{
-    [_channels removeObject:channel];
-}
-
 - (SSHKitDirectChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
     SSHKitDirectChannel *channel = [[SSHKitDirectChannel alloc] initWithSession:self delegate:aDelegate];
@@ -1066,13 +1027,13 @@
             return_from_block;
         }
         
-        [strongSelf->_channels addObject:channel];
+        [strongSelf.channels addObject:channel];
     }];
     
     return channel;
 }
 
-- (void)requestBindToAddress:(NSString *)address onPort:(uint16_t)port completionBlock:(SSHKitRemotePortForwardBoundBlock)completionBlock;
+- (void)requestRemoteForwardWithListenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
 {
     __weak SSHKitSession *weakSelf = self;
     
@@ -1082,27 +1043,8 @@
             return_from_block;
         }
         
-        int boundport = 0;
-        // todo: listening to ipv4 and ipv6 address respectively
-        BOOL rc = ssh_forward_listen(strongSelf.rawSession, address.UTF8String, port, &boundport);
-        
-        switch (rc) {
-            case SSH_OK:
-                [strongSelf->_acceptedForwards addObject:@[address, @(boundport)]];
-                completionBlock(YES, boundport, nil);
-                
-                break;
-                
-            case SSH_AGAIN:
-                [strongSelf->_forwardRequests addObject:@[address, @(port), completionBlock]];
-                break;
-                
-            case SSH_ERROR:
-            default:
-                completionBlock(NO, port, strongSelf.lastError);
-                
-                break;
-        }
+        SSHKitRemoteForwardRequest *request = [[SSHKitRemoteForwardRequest alloc] initWithSession:strongSelf listenHost:host onPort:port completionHandler:completionHandler];
+        [strongSelf->_forwardRequests addObject:request];
     }}];
 }
 

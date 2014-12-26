@@ -30,6 +30,7 @@ typedef NS_ENUM(NSInteger, SSHKitHostKeyType) {
 #define SSHKitLibsshErrorDomain  @"SSHKit.libssh"
 #define SSHKitSessionErrorDomain @"SSHKit.Session"
 #define SSHKitChannelErrorDomain @"SSHKit.Channel"
+#define SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION @"com.codinn.sshkit.remote-forward.complete.notification"
 
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     SSHKitErrorCodeNoError   = 0,
@@ -89,4 +90,4 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 
 typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
 
-typedef void (^ SSHKitRemotePortForwardBoundBlock)(BOOL success, uint16_t boundPort, NSError *error);
+typedef void (^ SSHKitRequestRemoteForwardCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);

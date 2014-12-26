@@ -19,6 +19,10 @@
         [self.session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
             __strong SSHKitDirectChannel *strongSelf = weakSelf;
             
+            if (!strongSelf) {
+                return;
+            }
+            
             strongSelf->_rawChannel = ssh_channel_new(strongSelf.session.rawSession);
         }}];
     }
@@ -28,7 +32,7 @@
 
 - (void)_doOpen
 {
-    if (self.stage == SSHKitChannelStageClosed) {
+    if (self.stage != SSHKitChannelStageOpening) {
         return;
     }
     
@@ -36,8 +40,9 @@
         
     switch (result) {
         case SSH_AGAIN:
-            self.stage = SSHKitChannelStageOpening;
+            // try again
             break;
+            
         case SSH_OK:
             self.stage = SSHKitChannelStageReadWrite;
             
@@ -47,6 +52,7 @@
                 [self.delegate channelDidOpen:self];
             }
             break;
+            
         default:
             // open failed
             [self closeWithError:self.session.lastError];
@@ -60,8 +66,15 @@
     self.port = port;
     self.type = SSHKitChannelTypeDirect;
     
+    __weak SSHKitDirectChannel *weakSelf = self;
     [self.session dispatchAsyncOnSessionQueue: ^ { @autoreleasepool {
-        [self _doOpen];
+        __strong SSHKitDirectChannel *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        
+        strongSelf.stage = SSHKitChannelStageOpening;
+        [strongSelf _doOpen];
     }}];
 }
 

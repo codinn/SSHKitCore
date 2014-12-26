@@ -29,4 +29,68 @@
     return self;
 }
 
++ (instancetype)tryAcceptForwardChannelOnSession:(SSHKitSession *)session
+{
+    int destination_port = 0;
+    ssh_channel channel = ssh_channel_accept_forward(session.rawSession, 0, &destination_port);
+    
+    if (!channel) {
+        return nil;
+    }
+    
+    return[[SSHKitForwardChannel alloc] initWithSession:session rawChannel:channel destinationPort:destination_port];
+}
+
+@end
+
+@implementation SSHKitRemoteForwardRequest
+
+- (instancetype)initWithSession:(SSHKitSession *)session listenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
+{
+    if (self=[super init]) {
+        self.session = session;
+        self.listenHost = host;
+        self.listenPort = port;
+        self.completionHandler = completionHandler;
+    }
+    
+    return self;
+}
+
+- (int)request
+{
+    int boundport = 0;
+    // todo: listening to ipv4 and ipv6 address respectively
+    int rc = ssh_forward_listen(self.session.rawSession, self.listenHost.UTF8String, self.listenPort, &boundport);
+    
+    switch (rc) {
+        case SSH_OK:
+        {
+            // success
+            [[NSNotificationCenter defaultCenter] postNotificationName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
+                                                                object:self
+                                                              userInfo:nil];
+            self.completionHandler(YES, boundport, nil);
+            break;
+        }
+            
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_ERROR:
+        default:
+        {
+            // failed
+            [[NSNotificationCenter defaultCenter] postNotificationName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
+                                                                object:self
+                                                              userInfo:nil];
+            self.completionHandler(NO, self.listenPort, self.session.lastError);
+            break;
+        }
+    }
+    
+    return rc;
+}
+
 @end

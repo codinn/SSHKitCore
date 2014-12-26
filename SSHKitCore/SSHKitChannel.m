@@ -136,21 +136,12 @@
  **/
 - (void)_doRead
 {
-    switch (self.stage) {
-        case SSHKitChannelStageClosed:
-            break;
-        
-        case SSHKitChannelStageOpening:
-            [self _doOpen];
-            break;
-            
-        case SSHKitChannelStageReadWrite:
-            [self _tryReadData:SSHKitChannelStdoutData];
-            [self _tryReadData:SSHKitChannelStderrData];
-            
-        default:
-            break;
+    if (self.stage != SSHKitChannelStageReadWrite) {
+        return;
     }
+    
+    [self _tryReadData:SSHKitChannelStdoutData];
+    [self _tryReadData:SSHKitChannelStderrData];
 }
 
 - (void)writeData:(NSData *)data

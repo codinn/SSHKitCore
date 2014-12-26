@@ -1,7 +1,7 @@
 #import <SSHKitCore/SSHKitCore.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
-@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser;
+@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -102,12 +102,6 @@
  */
 @property (nonatomic, readonly, getter = isAuthorized) BOOL authorized;
 
-/**
- *
- * Opened channels
- */
-@property (readonly) NSArray *channels;
-
 // -----------------------------------------------------------------------------
 #pragma mark Advanced Options
 // -----------------------------------------------------------------------------
@@ -188,7 +182,7 @@
 
 - (SSHKitDirectChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
-- (void)requestBindToAddress:(NSString *)address onPort:(uint16_t)port completionBlock:(SSHKitRemotePortForwardBoundBlock)completionBlock;
+- (void)requestRemoteForwardWithListenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
 
 @end
 
