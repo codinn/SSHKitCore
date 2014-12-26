@@ -199,6 +199,7 @@
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
+        _delegateFlags.didAcceptForwardChannel = [delegate respondsToSelector:@selector(session:didAcceptForwardChannel:)];
 	}
 }
 
@@ -1043,8 +1044,9 @@
             return_from_block;
         }
         
-        SSHKitRemoteForwardRequest *request = [[SSHKitRemoteForwardRequest alloc] initWithSession:strongSelf listenHost:host onPort:port completionHandler:completionHandler];
-        [strongSelf->_forwardRequests addObject:request];
+        SSHKitRemoteForwardRequest *forwardRequest = [[SSHKitRemoteForwardRequest alloc] initWithSession:strongSelf listenHost:host onPort:port completionHandler:completionHandler];
+        [strongSelf->_forwardRequests addObject:forwardRequest];
+        [forwardRequest request];
     }}];
 }
 

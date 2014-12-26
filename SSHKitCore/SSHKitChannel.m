@@ -55,10 +55,8 @@
 
 - (void)closeWithError:(NSError *) error
 {
-    __weak SSHKitChannel *weakSelf = self;
-    
     [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
-        __strong SSHKitChannel *strongSelf = weakSelf;
+        __strong SSHKitChannel *strongSelf = self;
         
         if (strongSelf.stage == SSHKitChannelStageClosed) { // already closed
             return;
