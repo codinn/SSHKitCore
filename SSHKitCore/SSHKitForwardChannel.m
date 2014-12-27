@@ -70,6 +70,9 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
                                                                 object:self
                                                               userInfo:nil];
+            
+            // boundport may equals 0, if listenPort is NOT 0.
+            boundport = boundport ? boundport : self.listenPort;
             self.completionHandler(YES, boundport, nil);
             break;
         }
