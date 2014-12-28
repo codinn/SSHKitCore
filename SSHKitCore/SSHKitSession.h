@@ -228,6 +228,7 @@
  */
 - (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(SSHKitHostKeyParser *)hostKey;
 - (void)session:(SSHKitSession *)session needAuthenticateUser:(NSString *)username;
+- (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 
 /**
  * Called when ssh server has forward a connection.

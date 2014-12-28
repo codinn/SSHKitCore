@@ -13,8 +13,8 @@
 		unsigned int didConnectToHostPort           : 1;
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
-		unsigned int didAuthenticateUser            : 1;
         unsigned int needAuthenticateUser           : 1;
+        unsigned int didAuthenticateUser            : 1;
         unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
     
@@ -200,6 +200,7 @@
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
         _delegateFlags.didAcceptForwardChannel = [delegate respondsToSelector:@selector(session:didAcceptForwardChannel:)];
+        _delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
 	}
 }
 
@@ -225,6 +226,10 @@
             
             if (ver>0) {
                 self.protocolVersion = @(ver).stringValue;
+            }
+            
+            if (_delegateFlags.didConnectToHostPort) {
+                [self.delegate session:self didConnectToHost:self.host port:self.port];
             }
             
             [self _resolveHostIP];
@@ -555,8 +560,8 @@
     
     self.currentStage = SSHKitSessionStageConnected;
     
-    if (_delegateFlags.didConnectToHostPort) {
-        [self.delegate session:self didConnectToHost:self.host port:self.port];
+    if (_delegateFlags.didAuthenticateUser) {
+        [self.delegate session:self didAuthenticateUser:nil];
     }
 }
 
