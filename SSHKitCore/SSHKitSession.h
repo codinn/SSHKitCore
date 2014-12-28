@@ -57,9 +57,6 @@
 /** current stage */
 @property (nonatomic, readonly) SSHKitSessionStage currentStage;
 
-/** supported authentication methods */
-@property (nonatomic, readonly) NSInteger authMethods;
-
 /** Full server hostname in the format `@"{hostname}"`. */
 @property (nonatomic, readonly) NSString *host;
 
@@ -227,7 +224,7 @@
  @returns YES if the session should trust the host, otherwise NO.
  */
 - (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(SSHKitHostKeyParser *)hostKey;
-- (void)session:(SSHKitSession *)session needAuthenticateUser:(NSString *)username;
+- (NSError *)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray *)methods;
 - (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 
 /**

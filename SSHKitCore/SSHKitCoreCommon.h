@@ -60,15 +60,14 @@ typedef NS_ENUM(NSInteger, SSHKitChannelType)  {
     SSHKitChannelTypeSubsystem // Not supported by SSHKit framework
 };
 
-/** equal with libssh SSH_AUTH_METHOD_xxx flags */
-NS_OPTIONS(NSInteger, SSHKitSessionUserAuthMethods) {
-    SSHKitSessionUserAuthUnknown     = 0,
-    SSHKitSessionUserAuthNone        = 1 << 0,
-    SSHKitSessionUserAuthPassword    = 1 << 1,
-    SSHKitSessionUserAuthPublickey   = 1 << 2,
-    SSHKitSessionUserAuthHostbased   = 1 << 3,
-    SSHKitSessionUserAuthInteractive = 1 << 4,
-    SSHKitSessionUserAuthGSSAPIMic   = 1 << 5,
+typedef NS_ENUM(NSInteger, SSHKitAuthMethod) {
+    SSHKitAuthMethodUnknown     = -2,
+    SSHKitAuthMethodNone        = -1,
+    SSHKitAuthMethodPassword    = 0,
+    SSHKitAuthMethodPublicKey,
+    SSHKitAuthMethodInteractive,
+    SSHKitAuthMethodHostBased,
+    SSHKitAuthMethodGSSAPI,
 };
 
 typedef NS_ENUM(NSInteger, SSHKitSessionStage) {

@@ -13,7 +13,7 @@
 		unsigned int didConnectToHostPort           : 1;
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
-        unsigned int needAuthenticateUser           : 1;
+        unsigned int authenticateWithAllowedMethods : 1;
         unsigned int didAuthenticateUser            : 1;
         unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
@@ -48,8 +48,6 @@
 @property (nonatomic, readwrite)  NSString    *protocolVersion;
 
 @property (nonatomic, readonly) long          timeout;
-
-@property (nonatomic, readwrite) NSInteger authMethods;
 
 @property (atomic, readwrite) dispatch_queue_t sessionQueue;
 
@@ -194,7 +192,7 @@
 {
 	if (_delegate != delegate) {
 		_delegate = delegate;
-        _delegateFlags.needAuthenticateUser = [delegate respondsToSelector:@selector(session:needAuthenticateUser:)];
+        _delegateFlags.authenticateWithAllowedMethods = [delegate respondsToSelector:@selector(session:authenticateWithAllowedMethods:)];
 		_delegateFlags.didConnectToHostPort = [delegate respondsToSelector:@selector(session:didConnectToHost:port:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
@@ -536,16 +534,40 @@
             break;
             
         case SSH_AUTH_DENIED:
+        {
             // pre auth success
+            NSMutableArray *authMethods = [@[] mutableCopy];
+            int authList = ssh_userauth_list(_rawSession, NULL);
             
-            self.authMethods = ssh_userauth_list(_rawSession, NULL);
+            if (authList & SSH_AUTH_METHOD_NONE) {
+                [authMethods addObject:@(SSHKitAuthMethodNone)];
+            }
+            if (authList & SSH_AUTH_METHOD_PASSWORD) {
+                [authMethods addObject:@(SSHKitAuthMethodPassword)];
+            }
+            if (authList & SSH_AUTH_METHOD_PUBLICKEY) {
+                [authMethods addObject:@(SSHKitAuthMethodPublicKey)];
+            }
+            if (authList & SSH_AUTH_METHOD_HOSTBASED) {
+                [authMethods addObject:@(SSHKitAuthMethodHostBased)];
+            }
+            if (authList & SSH_AUTH_METHOD_INTERACTIVE) {
+                [authMethods addObject:@(SSHKitAuthMethodInteractive)];
+            }
+            if (authList & SSH_AUTH_METHOD_GSSAPI_MIC) {
+                [authMethods addObject:@(SSHKitAuthMethodGSSAPI)];
+            }
             
-            if (_delegateFlags.needAuthenticateUser) {
-                [self.delegate session:self needAuthenticateUser:nil];
+            if (_delegateFlags.authenticateWithAllowedMethods) {
+                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods];
+                if (error) {
+                    [self disconnectWithError:error];
+                }
                 
                 // Handoff to next auth method
                 return;
             }
+        }
             
         default:
             [self _checkAuthenticateResult:rc];
@@ -603,15 +625,6 @@
 
 - (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler
 {
-    if ( !(self.authMethods & SSHKitSessionUserAuthInteractive) )
-    {
-        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                             code:SSHKitErrorCodeAuthError
-                                         userInfo:@{ NSLocalizedDescriptionKey : @"Keyboard-Interactive authentication method is not supported by SSH server" }];
-        [self disconnectWithError:error];
-        return;
-    }
-    
     self.currentStage = SSHKitSessionStageAuthenticating;
 
     __block NSInteger index = 0;
@@ -683,14 +696,6 @@
 
 - (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler;
 {
-    if ( !(self.authMethods & SSHKitSessionUserAuthPassword) ) {
-        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                             code:SSHKitErrorCodeAuthError
-                                         userInfo:@{ NSLocalizedDescriptionKey : @"Password authentication method is not supported by SSH server" }];
-        [self disconnectWithError:error];
-        return;
-    }
-    
     NSString *password = passwordHandler();
     
     self.currentStage = SSHKitSessionStageAuthenticating;
@@ -718,14 +723,6 @@
 
 - (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler
 {
-    if ( !(self.authMethods & SSHKitSessionUserAuthPublickey) ) {
-        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                    code:SSHKitErrorCodeAuthError
-                                userInfo:@{ NSLocalizedDescriptionKey : @"Publickey auth method is not supported by SSH server" }];
-        [self disconnectWithError:error];
-        return;
-    }
-    
     SSHKitIdentityParser *identity = [[SSHKitIdentityParser alloc] initWithIdentityPath:privateKeyPath passphraseHandler:handler];
     
     NSError *error = [identity parse];
