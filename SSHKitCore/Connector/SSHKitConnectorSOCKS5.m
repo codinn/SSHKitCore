@@ -13,7 +13,7 @@
 #import "CoSocket.h"
 #import "CoSOCKSMessage.h"
 
-#define CSConnectSOCKS5Domain @"CSConnect.SOCKS5"
+#define SSHKitConnectorSOCKS5Domain @"SSHKitConnector.SOCKS5"
 
 static NSError * socks5_do_auth_userpass(CoSocket *coSocket, NSString *username, NSString *password)
 {
@@ -27,13 +27,13 @@ static NSError * socks5_do_auth_userpass(CoSocket *coSocket, NSString *username,
     NSUInteger passwordLength   = [password lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     
     if (usernameLength>255) {
-        return [NSError errorWithDomain:CSConnectSOCKS5Domain
+        return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                             code:255
                         userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: authentication username exceeds 255 bytes" }];
     }
     
     if (passwordLength>255) {
-        return [NSError errorWithDomain:CSConnectSOCKS5Domain
+        return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                             code:255
                         userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: authentication password exceeds 255 bytes" }];
     }
@@ -70,7 +70,7 @@ static NSError * socks5_do_auth_userpass(CoSocket *coSocket, NSString *username,
     
     NSInteger responseCode = ((const char *)response.bytes)[1];
     if (responseCode!=0) {
-        return [NSError errorWithDomain:CSConnectSOCKS5Domain
+        return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                    code:255
                                userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: authentication failed" }];
     }
@@ -83,7 +83,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     NSUInteger  hostLength = [targetHost lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     
     if (hostLength > 255) {
-        return [NSError errorWithDomain:CSConnectSOCKS5Domain
+        return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                    code:255
                                userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: authentication username exceeds 255 bytes" }];
     }
@@ -187,44 +187,44 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
             break;
             
         case CoSOCKS5ResponseGeneralFailure:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: general SOCKS server failure" }];
         case CoSOCKS5ResponseNotAllowed:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: connection not allowed by ruleset" }];
         case CoSOCKS5ResponseNetworkUnreachable:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: network unreachable" }];
         case CoSOCKS5ResponseHostUnreachable:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: host unreachable" }];
         case CoSOCKS5ResponseRefused:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: connection refused" }];
         case CoSOCKS5ResponseTTLExpired:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: TTL expired" }];
         case CoSOCKS5ResponseCommandNotSupported:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: command not supported" }];
         case CoSOCKS5ResponseAddressNotSupported:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: address not supported" }];
         case CoSOCKS5ResponseInvalidAddress:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: invalid address" }];
             
         default:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: unknown error" }];
     }
@@ -247,7 +247,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
             addressResonse = [coSocket readDataToLength:16+2 error:&error];  /* recv IPv6 addr and port */
             break;
         default:
-            return [NSError errorWithDomain:CSConnectSOCKS5Domain
+            return [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                        code:255
                                    userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: recevied unknown address type" }];
             break;
@@ -357,7 +357,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     
     NSInteger responseVersion = ((const char *)response.bytes)[0];
     if (responseVersion!=CoSOCKSVersion5) {
-        if (errPtr) *errPtr = [NSError errorWithDomain:CSConnectSOCKS5Domain
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                             code:255
                                               userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: peer is not a SOCKS5 proxy server" }];
         [self disconnect];
@@ -368,7 +368,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     
     switch ( responseAuthMethod ) {
         case CoSOCKS5AuthMethodReject:
-            if (errPtr) *errPtr = [NSError errorWithDomain:CSConnectSOCKS5Domain
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                                 code:255
                                             userInfo:@{ NSLocalizedDescriptionKey : @"SOCKS5: no acceptable authentication method" }];
             [self disconnect];
@@ -390,7 +390,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
             break;
             
         default:
-            if (errPtr) *errPtr = [NSError errorWithDomain:CSConnectSOCKS5Domain
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitConnectorSOCKS5Domain
                                                 code:255
                                             userInfo:@{ NSLocalizedDescriptionKey : @"Unsupported authentication method" }];
             [self disconnect];

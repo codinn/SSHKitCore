@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-NSData * CSConnectLocalResolveHost(NSString *host, uint16_t port, NSError **errPtr);
-
 @interface SSHKitConnector : NSObject
 
 - (instancetype)initWithTimeout:(NSTimeInterval)timeout;

@@ -13,7 +13,36 @@
 #import "CoSOCKSMessage.h"
 #import "SSHKitConnector+Protected.h"
 
-#define CSConnectSOCKS4Domain @"CSConnect.SOCKS4"
+#define SSHKitConnectorSOCKS4Domain @"SSHKitConnector.SOCKS4"
+
+
+static NSData * _localResolveHost(NSString *host, uint16_t port, NSError **errPtr)
+{
+    NSMutableArray *addresses = [CoSocket lookupHost:host port:port error:errPtr];
+    
+    if (errPtr&&*errPtr) {
+        return nil;
+    }
+    
+    NSData *address4 = nil;
+    
+    for (NSData *address in addresses)
+    {
+        if (!address4 && [CoSocket isIPv4Address:address])
+        {
+            address4 = address;
+        }
+    }
+    
+    if (!address4) {
+        NSString *desc = [NSString stringWithFormat:@"Can't resolve hostname “%@” to IPv4 address", host];
+        *errPtr = [NSError errorWithDomain:SSHKitConnectorSOCKS4Domain
+                                      code:-1
+                                  userInfo:@{ NSLocalizedDescriptionKey : desc }];
+    }
+    
+    return address4;
+}
 
 @interface SSHKitConnectorSOCKS4() {
 @protected
@@ -103,16 +132,9 @@
         buffer[offset] = 0x01;
         offset+=1;
     } else {
-        NSData *address = CSConnectLocalResolveHost(self.targetHost, self.targetPort, errPtr);
+        NSData *address = _localResolveHost(self.targetHost, self.targetPort, errPtr);
         
         if (!address) {
-            return NO;
-        }
-        
-        if (![CoSocket isIPv4Address:address]) {
-            *errPtr = [NSError errorWithDomain:CSConnectSOCKS4Domain
-                                       code:255
-                                   userInfo:@{ NSLocalizedDescriptionKey : @"IPv6 is not supported by your SOCKS4 proxy server" }];
             return NO;
         }
         
@@ -182,7 +204,7 @@
     }
     
     if (failureReason.length) {
-        if (errPtr) *errPtr = [NSError errorWithDomain:CSConnectSOCKS4Domain
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitConnectorSOCKS4Domain
                                                   code:responseCode
                                               userInfo:@{ NSLocalizedDescriptionKey : failureReason }];
         [self disconnect];
