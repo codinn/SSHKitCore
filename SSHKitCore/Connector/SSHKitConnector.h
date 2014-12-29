@@ -14,12 +14,12 @@ NSData * CSConnectLocalResolveHost(NSString *host, uint16_t port, NSError **errP
 
 - (instancetype)initWithTimeout:(NSTimeInterval)timeout;
 
+@property (readonly) int socketFD;
+
 // connect to target
 
 - (BOOL)connectToTarget:(NSString *)host onPort:(uint16_t)port error:(NSError **)errPtr;
 
 - (void)disconnect;
-
-- (int)dupSocketFD;
 
 @end

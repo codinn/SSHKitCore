@@ -138,10 +138,10 @@
      */
     
     NSData *data = [NSData dataWithBytesNoCopy:buffer length:offset freeWhenDone:NO];
-    _coSocket = [[CoSocket alloc] initWithHost:self.proxyHost onPort:self.proxyPort timeout:self.timeout];
+    _coSocket = [[CoSocket alloc] init];
     
-    if (![_coSocket connect]) {
-        if (errPtr) *errPtr = _coSocket.lastError;
+    if (![_coSocket connectToHost:self.proxyHost onPort:self.proxyPort withTimeout:self.timeout error:errPtr])
+    {
         [self disconnect];
         return NO;
     }
@@ -149,16 +149,14 @@
     /* send command and get response
      response is: VN:1, CD:1, PORT:2, ADDR:4 */
     
-    if (![_coSocket writeData:data]) {                   /* send request */
-        if (errPtr) *errPtr = _coSocket.lastError;
+    if (![_coSocket writeData:data error:errPtr]) {                   /* send request */
         [self disconnect];
         return NO;
     }
     
-    NSData *response = [_coSocket readDataToLength:8];   /* recv response */
+    NSData *response = [_coSocket readDataToLength:8 error:errPtr];   /* recv response */
     
     if (!response.length) {                 /* send request */
-        if (errPtr) *errPtr = _coSocket.lastError;
         [self disconnect];
         return NO;
     }

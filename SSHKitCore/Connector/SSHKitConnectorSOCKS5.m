@@ -57,14 +57,15 @@ static NSError * socks5_do_auth_userpass(CoSocket *coSocket, NSString *username,
     /* send it and get answer */
     NSData *data = [NSData dataWithBytesNoCopy:buffer length:offset freeWhenDone:NO];
     
-    if (![coSocket writeData:data]) {
-        return coSocket.lastError;
+    NSError *error = nil;
+    if (![coSocket writeData:data error:&error]) {
+        return error;
     }
     
-    NSData *response = [coSocket readDataToLength:2];   /* recv response */
+    NSData *response = [coSocket readDataToLength:2 error:&error];   /* recv response */
     
     if (!response.length) {                 /* send request */
-        return coSocket.lastError;
+        return error;
     }
     
     NSInteger responseCode = ((const char *)response.bytes)[1];
@@ -149,8 +150,9 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     /* send it and get answer */
     NSData *data = [NSData dataWithBytesNoCopy:buffer length:offset freeWhenDone:NO];
     
-    if (![coSocket writeData:data]) {
-        return coSocket.lastError;
+    NSError *error = nil;
+    if (![coSocket writeData:data error:&error]) {
+        return error;
     }
     
     //      +-----+-----+-----+------+------+------+
@@ -172,10 +174,10 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     // But according to XEP-65 this is only marked as a SHOULD and not a MUST.
     // So just in case, we'll read up to the address length now, and then read in the address+port next.
     
-    NSData *response = [coSocket readDataToLength:4];   /* recv response */
+    NSData *response = [coSocket readDataToLength:4 error:&error];   /* recv response */
     
     if (!response.length) {                 /* send request */
-        return coSocket.lastError;
+        return error;
     }
     
     NSInteger responseCode = ((const char *)response.bytes)[1];
@@ -231,18 +233,18 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     NSData *addressResonse = nil;
     switch (addressType) {
         case CoSOCKS5AddressTypeIPv4:     /* IP v4 ADDR*/
-            addressResonse = [coSocket readDataToLength:4+2];   /* recv IPv4 addr and port */
+            addressResonse = [coSocket readDataToLength:4+2 error:&error];   /* recv IPv4 addr and port */
             break;
         case CoSOCKS5AddressTypeDomainName:     /* DOMAINNAME */
-            addressResonse = [coSocket readDataToLength:1];     /* recv name and port */
+            addressResonse = [coSocket readDataToLength:1 error:&error];     /* recv name and port */
             if (!addressResonse.length) {
-                return coSocket.lastError;
+                return error;
             }
             
-            addressResonse = [coSocket readDataToLength:((const char *)addressResonse.bytes)[0]+2];
+            addressResonse = [coSocket readDataToLength:((const char *)addressResonse.bytes)[0]+2 error:&error];
             break;
         case CoSOCKS5AddressTypeIPv6:     /* IP v6 ADDR */
-            addressResonse = [coSocket readDataToLength:16+2];  /* recv IPv6 addr and port */
+            addressResonse = [coSocket readDataToLength:16+2 error:&error];  /* recv IPv6 addr and port */
             break;
         default:
             return [NSError errorWithDomain:CSConnectSOCKS5Domain
@@ -252,7 +254,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     }
     
     if (!addressResonse.length) {
-        return coSocket.lastError;
+        return error;
     }
     
     /* Conguraturation, connected via SOCKS5 server! */
@@ -269,10 +271,10 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     self.targetHost = host;
     self.targetPort = port;
     
-    _coSocket = [[CoSocket alloc] initWithHost:self.proxyHost onPort:self.proxyPort timeout:self.timeout];
+    _coSocket = [[CoSocket alloc] init];
     
-    if (![_coSocket connect]) {
-        if (errPtr) *errPtr = _coSocket.lastError;
+    if (![_coSocket connectToHost:self.proxyHost onPort:self.proxyPort withTimeout:self.timeout error:errPtr])
+    {
         [self disconnect];
         return NO;
     }
@@ -328,8 +330,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     
     NSData *data = [NSData dataWithBytesNoCopy:buffer length:offset freeWhenDone:NO];
     
-    if (![_coSocket writeData:data]) {                   /* send request */
-        if (errPtr) *errPtr = _coSocket.lastError;
+    if (![_coSocket writeData:data error:errPtr]) {                   /* send request */
         [self disconnect];
         return NO;
     }
@@ -347,10 +348,9 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     // Method  = 0 (No authentication, anonymous access)
     
     
-    NSData *response = [_coSocket readDataToLength:2];   /* recv response */
+    NSData *response = [_coSocket readDataToLength:2 error:errPtr];   /* recv response */
     
     if (!response.length) {                 /* send request */
-        if (errPtr) *errPtr = _coSocket.lastError;
         [self disconnect];
         return NO;
     }

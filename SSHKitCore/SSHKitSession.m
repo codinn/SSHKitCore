@@ -46,9 +46,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @property (nonatomic, readwrite)  SSHKitSessionStage currentStage;
 @property (nonatomic, readwrite)  NSString    *host;
-@property (nonatomic, readwrite)  NSString    *hostIP;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
+
+// nil if session is connected over proxy
+@property (nonatomic, readwrite)  NSString    *hostIP;
+
 @property (nonatomic, readwrite)  NSString    *privateKeyPath;
 
 @property (nonatomic, readwrite)  NSString    *clientBanner;
@@ -342,7 +345,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 return;
             }
             
-            socket_t socket_fd = [strongSelf->_connector dupSocketFD];
+            socket_t socket_fd = dup(strongSelf->_connector.socketFD);
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket_fd);
         }
         

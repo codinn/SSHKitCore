@@ -63,39 +63,33 @@ NSData * CSConnectLocalResolveHost(NSString *host, uint16_t port, NSError **errP
     [self disconnect];
 }
 
+- (int)socketFD
+{
+    if (_coSocket) {
+        return _coSocket.socketFD;
+    }
+    
+    return -1;
+}
+
 - (BOOL)connectToTarget:(NSString *)host onPort:(uint16_t)port error:(NSError **)errPtr
 {
     self.targetHost = host;
     self.targetPort = port;
     
-    _coSocket = [[CoSocket alloc] initWithHost:self.targetHost onPort:self.targetPort];
+    _coSocket = [[CoSocket alloc] init];
     
-    if (![_coSocket connect]) {
-        if (errPtr) *errPtr = _coSocket.lastError;
-        return NO;
-    }
-    
-    return YES;
+    return [_coSocket connectToHost:self.targetHost onPort:self.targetPort withTimeout:self.timeout error:errPtr];
 }
 
 
 - (void)disconnect
 {
     if (_coSocket) {
-        [_coSocket shutdown];
-        [_coSocket close];
+        [_coSocket disconnect];
     }
     
     _coSocket = nil;
-}
-
-- (int)dupSocketFD
-{
-    if (_coSocket.sockfd > 0) {
-        return dup(_coSocket.sockfd);
-    }
-    
-    return 0;
 }
 
 @end

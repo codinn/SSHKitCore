@@ -35,10 +35,11 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
     
     BOOL forProxy = YES;
     
-    _coSocket = [[CoSocket alloc] initWithHost:self.proxyHost onPort:self.proxyPort];
     
-    if (![_coSocket connect]) {
-        if (errPtr) *errPtr = _coSocket.lastError;
+    _coSocket = [[CoSocket alloc] init];
+    
+    if (![_coSocket connectToHost:self.targetHost onPort:self.targetPort withTimeout:self.timeout error:errPtr])
+    {
         return NO;
     }
     
@@ -51,8 +52,7 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
         [request addBasicAuthenticationWithUsername:self.proxyUsername password:self.proxyPassword forProxy:forProxy];
     }
     
-    if (![_coSocket writeData:request.serializedData]) {
-        if (errPtr) *errPtr = _coSocket.lastError;
+    if (![_coSocket writeData:request.serializedData error:errPtr]) {
         return NO;
     }
     
@@ -61,10 +61,9 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
     
     NSData *responseTerminatorData = [@"\r\n\r\n" dataUsingEncoding:NSASCIIStringEncoding];
     
-    NSData *responseData = [_coSocket readDataToData:responseTerminatorData];
+    NSData *responseData = [_coSocket readDataToData:responseTerminatorData error:errPtr];
         
-    if (!responseData.length) {
-        if (errPtr) *errPtr = _coSocket.lastError;
+    if (!responseData.length || *errPtr) {
         return NO;
     }
     
