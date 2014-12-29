@@ -54,9 +54,6 @@
 #pragma mark Diagnostics
 // -----------------------------------------------------------------------------
 
-/** current stage */
-@property (nonatomic, readonly) SSHKitSessionStage currentStage;
-
 /** Full server hostname in the format `@"{hostname}"`. */
 @property (nonatomic, readonly) NSString *host;
 

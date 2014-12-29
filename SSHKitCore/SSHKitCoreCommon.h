@@ -70,15 +70,6 @@ typedef NS_ENUM(NSInteger, SSHKitAuthMethod) {
     SSHKitAuthMethodGSSAPI,
 };
 
-typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
-    SSHKitSessionStageUnknown   = 0,
-    SSHKitSessionStageNotConnected,
-    SSHKitSessionStageConnecting,
-    SSHKitSessionStagePreAuthenticating,
-    SSHKitSessionStageAuthenticating,
-    SSHKitSessionStageConnected,
-};
-
 typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageInvalid,        // channel has not been inited correctly
     SSHKitChannelStageCreated,        // channel has been created

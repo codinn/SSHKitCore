@@ -7,6 +7,15 @@
 #import "SSHKitConnectorProxy.h"
 #import "SSHKitIdentityParser.h"
 
+typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
+    SSHKitSessionStageUnknown   = 0,
+    SSHKitSessionStageNotConnected,
+    SSHKitSessionStageConnecting,
+    SSHKitSessionStagePreAuthenticate,
+    SSHKitSessionStageAuthenticating,
+    SSHKitSessionStageAuthenticated,
+};
+
 @interface SSHKitSession () {
 	struct {
 		unsigned int keyboardInteractiveRequest     : 1;
@@ -249,7 +258,7 @@
                 return;
             }
             
-            self.currentStage = SSHKitSessionStagePreAuthenticating;
+            self.currentStage = SSHKitSessionStagePreAuthenticate;
             [self _preAuthenticate];
         }
             break;
@@ -365,7 +374,7 @@
         
         strongSelf.currentStage = SSHKitSessionStageConnecting;
         [strongSelf _doConnect];
-        [strongSelf _startSessionLoop];
+        [strongSelf _startReadSource];
     }}];
 }
 
@@ -580,7 +589,7 @@
     // start diagnoses timer
     [self _fireKeepAliveTimer];
     
-    self.currentStage = SSHKitSessionStageConnected;
+    self.currentStage = SSHKitSessionStageAuthenticated;
     
     if (_delegateFlags.didAuthenticateUser) {
         [self.delegate session:self didAuthenticateUser:nil];
@@ -833,7 +842,7 @@
 /**
  * Reads the first available bytes that become available on the channel.
  **/
-- (void)_startSessionLoop
+- (void)_startReadSource
 {
     if (_readSource) {
         dispatch_source_cancel(_readSource);
@@ -856,7 +865,7 @@
             case SSHKitSessionStageConnecting:
                 [strongSelf _doConnect];
                 break;
-            case SSHKitSessionStagePreAuthenticating:
+            case SSHKitSessionStagePreAuthenticate:
                 [strongSelf _preAuthenticate];
                 break;
             case SSHKitSessionStageAuthenticating:
@@ -865,7 +874,7 @@
                 }
                 
                 break;
-            case SSHKitSessionStageConnected:
+            case SSHKitSessionStageAuthenticated:
                 [strongSelf _doReadWrite];
                 break;
             case SSHKitSessionStageUnknown:
