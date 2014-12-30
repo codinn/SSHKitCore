@@ -7,6 +7,8 @@
 #import "SSHKitConnector.h"
 #import "SSHKitIdentityParser.h"
 
+#define SOCKET_NULL -1
+
 typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitSessionStageUnknown   = 0,
     SSHKitSessionStageNotConnected,
@@ -39,8 +41,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     // make sure disconnect only once
     BOOL _alreadyDidDisconnect;
     
-    int _customSocketFD;
-    
     SSHKitConnector *_connector;
 }
 
@@ -48,9 +48,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (nonatomic, readwrite)  NSString    *host;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
-
-// nil if session is connected over proxy
-@property (nonatomic, readwrite)  NSString    *hostIP;
 
 @property (nonatomic, readwrite)  NSString    *privateKeyPath;
 
@@ -98,12 +95,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (instancetype)init
 {
-	return [self initWithDelegate:nil sessionQueue:NULL socketFD:0];
+	return [self initWithDelegate:nil sessionQueue:NULL socketFD:SOCKET_NULL];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate
 {
-	return [self initWithDelegate:aDelegate sessionQueue:NULL socketFD:0];
+	return [self initWithDelegate:aDelegate sessionQueue:NULL socketFD:SOCKET_NULL];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFD:(int)socketFD
@@ -113,7 +110,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq
 {
-    return [self initWithDelegate:aDelegate sessionQueue:sq socketFD:0];
+    return [self initWithDelegate:aDelegate sessionQueue:sq socketFD:SOCKET_NULL];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFD:(int)socketFD
@@ -128,7 +125,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.currentStage = SSHKitSessionStageNotConnected;
         self.channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
-        _customSocketFD = socketFD;
+        _socketFD = socketFD;
         self.proxyType = SSHKitProxyTypeDirect;
         
 		self.delegate = aDelegate;
@@ -249,8 +246,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 [self.delegate session:self didConnectToHost:self.host port:self.port];
             }
             
-            [self _resolveHostIP];
-            
             // check host key
             SSHKitHostKeyParser *hostKey = [[SSHKitHostKeyParser alloc] init];
             NSError *error = [hostKey parseFromSession:self];
@@ -303,10 +298,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        if (strongSelf->_customSocketFD) {
-            // libssh will close this fd automatically
-            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &strongSelf->_customSocketFD);
-        } else {
+        if (strongSelf->_socketFD==SOCKET_NULL) {
             if (self.proxyType > SSHKitProxyTypeDirect) {
                 // connect over a proxy server
                 
@@ -349,9 +341,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 return;
             }
             
-            socket_t socket_fd = dup(strongSelf->_connector.socketFD);
-            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket_fd);
+            strongSelf->_socketFD = dup(strongSelf->_connector.socketFD);
         }
+        
+        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &strongSelf->_socketFD);
         
         // compression
         
@@ -471,6 +464,16 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         ssh_disconnect(_rawSession);
     }
     
+    if (_socketFD!=SOCKET_NULL) {
+        // libssh will close this fd automatically
+        _socketFD = SOCKET_NULL;
+    }
+    
+    if (_connector) {
+        [_connector disconnect];
+        _connector = nil;
+    }
+    
     if (_delegateFlags.didDisconnectWithError) {
         [self.delegate session:self didDisconnectWithError:error];
     }
@@ -494,6 +497,16 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 #pragma mark Diagnostics
+
+- (NSString *)hostIP
+{
+    if (self.proxyHost.length) { // connect over a proxy
+        return nil;
+    }
+    
+    // _connector will be nil if use a custom socket fd
+    return _connector.connectedHost;
+}
 
 - (NSError *)lastError
 {
@@ -981,36 +994,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         dispatch_source_cancel(_keepAliveTimer);
         _keepAliveTimer = nil;
     }
-}
-
-- (int)socketFD
-{
-    return ssh_get_fd(_rawSession);
-}
-
-- (void)_resolveHostIP
-{
-    if (_customSocketFD) {
-        return;
-    }
-    
-    struct sockaddr_storage addr;
-    socklen_t addr_len=sizeof(addr);
-    int err=getpeername(self.socketFD, (struct sockaddr*)&addr, &addr_len);
-    
-    if (err!=0) {
-        return;
-    }
-    
-    char buffer[INET6_ADDRSTRLEN];
-    err=getnameinfo((struct sockaddr*)&addr, addr_len, buffer, sizeof(buffer),
-                    0, 0, NI_NUMERICHOST);
-    
-    if (err!=0) {
-        return;
-    }
-    
-    self.hostIP = @(buffer);
 }
 
 #pragma mark - Open Channels

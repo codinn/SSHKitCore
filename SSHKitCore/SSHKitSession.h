@@ -57,7 +57,9 @@
 /** Full server hostname in the format `@"{hostname}"`. */
 @property (nonatomic, readonly) NSString *host;
 
-/** The server actual IP address. */
+/** The server actual IP address.
+ *  nil if session is connected over proxy
+  */
 @property (nonatomic, readonly) NSString *hostIP;
 
 /** The server port to connect to. */
