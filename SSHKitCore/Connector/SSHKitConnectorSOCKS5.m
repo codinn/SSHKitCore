@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <arpa/inet.h>
-#import "SSHKitConnectorProxy.h"
+#import "SSHKitConnector.h"
 #import "SSHKitConnector+Protected.h"
 #import "CoSocket.h"
 #import "CoSOCKSMessage.h"
@@ -266,14 +266,12 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
 /* begin SOCKS protocol 5 relaying
  */
 
-- (BOOL)connectToTarget:(NSString *)host onPort:(uint16_t)port error:(NSError **)errPtr
+- (BOOL)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withTimeout:(NSTimeInterval)timeout error:(NSError *__autoreleasing *)errPtr
 {
     self.targetHost = host;
     self.targetPort = port;
     
-    _coSocket = [[CoSocket alloc] init];
-    
-    if (![_coSocket connectToHost:self.proxyHost onPort:self.proxyPort withTimeout:self.timeout error:errPtr])
+    if (![super connectToHost:self.proxyHost onPort:self.proxyPort viaInterface:interface withTimeout:timeout error:errPtr])
     {
         [self disconnect];
         return NO;
@@ -330,7 +328,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     
     NSData *data = [NSData dataWithBytesNoCopy:buffer length:offset freeWhenDone:NO];
     
-    if (![_coSocket writeData:data error:errPtr]) {                   /* send request */
+    if (![self writeData:data error:errPtr]) {                   /* send request */
         [self disconnect];
         return NO;
     }
@@ -348,7 +346,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
     // Method  = 0 (No authentication, anonymous access)
     
     
-    NSData *response = [_coSocket readDataToLength:2 error:errPtr];   /* recv response */
+    NSData *response = [self readDataToLength:2 error:errPtr];   /* recv response */
     
     if (!response.length) {                 /* send request */
         [self disconnect];
@@ -380,7 +378,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
             
         case CoSOCKS5AuthMethodUserPass:
         {
-            NSError *error = socks5_do_auth_userpass(_coSocket, self.proxyUsername, self.proxyPassword);
+            NSError *error = socks5_do_auth_userpass(self, self.proxyUsername, self.proxyPassword);
             if (error) {
                 if (errPtr) *errPtr = error;
                 [self disconnect];
@@ -397,7 +395,7 @@ static NSError * socks5_do_connect_target(CoSocket *coSocket, NSString *targetHo
             return NO;     /* fail */
     }
     
-    NSError *error = socks5_do_connect_target(_coSocket, self.targetHost, self.targetPort);
+    NSError *error = socks5_do_connect_target(self, self.targetHost, self.targetPort);
     
     if (error) {
         if (errPtr) *errPtr = error;

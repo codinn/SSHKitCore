@@ -9,21 +9,15 @@
 #import <Foundation/Foundation.h>
 #import "CoSocket.h"
 
-@interface SSHKitConnector() {
-    @protected
-    CoSocket *_coSocket;
-}
-
-@property (readwrite) NSTimeInterval timeout;
-
-@property (readwrite) NSString *targetHost;
-@property (readwrite) uint16_t targetPort;
-@end
-
 @interface SSHKitConnectorProxy()
+
+// proxy settings
 
 @property (readwrite) NSString *proxyHost;
 @property (readwrite) uint16_t proxyPort;
+
+@property (readwrite) NSString *targetHost;
+@property (readwrite) uint16_t targetPort;
 
 @property (readwrite) NSString *proxyUsername;
 @property (readwrite) NSString *proxyPassword;

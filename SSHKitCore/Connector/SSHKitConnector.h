@@ -7,17 +7,34 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CoSocket.h"
 
-@interface SSHKitConnector : NSObject
+@interface SSHKitConnector : CoSocket
 
-- (instancetype)initWithTimeout:(NSTimeInterval)timeout;
+@end
 
-@property (readonly) int socketFD;
+@interface SSHKitConnectorProxy : SSHKitConnector
 
-// connect to target
+- (instancetype)initWithProxyHost:(NSString *)host port:(uint16_t)port;
 
-- (BOOL)connectToTarget:(NSString *)host onPort:(uint16_t)port error:(NSError **)errPtr;
+- (instancetype)initWithProxyHost:(NSString *)host port:(uint16_t)port username:(NSString *)username password:(NSString *)password;
 
-- (void)disconnect;
+@end
+
+
+@interface SSHKitConnectorSOCKS4 : SSHKitConnectorProxy
+
+@end
+
+
+@interface SSHKitConnectorSOCKS4A : SSHKitConnectorSOCKS4
+
+@end
+
+@interface SSHKitConnectorSOCKS5 : SSHKitConnectorProxy
+
+@end
+
+@interface SSHKitConnectorHTTPS : SSHKitConnectorProxy
 
 @end

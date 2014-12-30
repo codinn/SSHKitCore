@@ -4,7 +4,7 @@
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
 #import "SSHKitConnector.h"
-#import "SSHKitConnectorProxy.h"
+#import "SSHKitConnector.h"
 #import "SSHKitIdentityParser.h"
 
 typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
@@ -328,17 +328,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 }
                 
                 if (strongSelf.proxyUsername.length) {
-                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxy:strongSelf.proxyHost onPort:strongSelf.proxyPort username:strongSelf.proxyUsername password:strongSelf.proxyPassword timeout:timeout];
+                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort username:strongSelf.proxyUsername password:strongSelf.proxyPassword];
                 } else {
-                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxy:strongSelf.proxyHost onPort:strongSelf.proxyPort timeout:strongSelf.timeout];
+                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort];
                 }
             } else {
                 // connect directly
-                strongSelf->_connector = [[SSHKitConnector alloc] initWithTimeout:timeout];
+                strongSelf->_connector = [[SSHKitConnector alloc] init];
             }
             
             NSError *error = nil;
-            [strongSelf->_connector connectToTarget:host onPort:port error:&error];
+            [strongSelf->_connector connectToHost:host onPort:port withTimeout:strongSelf.timeout error:&error];
             
             if (error) {
                 [strongSelf disconnectWithError:error];

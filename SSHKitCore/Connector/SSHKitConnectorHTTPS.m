@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <Foundation/Foundation.h>
 #import <arpa/inet.h>
-#import "SSHKitConnectorProxy.h"
+#import "SSHKitConnector.h"
 #import "SSHKitConnector+Protected.h"
 #import "CoSocket.h"
 #import "CoHTTPMessage.h"
@@ -27,18 +27,14 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
 
 /* begin HTTPS protocol CONNECT relaying
  */
-
-- (BOOL)connectToTarget:(NSString *)host onPort:(uint16_t)port error:(NSError **)errPtr
+- (BOOL)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withTimeout:(NSTimeInterval)timeout error:(NSError *__autoreleasing *)errPtr
 {
     self.targetHost = host;
     self.targetPort = port;
     
     BOOL forProxy = YES;
     
-    
-    _coSocket = [[CoSocket alloc] init];
-    
-    if (![_coSocket connectToHost:self.targetHost onPort:self.targetPort withTimeout:self.timeout error:errPtr])
+    if (![super connectToHost:self.targetHost onPort:self.targetPort viaInterface:interface withTimeout:timeout error:errPtr])
     {
         return NO;
     }
@@ -52,7 +48,7 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
         [request addBasicAuthenticationWithUsername:self.proxyUsername password:self.proxyPassword forProxy:forProxy];
     }
     
-    if (![_coSocket writeData:request.serializedData error:errPtr]) {
+    if (![self writeData:request.serializedData error:errPtr]) {
         return NO;
     }
     
@@ -61,7 +57,7 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
     
     NSData *responseTerminatorData = [@"\r\n\r\n" dataUsingEncoding:NSASCIIStringEncoding];
     
-    NSData *responseData = [_coSocket readDataToData:responseTerminatorData error:errPtr];
+    NSData *responseData = [self readDataToData:responseTerminatorData error:errPtr];
         
     if (!responseData.length || *errPtr) {
         return NO;

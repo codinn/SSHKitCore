@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import <arpa/inet.h>
-#import "SSHKitConnectorProxy.h"
 #import "CoSocket.h"
 #import "CoSOCKSMessage.h"
+#import "SSHKitConnector.h"
 #import "SSHKitConnector+Protected.h"
 
 #define SSHKitConnectorSOCKS4Domain @"SSHKitConnector.SOCKS4"
@@ -52,10 +52,10 @@ static NSData * _localResolveHost(NSString *host, uint16_t port, NSError **errPt
 
 @implementation SSHKitConnectorSOCKS4
 
-- (instancetype)initWithProxy:(NSString *)host onPort:(uint16_t)port username:(NSString *)username password:(NSString *)password timeout:(NSTimeInterval)timeout
+- (instancetype)initWithProxyHost:(NSString *)host port:(uint16_t)port username:(NSString *)username password:(NSString *)password
 {
     
-    if((self = [super initWithProxy:host onPort:port username:username password:password timeout:timeout])) {
+    if((self = [super initWithProxyHost:host port:port username:username password:password])) {
         _remoteResolver = NO;
     }
     
@@ -82,7 +82,7 @@ static NSData * _localResolveHost(NSString *host, uint16_t port, NSError **errPt
  (in this order).
  
  */
-- (BOOL)connectToTarget:(NSString *)host onPort:(uint16_t)port error:(NSError **)errPtr
+- (BOOL)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withTimeout:(NSTimeInterval)timeout error:(NSError *__autoreleasing *)errPtr
 {
     self.targetHost = host;
     self.targetPort = port;
@@ -160,9 +160,8 @@ static NSData * _localResolveHost(NSString *host, uint16_t port, NSError **errPt
      */
     
     NSData *data = [NSData dataWithBytesNoCopy:buffer length:offset freeWhenDone:NO];
-    _coSocket = [[CoSocket alloc] init];
     
-    if (![_coSocket connectToHost:self.proxyHost onPort:self.proxyPort withTimeout:self.timeout error:errPtr])
+    if (![super connectToHost:self.proxyHost onPort:self.proxyPort viaInterface:interface withTimeout:timeout error:errPtr])
     {
         [self disconnect];
         return NO;
@@ -171,12 +170,12 @@ static NSData * _localResolveHost(NSString *host, uint16_t port, NSError **errPt
     /* send command and get response
      response is: VN:1, CD:1, PORT:2, ADDR:4 */
     
-    if (![_coSocket writeData:data error:errPtr]) {                   /* send request */
+    if (![self writeData:data error:errPtr]) {                   /* send request */
         [self disconnect];
         return NO;
     }
     
-    NSData *response = [_coSocket readDataToLength:8 error:errPtr];   /* recv response */
+    NSData *response = [self readDataToLength:8 error:errPtr];   /* recv response */
     
     if (!response.length) {                 /* send request */
         [self disconnect];
@@ -223,7 +222,7 @@ static NSData * _localResolveHost(NSString *host, uint16_t port, NSError **errPt
 - (instancetype)initWithProxy:(NSString *)host onPort:(uint16_t)port username:(NSString *)username password:(NSString *)password timeout:(NSTimeInterval)timeout
 {
     
-    if((self = [super initWithProxy:host onPort:port username:username password:password timeout:timeout])) {
+    if((self = [super initWithProxyHost:host port:port username:username password:password])) {
         _remoteResolver = YES;
     }
     
