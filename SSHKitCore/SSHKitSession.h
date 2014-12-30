@@ -62,6 +62,11 @@
   */
 @property (nonatomic, readonly) NSString *hostIP;
 
+/** Is the server actual IP is a IPv6 address
+ *  NO if session is connected over proxy
+ */
+@property (nonatomic, readonly) BOOL isIPv6;
+
 /** The server port to connect to. */
 @property (nonatomic, readonly) uint16_t port;
 
