@@ -1,4 +1,4 @@
-#import <SSHKitCore/SSHKitCore.h>
+#import <SSHKitCore/Common.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
 @class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest;

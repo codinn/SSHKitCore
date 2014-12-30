@@ -5,7 +5,7 @@
 //  Created by Yang Yubo on 10/29/14.
 //
 //
-
+#import <SSHKitCore/Common.h>
 #import <SSHKitCore/SSHKitChannel.h>
 
 @interface SSHKitDirectChannel : SSHKitChannel

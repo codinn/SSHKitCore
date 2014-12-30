@@ -1,11 +1,10 @@
 //
-//  SSHKitCoreCommon.h
+//  Common.h
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 11/14/14.
 //
 //
-
 #import <Foundation/Foundation.h>
 
 /* some types for keys */
