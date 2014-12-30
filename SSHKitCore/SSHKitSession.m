@@ -116,6 +116,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFD:(int)socketFD
 {
     if ((self = [super init])) {
+        self.enableCompression = NO;
+        self.enableIPv4 = YES;
+        self.enableIPv6 = YES;
+        
         _rawSession = ssh_new();
         
         if (!_rawSession) {
@@ -192,8 +196,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 {
     [self dispatchSyncOnSessionQueue: ^{
         [self disconnect];
-        ssh_free(self->_rawSession);
-        self->_rawSession= NULL;
+        ssh_free(self.rawSession);
+        self->_rawSession = NULL;
 	}];
 }
 
@@ -332,6 +336,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 // connect directly
                 strongSelf->_connector = [[SSHKitConnector alloc] init];
             }
+            
+            // configure ipv4/ipv6
+            strongSelf->_connector.IPv4Enabled = strongSelf.enableIPv4;
+            strongSelf->_connector.IPv6Enabled = strongSelf.enableIPv6;
             
             NSError *error = nil;
             [strongSelf->_connector connectToHost:host onPort:port withTimeout:strongSelf.timeout error:&error];

@@ -104,13 +104,15 @@
 @property (nonatomic, readonly, getter = isAuthorized) BOOL authorized;
 
 // -----------------------------------------------------------------------------
-#pragma mark Advanced Options
+#pragma mark Advanced Options, setting before connection
 // -----------------------------------------------------------------------------
 
 - (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port;
 - (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password;
 
 @property BOOL      enableCompression;
+@property BOOL      enableIPv4;
+@property BOOL      enableIPv6;
 
 // -----------------------------------------------------------------------------
 #pragma mark Connecting
