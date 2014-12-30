@@ -100,14 +100,10 @@
 #pragma mark Advanced Options
 // -----------------------------------------------------------------------------
 
-@property (nonatomic)       SSHKitProxyType  proxyType;
-@property (nonatomic, copy) NSString  *proxyHost;
-@property (nonatomic)       uint16_t  proxyPort;
-@property (nonatomic, copy) NSString  *proxyUsername;
-@property (nonatomic, copy) NSString  *proxyPassword;
+- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port;
+- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password;
 
-@property BOOL      extraOptionCompression;
-@property NSString  *extraOptionProxyCommand;
+@property BOOL      enableCompression;
 
 // -----------------------------------------------------------------------------
 #pragma mark Connecting

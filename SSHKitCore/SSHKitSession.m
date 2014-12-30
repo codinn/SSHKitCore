@@ -64,6 +64,13 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (atomic, readwrite) dispatch_queue_t sessionQueue;
 
 @property (nonatomic, readwrite) NSMutableArray *channels;
+
+// connect over proxy
+@property (nonatomic) SSHKitProxyType proxyType;
+@property (nonatomic, copy) NSString  *proxyHost;
+@property (nonatomic)       uint16_t  proxyPort;
+@property (nonatomic, copy) NSString  *proxyUsername;
+@property (nonatomic, copy) NSString  *proxyPassword;
 @end
 
 #pragma mark -
@@ -296,9 +303,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        // set to non-blocking mode
-        ssh_set_blocking(strongSelf.rawSession, 0);
-        
         if (strongSelf->_customSocketFD) {
             // libssh will close this fd automatically
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &strongSelf->_customSocketFD);
@@ -349,6 +353,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket_fd);
         }
         
+        // compression
+        
+        if (strongSelf.enableCompression) {
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_COMPRESSION, "yes");
+        } else {
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_COMPRESSION, "no");
+        }
+        
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
 #if DEBUG
         int verbosity = SSH_LOG_FUNCTIONS;
@@ -369,6 +381,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         if (strongSelf->_timeout > 0) {
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_TIMEOUT, &strongSelf->_timeout);
         }
+        
+        // set to non-blocking mode
+        ssh_set_blocking(strongSelf.rawSession, 0);
         
         // disconnect if connected
         if (strongSelf.isConnected) {
@@ -894,48 +909,19 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark - Extra Options
 // -----------------------------------------------------------------------------
 
-- (BOOL)extraOptionCompression
+- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port
 {
-    char* value = NULL;
-    int result = ssh_options_get(_rawSession, SSH_OPTIONS_COMPRESSION, &value);
-    
-    if (SSH_OK==result && value) {
-        result = strcasecmp(value, "yes");
-        ssh_string_free_char(value);
-        
-        if ( 0==result ) {
-            return YES;
-        }
-    }
-    
-    return NO;
+    self.proxyType = type;
+    self.proxyHost = host;
+    self.proxyPort = port;
 }
-- (void)setExtraOptionCompression:(BOOL)enabled
+- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password
 {
-    if (enabled) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "yes");
-    } else {
-        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "no");
-    }
-}
-
-- (NSString *)extraOptionProxyCommand
-{
-    char* value = NULL;
-    int result = ssh_options_get(_rawSession, SSH_OPTIONS_PROXYCOMMAND, &value);
-    
-    if (SSH_OK==result && value) {
-        NSString *rc = @(value);
-        ssh_string_free_char(value);
-        
-        return rc;
-    }
-    
-    return nil;
-}
-- (void)setExtraOptionProxyCommand:(NSString *)command
-{
-    ssh_options_set(_rawSession, SSH_OPTIONS_PROXYCOMMAND, command.UTF8String);
+    self.proxyType = type;
+    self.proxyHost = host;
+    self.proxyPort = port;
+    self.proxyUsername = user;
+    self.proxyPassword = password;
 }
 
 #pragma mark - Internal Helpers
