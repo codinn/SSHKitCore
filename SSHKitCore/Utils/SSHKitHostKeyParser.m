@@ -31,7 +31,7 @@
     // get key type
     // --------------------------------------------------
     
-    _type = (SSHKitHostKeyType)ssh_key_type(_hostKey);
+    _keyType = (SSHKitHostKeyType)ssh_key_type(_hostKey);
     
     // --------------------------------------------------
     // get base64 key string
@@ -66,7 +66,7 @@
     // set key type
     // --------------------------------------------------
     
-    _type = type;
+    _keyType = type;
     
     // --------------------------------------------------
     // set base64 key string
@@ -74,7 +74,7 @@
     
     _base64 = [base64 copy];
     
-    int rc = ssh_pki_import_pubkey_base64([_base64 cStringUsingEncoding:NSASCIIStringEncoding], (enum ssh_keytypes_e) _type, &_hostKey);
+    int rc = ssh_pki_import_pubkey_base64([_base64 cStringUsingEncoding:NSASCIIStringEncoding], (enum ssh_keytypes_e) _keyType, &_hostKey);
     
     if (rc < 0) {
         NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
@@ -88,22 +88,7 @@
 
 - (NSString *)typeName
 {
-    switch ([self type]) {
-        case SSHKitHostKeyTypeDSS:
-            return @"DSS";
-            
-        case SSHKitHostKeyTypeECDSA:
-            return @"ECDSA";
-            
-        case SSHKitHostKeyTypeRSA:
-            return @"RSA";
-            
-        case SSHKitHostKeyTypeRSA1:
-            return @"RSA1";
-            
-        default:
-            return @"UNKNOWN";
-    }
+    return [self.class nameForKeyType:self.keyType];
 }
 
 - (NSError *)_generateMD5Fingerprint
@@ -138,6 +123,26 @@
 {
     if (_hostKey) {
         ssh_key_free(_hostKey);
+    }
+}
+
++ (NSString *)nameForKeyType:(SSHKitHostKeyType)keyType
+{
+    switch (keyType) {
+        case SSHKitHostKeyTypeDSS:
+            return @"DSS";
+            
+        case SSHKitHostKeyTypeECDSA:
+            return @"ECDSA";
+            
+        case SSHKitHostKeyTypeRSA:
+            return @"RSA";
+            
+        case SSHKitHostKeyTypeRSA1:
+            return @"RSA1";
+            
+        default:
+            return @"UNKNOWN";
     }
 }
 

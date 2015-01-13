@@ -516,16 +516,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     return _connector.connectedHost;
 }
 
-- (BOOL)isIPv6
-{
-    if (self.proxyHost.length) { // connect over a proxy
-        return NO;
-    }
-    
-    // _connector will be nil if use a custom socket fd
-    return _connector.isIPv6;
-}
-
 - (NSError *)lastError
 {
     if(!_rawSession) {
