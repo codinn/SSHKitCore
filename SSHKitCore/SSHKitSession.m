@@ -416,13 +416,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (BOOL)isConnected
 {
     __block BOOL flag = NO;
-    __weak SSHKitSession *weakSelf = self;
     
     [self dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
-        __strong SSHKitSession *strongSelf = weakSelf;
-        int status = ssh_get_status(strongSelf->_rawSession);
+        int status = ssh_get_status(self.rawSession);
         
-        if ( (status & SSH_CLOSED_ERROR) || (status & SSH_CLOSED) || (ssh_is_connected(strongSelf->_rawSession) == 0) ) {
+        if ( (status & SSH_CLOSED_ERROR) || (status & SSH_CLOSED) || (ssh_is_connected(self.rawSession) == 0) ) {
             flag = NO;
         } else {
             flag = YES;
