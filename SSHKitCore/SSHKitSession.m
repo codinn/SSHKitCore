@@ -251,8 +251,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             }
             
             // check host key
-            SSHKitHostKeyParser *hostKey = [[SSHKitHostKeyParser alloc] init];
-            NSError *error = [hostKey parseFromSession:self];
+            NSError *error = nil;
+            SSHKitHostKeyParser *hostKey = [SSHKitHostKeyParser parserFromSession:self error:&error];
             
             if ( !error && ! (_delegateFlags.shouldConnectWithHostKey && [self.delegate session:self shouldConnectWithHostKey:hostKey]) )
             {
