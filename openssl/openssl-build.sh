@@ -15,10 +15,11 @@
 ## Parameters
 ## --------------------
 
-VERSION=1.0.1j
-OSX_SDK=10.9
-MIN_OSX=10.6
+VERSION=1.0.1l
+OSX_SDK=10.10
+MIN_OSX=10.8
 IOS_SDK=8.1
+MIN_IOS=7.0
 
 # These values are used to avoid version detection
 FAKE_NIBBLE=0x102031af
@@ -114,23 +115,13 @@ build_osx() {
 }
 
 build_ios() {
-	ARCHS="i386 armv7 armv7s arm64"
+	ARCHS="i386 x86_64 armv7 armv7s arm64"
 	for ARCH in $ARCHS; do
 		PLATFORM="iPhoneOS"
 		COMPILER="iphoneos-cross"
 		SRC_DIR="$BUILD_DIR/$PLATFORM-$ARCH"
 		DST_DIR="$DIST_DIR/$PLATFORM-$ARCH"
 		LOG_FILE="$BASE_DIR/$PLATFORM$IOS_SDK-$ARCH.log"
-
-		# Select the compiler
-		if [ "$ARCH" == "i386" ]; then
-			PLATFORM="iPhoneSimulator"
-			MIN_IOS="4.0"
-		elif [ "$ARCH" == "arm64" ]; then
-			MIN_IOS="7.0"
-		else
-			MIN_IOS="4.0"
-		fi
 		
 		CROSS_TOP="$DEVELOPER_DIR/Platforms/$PLATFORM.platform/Developer"
 		CROSS_SDK="$PLATFORM$IOS_SDK.sdk"
