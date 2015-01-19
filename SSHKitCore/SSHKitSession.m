@@ -29,10 +29,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
     
-	dispatch_source_t _readSource;
-    dispatch_source_t _keepAliveTimer;
-    NSInteger _keepAliveCounter;
-    NSMutableArray *_forwardRequests;
+	dispatch_source_t   _readSource;
+    dispatch_source_t   _keepAliveTimer;
+    NSInteger           _keepAliveCounter;
+    NSMutableArray      *_forwardRequests;
     
     dispatch_block_t    _authBlock;
     
@@ -894,7 +894,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        strongSelf->_keepAliveCounter = 3;
+        // reset keepalive counter
+        strongSelf->_keepAliveCounter = self.serverAliveCountMax;
         
         switch (strongSelf.currentStage) {
             case SSHKitSessionStageNotConnected:
@@ -948,8 +949,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 // todo: dropbear does not support keepalive message
 - (void)_fireKeepAliveTimer
 {
+    if (self.serverAliveCountMax<=0) {
+        return;
+    }
+    
     _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
-    _keepAliveCounter = 3;
+    _keepAliveCounter = self.serverAliveCountMax;
     
     uint64_t interval = SSHKit_SESSION_DEFAULT_TIMEOUT;
     if (_timeout > SSHKit_SESSION_MIN_TIMEOUT) {
@@ -972,7 +977,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if (strongSelf->_keepAliveCounter<=0) {
                 [strongSelf disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                                     code:SSHKitErrorCodeTimeout
-                                                                userInfo:@{ NSLocalizedDescriptionKey : @"Timeout, server not responding"} ]];
+                                                                userInfo:@{ NSLocalizedDescriptionKey : @"Keepalive messages timed out, disable server keepalive mechanism if remote server does not support it."} ]];
                 return_from_block;
             }
             

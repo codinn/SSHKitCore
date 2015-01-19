@@ -108,6 +108,7 @@
 @property BOOL      enableCompression;
 @property BOOL      enableIPv4;
 @property BOOL      enableIPv6;
+@property NSInteger serverAliveCountMax;
 
 // -----------------------------------------------------------------------------
 #pragma mark Connecting
