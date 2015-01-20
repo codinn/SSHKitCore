@@ -977,7 +977,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if (strongSelf->_keepAliveCounter<=0) {
                 [strongSelf disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                                     code:SSHKitErrorCodeTimeout
-                                                                userInfo:@{ NSLocalizedDescriptionKey : @"Keepalive messages timed out, disable server keepalive mechanism if remote server does not support it."} ]];
+                                                                userInfo:@{ NSLocalizedDescriptionKey : @"Server alive messages timed out, disable server alive mechanism if remote host does not support it."} ]];
                 return_from_block;
             }
             
