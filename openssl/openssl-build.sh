@@ -1,210 +1,134 @@
 #!/bin/bash
 
-## Stolen from https://gist.github.com/letiemble/6710405
+# https://github.com/krzyzanowskim/OpenSSL/blob/master/build.sh
 
-###############################################################################
-##                                                                           ##
-## Build and package OpenSSL static libraries for OSX/iOS                    ##
-##                                                                           ##
-## This script is in the public domain.                                      ##
-## Creator     : Laurent Etiemble                                            ##
-##                                                                           ##
-###############################################################################
+# Yay shell scripting! This script builds a static version of
+# OpenSSL ${OPENSSL_VERSION} for iOS and OSX that contains code for armv6, armv7, armv7s, arm64, i386 and x86_64.
 
-## --------------------
-## Parameters
-## --------------------
+set -x
 
-VERSION=1.0.1l
-OSX_SDK=10.10
-MIN_OSX=10.8
-IOS_SDK=8.1
-MIN_IOS=7.0
+# Setup paths to stuff we need
 
-# These values are used to avoid version detection
-FAKE_NIBBLE=0x102031af
-FAKE_TEXT="OpenSSL 0.9.8y 5 Feb 2013"
+OPENSSL_VERSION="1.0.1l"
 
-## --------------------
-## Variables
-## --------------------
+DEVELOPER=$(xcode-select --print-path)
 
-DEVELOPER_DIR=`xcode-select -print-path`
-if [ ! -d $DEVELOPER_DIR ]; then
-    echo "Please set up Xcode correctly. '$DEVELOPER_DIR' is not a valid developer tools folder."
-    exit 1
-fi
-if [ ! -d "$DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/MacOSX$OSX_SDK.sdk" ]; then
-    echo "The OS X SDK $OSX_SDK was not found."
-    exit 1
-fi
-if [ ! -d "$DEVELOPER_DIR/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS$IOS_SDK.sdk" ]; then
-    echo "The iOS SDK $IOS_SDK was not found."
-    exit 1
-fi
+IOS_SDK_VERSION=$(xcrun --sdk iphoneos --show-sdk-version)
+IOS_DEPLOYMENT_VERSION="7.0"
+OSX_SDK_VERSION=$(xcrun --sdk macosx --show-sdk-version)
+OSX_DEPLOYMENT_VERSION="10.9"
 
-BASE_DIR=`pwd`
-BUILD_DIR="$BASE_DIR/build"
-DIST_DIR="$BASE_DIR/dist"
-FILES_DIR="$BASE_DIR/files"
+IPHONEOS_PLATFORM=$(xcrun --sdk iphoneos --show-sdk-platform-path)
+IPHONEOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
 
-OPENSSL_NAME="openssl-$VERSION"
-OPENSSL_FILE="$OPENSSL_NAME.tar.gz"
-OPENSSL_URL="http://www.openssl.org/source/$OPENSSL_FILE"
-OPENSSL_PATH="$FILES_DIR/$OPENSSL_FILE"
+IPHONESIMULATOR_PLATFORM=$(xcrun --sdk iphonesimulator --show-sdk-platform-path)
+IPHONESIMULATOR_SDK=$(xcrun --sdk iphonesimulator --show-sdk-path)
 
-## --------------------
-## Main
-## --------------------
+OSX_PLATFORM=$(xcrun --sdk macosx --show-sdk-platform-path)
+OSX_SDK=$(xcrun --sdk macosx --show-sdk-path)
 
-_unarchive() {
-	# Expand source tree if needed
-	if [ ! -d "$SRC_DIR" ]; then
-		echo "Unarchive sources for $PLATFORM-$ARCH..."
-		(cd "$BUILD_DIR"; tar -zxf "$OPENSSL_PATH"; mv "$OPENSSL_NAME" "$SRC_DIR";)
-	fi
+# Clean up whatever was left from our previous build
+
+rm -rf include-ios include-osx lib-ios lib-osx
+rm -rf "/tmp/openssl-${OPENSSL_VERSION}-*"
+rm -rf "/tmp/openssl-${OPENSSL_VERSION}-*.log"
+
+build()
+{
+   ARCH=$1
+   SDK=$2
+   TYPE=$3
+
+   export BUILD_TOOLS="${DEVELOPER}"
+   export CC="${BUILD_TOOLS}/usr/bin/gcc -arch ${ARCH}"
+
+   rm -rf "openssl-${OPENSSL_VERSION}"
+   tar xfz "openssl-${OPENSSL_VERSION}.tar.gz"
+   pushd .
+   cd "openssl-${OPENSSL_VERSION}"
+
+   #fix header for Swift
+
+   sed -ie "s/BIGNUM \*I,/BIGNUM \*i,/g" crypto/rsa/rsa.h
+
+   if [ "$TYPE" == "ios" ]; then
+      # IOS
+      if [ "$ARCH" == "x86_64" ]; then
+         # Simulator
+         export CROSS_TOP="${IPHONESIMULATOR_PLATFORM}/Developer"
+         export CROSS_SDK="iPhoneSimulator${IOS_SDK_VERSION}.sdk"
+         ./Configure darwin64-x86_64-cc -no-apps --openssldir="/tmp/openssl-${OPENSSL_VERSION}-${ARCH}" &> "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}.log"
+         sed -ie "s!^CFLAG=!CFLAG=-isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -arch $ARCH -mios-simulator-version-min=${IOS_DEPLOYMENT_VERSION} !" "Makefile"
+      elif [ "$ARCH" == "i386" ]; then
+         # Simulator
+         export CROSS_TOP="${IPHONESIMULATOR_PLATFORM}/Developer"
+         export CROSS_SDK="iPhoneSimulator${IOS_SDK_VERSION}.sdk"
+         ./Configure iphoneos-cross -no-asm -no-apps --openssldir="/tmp/openssl-${OPENSSL_VERSION}-${ARCH}" &> "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}.log"
+         sed -ie "s!^CFLAG=!CFLAG=-isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -arch $ARCH -mios-simulator-version-min=${IOS_DEPLOYMENT_VERSION} !" "Makefile"
+      else
+         # iOS
+         export CROSS_TOP="${IPHONEOS_PLATFORM}/Developer"
+         export CROSS_SDK="iPhoneOS${IOS_SDK_VERSION}.sdk"
+         ./Configure iphoneos-cross -no-asm -no-apps --openssldir="/tmp/openssl-${OPENSSL_VERSION}-${ARCH}" &> "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}.log"
+         perl -i -pe 's|static volatile sig_atomic_t intr_signal|static volatile int intr_signal|' crypto/ui/ui_openssl.c
+         sed -ie "s!^CFLAG=!CFLAG=-isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -arch $ARCH -miphoneos-version-min=${IOS_DEPLOYMENT_VERSION} !" "Makefile"
+      fi
+   else
+      #OSX
+      if [ "$ARCH" == "x86_64" ]; then
+         ./Configure darwin64-x86_64-cc -no-apps --openssldir="/tmp/openssl-${OPENSSL_VERSION}-${ARCH}" &> "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}.log"
+         sed -ie "s!^CFLAG=!CFLAG=-isysroot ${SDK} -arch $ARCH -mmacosx-version-min=${OSX_DEPLOYMENT_VERSION} !" "Makefile"
+      elif [ "$ARCH" == "i386" ]; then
+         ./Configure darwin-i386-cc -no-apps --openssldir="/tmp/openssl-${OPENSSL_VERSION}-${ARCH}" &> "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}.log"
+         sed -ie "s!^CFLAG=!CFLAG=-isysroot ${SDK} -arch $ARCH -mmacosx-version-min=${OSX_DEPLOYMENT_VERSION} !" "Makefile"
+      fi
+   fi
+
+   make &> "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}.log"
+   make install &> "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}.log"
+   popd
+   rm -rf "openssl-${OPENSSL_VERSION}"
+
+   # Add arch to library
+   if [ -f "dist/openssl-${OPENSSL_VERSION}-${TYPE}/lib/libcrypto.a" ]; then
+      xcrun lipo "dist/openssl-${OPENSSL_VERSION}-${TYPE}/lib/libcrypto.a" "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}/lib/libcrypto.a" -create -output "dist/openssl-${OPENSSL_VERSION}-${TYPE}/lib/libcrypto.a"
+      xcrun lipo "dist/openssl-${OPENSSL_VERSION}-${TYPE}/lib/libssl.a" "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}/lib/libssl.a" -create -output "dist/openssl-${OPENSSL_VERSION}-${TYPE}/lib/libssl.a"
+   else
+      cp "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}/lib/libcrypto.a" "dist/openssl-${OPENSSL_VERSION}-${TYPE}/lib/libcrypto.a"
+      cp "/tmp/openssl-${OPENSSL_VERSION}-${ARCH}/lib/libssl.a" "dist/openssl-${OPENSSL_VERSION}-${TYPE}/lib/libssl.a"
+   fi
 }
 
-_configure() {
-	# Configure
-	if [ "x$DONT_CONFIGURE" == "x" ]; then
-		echo "Configuring $PLATFORM-$ARCH..."
-		(cd "$SRC_DIR"; CROSS_TOP="$CROSS_TOP" CROSS_SDK="$CROSS_SDK" CC="$CC" ./Configure --prefix="$DST_DIR" -no-apps "$COMPILER" > "$LOG_FILE" 2>&1)
-	fi
-}
-
-_build() {
-	# Build
-	if [ "x$DONT_BUILD" == "x" ]; then
-		echo "Building $PLATFORM-$ARCH..."
-		(cd "$SRC_DIR"; CROSS_TOP="$CROSS_TOP" CROSS_SDK="$CROSS_SDK" CC="$CC" make >> "$LOG_FILE" 2>&1)
-	fi
-}
-
-build_osx() {
-	ARCHS="i386 x86_64"
-	for ARCH in $ARCHS; do
-		PLATFORM="MacOSX"
-		COMPILER="darwin-i386-cc"
-		SRC_DIR="$BUILD_DIR/$PLATFORM-$ARCH"
-		DST_DIR="$DIST_DIR/$PLATFORM-$ARCH"
-		LOG_FILE="$BASE_DIR/$PLATFORM$OSX_SDK-$ARCH.log"
-
-		# Select the compiler
-		if [ "$ARCH" == "i386" ]; then
-			COMPILER="darwin-i386-cc"
-		else
-			COMPILER="darwin64-x86_64-cc"
-		fi
-
-		CROSS_TOP="$DEVELOPER_DIR/Platforms/$PLATFORM.platform/Developer"
-		CROSS_SDK="$PLATFORM$OSX_SDK.sdk"
-		CC="$DEVELOPER_DIR/usr/bin/gcc -arch $ARCH"
-	
-		_unarchive
-		_configure
-		
-		# Patch Makefile
-		sed -ie "s/^CFLAG= -/CFLAG=  -mmacosx-version-min=$MIN_OSX -/" "$SRC_DIR/Makefile"
-		# Patch versions
-		sed -ie "s/^#define OPENSSL_VERSION_NUMBER.*$/#define OPENSSL_VERSION_NUMBER  $FAKE_NIBBLE/" "$SRC_DIR/crypto/opensslv.h"
-		sed -ie "s/^#define OPENSSL_VERSION_TEXT.*$/#define OPENSSL_VERSION_TEXT  \"$FAKE_TEXT\"/" "$SRC_DIR/crypto/opensslv.h"
-
-		_build
-	done
-}
-
-build_ios() {
-	ARCHS="i386 x86_64 armv7 armv7s arm64"
-	for ARCH in $ARCHS; do
-		PLATFORM="iPhoneOS"
-		COMPILER="iphoneos-cross"
-		SRC_DIR="$BUILD_DIR/$PLATFORM-$ARCH"
-		DST_DIR="$DIST_DIR/$PLATFORM-$ARCH"
-		LOG_FILE="$BASE_DIR/$PLATFORM$IOS_SDK-$ARCH.log"
-		
-		CROSS_TOP="$DEVELOPER_DIR/Platforms/$PLATFORM.platform/Developer"
-		CROSS_SDK="$PLATFORM$IOS_SDK.sdk"
-		CC="clang -arch $ARCH"
-		
-		_unarchive
-		_configure
-		
-		# Patch Makefile
-		sed -ie "s/^CFLAG= -/CFLAG=  -miphoneos-version-min=$MIN_IOS -/" "$SRC_DIR/Makefile"
-		# Patch versions
-		sed -ie "s/^#define OPENSSL_VERSION_NUMBER.*$/#define OPENSSL_VERSION_NUMBER  $FAKE_NIBBLE/" "$SRC_DIR/crypto/opensslv.h"
-		sed -ie "s/^#define OPENSSL_VERSION_TEXT.*$/#define OPENSSL_VERSION_TEXT  \"$FAKE_TEXT\"/" "$SRC_DIR/crypto/opensslv.h"
-		
-		_build
-	done
-}
-
-distribute_osx() {
-	PLATFORM="MacOSX"
-	NAME="$OPENSSL_NAME-$PLATFORM"
-	DIR="$DIST_DIR/$NAME"
-	FILES="libcrypto.a libssl.a"
-	mkdir -p "$DIR/include"
-	mkdir -p "$DIR/lib"
-
-	echo "$VERSION" > "$DIR/VERSION"
-	cp "$BUILD_DIR/MacOSX-i386/LICENSE" "$DIR"
-	cp -LR "$BUILD_DIR/MacOSX-i386/include/" "$DIR/include"
-	
-	# Alter rsa.h to make Swift happy
-	sed -i .bak 's/const BIGNUM \*I/const BIGNUM *i/g' "$DIR/include/openssl/rsa.h"
-	
-	for f in $FILES; do
-		lipo -create \
-			"$BUILD_DIR/MacOSX-i386/$f" \
-			"$BUILD_DIR/MacOSX-x86_64/$f" \
-			-output "$DIR/lib/$f"
-	done
-	
-	(cd "$DIST_DIR"; tar -cvf "../$NAME.tar.gz" "$NAME")
-}
-
-distribute_ios() {
-	PLATFORM="iOS"
-	NAME="$OPENSSL_NAME-$PLATFORM"
-	DIR="$DIST_DIR/$NAME"
-	FILES="libcrypto.a libssl.a"
-	mkdir -p "$DIR/include"
-	mkdir -p "$DIR/lib"
-
-	echo "$VERSION" > "$DIR/VERSION"
-	cp "$BUILD_DIR/iPhoneOS-i386/LICENSE" "$DIR"
-	cp -LR "$BUILD_DIR/iPhoneOS-i386/include/" "$DIR/include"
-	
-	# Alter rsa.h to make Swift happy
-	sed -i .bak 's/const BIGNUM \*I/const BIGNUM *i/g' "$DIR/include/openssl/rsa.h"
-	
-	for f in $FILES; do
-		lipo -create \
-			"$BUILD_DIR/iPhoneOS-i386/$f" \
-			"$BUILD_DIR/iPhoneOS-arm64/$f" \
-			"$BUILD_DIR/iPhoneOS-armv7/$f" \
-			"$BUILD_DIR/iPhoneOS-armv7s/$f" \
-			"$BUILD_DIR/MacOSX-x86_64/$f" \
-			-output "$DIR/lib/$f"
-	done
-	
-	(cd "$DIST_DIR"; tar -cvf "../$NAME.tar.gz" "$NAME")
-}
-
-# Create folders
-mkdir -p "$BUILD_DIR"
-mkdir -p "$DIST_DIR"
-mkdir -p "$FILES_DIR"
+OPENSSL_FILE="openssl-${OPENSSL_VERSION}.tar.gz"
+OPENSSL_URL="http://www.openssl.org/source/${OPENSSL_FILE}"
 
 # Retrieve OpenSSL tarbal if needed
-if [ ! -e "$OPENSSL_PATH" ]; then
-	curl "$OPENSSL_URL" -o "$OPENSSL_PATH"
+if [ ! -e "${OPENSSL_FILE}" ]; then
+	curl "${OPENSSL_URL}" -o "${OPENSSL_FILE}"
 fi
 
-build_osx
-build_ios
+if [ ! -f "dist/openssl-${OPENSSL_VERSION}-ios/lib/libcrypto.a" ]; then
+	mkdir -p dist/openssl-${OPENSSL_VERSION}-ios/lib
 
-distribute_osx
-distribute_ios
+	build "armv7" "${IPHONEOS_SDK}" "ios"
+	build "armv7s" "${IPHONEOS_SDK}" "ios"
+	build "arm64" "${IPHONEOS_SDK}" "ios"
+	build "i386" "${IPHONESIMULATOR_SDK}" "ios"
+	build "x86_64" "${IPHONESIMULATOR_SDK}" "ios"
+
+	mkdir -p dist/openssl-${OPENSSL_VERSION}-ios/include
+	cp -r /tmp/openssl-${OPENSSL_VERSION}-i386/include/openssl dist/openssl-${OPENSSL_VERSION}-ios/include/
+fi
+
+if [ ! -f "dist/openssl-${OPENSSL_VERSION}-osx/lib/libcrypto.a" ]; then
+	mkdir -p dist/openssl-${OPENSSL_VERSION}-osx/lib
+
+	build "i386" "${OSX_SDK}" "osx"
+	build "x86_64" "${OSX_SDK}" "osx"
+
+	mkdir -p dist/openssl-${OPENSSL_VERSION}-osx/include
+	cp -r /tmp/openssl-${OPENSSL_VERSION}-i386/include/openssl dist/openssl-${OPENSSL_VERSION}-osx/include/
+fi
+
+rm -rf "/tmp/openssl-${OPENSSL_VERSION}-*"
+rm -rf "/tmp/openssl-${OPENSSL_VERSION}-*.log"
