@@ -60,7 +60,6 @@
 - (int)request
 {
     int boundport = 0;
-    // todo: listening to ipv4 and ipv6 address respectively
     int rc = ssh_forward_listen(self.session.rawSession, self.listenHost.UTF8String, self.listenPort, &boundport);
     
     switch (rc) {

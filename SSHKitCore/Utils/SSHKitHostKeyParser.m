@@ -16,7 +16,6 @@
 {
     // --------------------------------------------------
     // get host key from session
-    // todo: protect in session queue
     // --------------------------------------------------
     SSHKitHostKeyParser *parser = [[SSHKitHostKeyParser alloc] init];
     if (!parser) {

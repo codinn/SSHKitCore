@@ -93,9 +93,8 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
     }
     
     if (failureReason) {
-        // todo: error code should replaced by a macro
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitConnectorHTTPSDomain
-                                           code:6
+                                           code:statusCode
                                        userInfo:@{ NSLocalizedDescriptionKey : failureReason }];
         return NO;
     }

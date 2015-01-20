@@ -917,7 +917,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 break;
             case SSHKitSessionStageUnknown:
                 // should never comes to here
-                // todo: add a assert protection?
                 break;
         }
     }});
