@@ -946,7 +946,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark - Internal Helpers
 
-// todo: dropbear does not support keepalive message
 - (void)_fireKeepAliveTimer
 {
     if (self.serverAliveCountMax<=0) {
@@ -957,10 +956,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     _keepAliveCounter = self.serverAliveCountMax;
     
     uint64_t interval = SSHKit_SESSION_DEFAULT_TIMEOUT;
-    if (_timeout > SSHKit_SESSION_MIN_TIMEOUT) {
+    
+    if (_timeout > 0) {
         interval = _timeout;
-    } else if (_timeout > 0) {
-        interval = SSHKit_SESSION_MIN_TIMEOUT;
     }
     
     if (_keepAliveTimer)
@@ -977,7 +975,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if (strongSelf->_keepAliveCounter<=0) {
                 [strongSelf disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                                     code:SSHKitErrorCodeTimeout
-                                                                userInfo:@{ NSLocalizedDescriptionKey : @"Server alive messages timed out, disable server alive mechanism if remote host does not support it."} ]];
+                                                                userInfo:@{ NSLocalizedDescriptionKey : @"Server alive messages timed out, disable server alive mechanism if remote host does not support it"} ]];
                 return_from_block;
             }
             

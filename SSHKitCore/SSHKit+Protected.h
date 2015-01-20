@@ -12,7 +12,6 @@ NSString * SSHKitGetBase64FromHostKey(ssh_key key);
 
 #define SSHKit_CHANNEL_MAX_PACKET        32768
 #define SSHKit_SESSION_DEFAULT_TIMEOUT   120 // two minutes
-#define SSHKit_SESSION_MIN_TIMEOUT       5
 
 /*
  * 1. Session Queue could not dispatch write queue sync
