@@ -881,8 +881,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if (_delegateFlags.didAcceptForwardChannel) {
         [_delegate session:self didAcceptForwardChannel:forwardChannel];
     }
-    
-    // todo: detect connection break by creating a fake channel to read data
 }
 
 /**
