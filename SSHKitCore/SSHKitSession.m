@@ -363,6 +363,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_COMPRESSION, "no");
         }
         
+        // tcp keepalive
+        if ( strongSelf.serverAliveCountMax<=0 ) {
+            int on = 1;
+            setsockopt(strongSelf->_socketFD, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
+        }
+        
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
 #if DEBUG
         int verbosity = SSH_LOG_FUNCTIONS;
@@ -875,6 +881,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if (_delegateFlags.didAcceptForwardChannel) {
         [_delegate session:self didAcceptForwardChannel:forwardChannel];
     }
+    
+    // todo: detect connection break by creating a fake channel to read data
 }
 
 /**
