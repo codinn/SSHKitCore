@@ -45,8 +45,9 @@ typedef NS_ENUM(NSInteger, SSHKitProxyType) {
     SSHKitProxyTypeDirect = -1,
     SSHKitProxyTypeSOCKS5 = 0,
     SSHKitProxyTypeSOCKS4,
-    SSHKitProxyTypeHTTPS,
+    SSHKitProxyTypeHTTP,
     SSHKitProxyTypeSOCKS4A,
+    SSHKitProxyTypeHTTPS, // just alias of SSHKitProxyTypeHTTP
 };
 
 typedef NS_ENUM(NSInteger, SSHKitChannelType)  {

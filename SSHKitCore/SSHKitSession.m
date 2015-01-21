@@ -309,6 +309,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 id ConnectProxyClass = SSHKitConnectorProxy.class;
                 
                 switch (self.proxyType) {
+                    case SSHKitProxyTypeHTTP:
                     case SSHKitProxyTypeHTTPS:
                         ConnectProxyClass = SSHKitConnectorHTTPS.class;
                         break;
