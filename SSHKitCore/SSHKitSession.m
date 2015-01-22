@@ -653,12 +653,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         case SSH_AUTH_ERROR:
             [self disconnectWithError:self.lastError];
             return NO;
-        case SSH_AUTH_AGAIN: // actually, its timed out
-            [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                          code:SSHKitErrorCodeTimeout
-                                                      userInfo:@{ NSLocalizedDescriptionKey : @"Timeout, server not responding"} ]];
-            return NO;
-            
             
         case SSH_AUTH_SUCCESS:
             [self _didAuthenticate];
@@ -670,6 +664,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                                                       userInfo:@{ NSLocalizedDescriptionKey : @"Multifactor authentication is not supported currently."} ]];
             return NO;
             
+        case SSH_AUTH_AGAIN: // should never come here
         default:
             [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                           code:SSHKitErrorCodeAuthError
@@ -845,7 +840,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         [self disconnectWithError:self.lastError];
     }
     
-    // iterate channels
+    // iterate channels, use NSEnumerationReverse to safe remove object in array
     [self.channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
     {
         switch (channel.stage) {
@@ -983,9 +978,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             }
             
             if (strongSelf->_keepAliveCounter<=0) {
+                NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
                 [strongSelf disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                                     code:SSHKitErrorCodeTimeout
-                                                                userInfo:@{ NSLocalizedDescriptionKey : @"Server alive messages timed out, disable server alive mechanism if remote host does not support it"} ]];
+                                                                userInfo:@{ NSLocalizedDescriptionKey : errorDesc } ]];
                 return_from_block;
             }
             
