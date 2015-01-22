@@ -12,6 +12,7 @@
 typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitSessionStageUnknown   = 0,
     SSHKitSessionStageNotConnected,
+    SSHKitSessionStageOpeningSocket,
     SSHKitSessionStageConnecting,
     SSHKitSessionStagePreAuthenticate,
     SSHKitSessionStageAuthenticating,
@@ -58,7 +59,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @property (nonatomic, readonly) long          timeout;
 
-@property (atomic, readwrite) dispatch_queue_t sessionQueue;
+@property (nonatomic, readonly) dispatch_queue_t sessionQueue;
 
 @property (nonatomic, readwrite) NSMutableArray *channels;
 
@@ -342,12 +343,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             strongSelf->_connector.IPv4Enabled = strongSelf.enableIPv4;
             strongSelf->_connector.IPv6Enabled = strongSelf.enableIPv6;
             
+            strongSelf.currentStage = SSHKitSessionStageOpeningSocket;
+            
             NSError *error = nil;
             [strongSelf->_connector connectToHost:host onPort:port withTimeout:strongSelf.timeout error:&error];
             
             if (error) {
                 [strongSelf disconnectWithError:error];
-                return;
+                return_from_block;
             }
             
             strongSelf->_socketFD = dup(strongSelf->_connector.socketFD);
@@ -906,6 +909,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         switch (strongSelf.currentStage) {
             case SSHKitSessionStageNotConnected:
+            case SSHKitSessionStageOpeningSocket:
                 break;
             case SSHKitSessionStageConnecting:
                 [strongSelf _doConnect];
