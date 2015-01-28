@@ -153,7 +153,6 @@
             return_from_block;
         }
         
-        
         uint32_t wrote = 0;
         
         do {
