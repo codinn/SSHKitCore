@@ -78,6 +78,13 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageClosed,         // the channel has been closed
 };
 
+/* All implementations MUST be able to process packets with an
+ * uncompressed payload length of 32768 bytes or less and a total packet
+ * size of 35000 bytes or less (including 'packet_length',
+ *                              'padding_length', 'payload', 'random padding', and 'mac').
+ */
+#define SSHKIT_CORE_SSH_MAX_PAYLOAD 16384 // 16K should appropriate for both channel and sftp
+
 typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
 
 typedef void (^ SSHKitRequestRemoteForwardCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
