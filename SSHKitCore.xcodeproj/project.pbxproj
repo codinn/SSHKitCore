@@ -160,14 +160,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = E9CD78F40DBE43C1A5DE5305;
+			remoteGlobalIDString = 32F7659328424524856E85F2;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = E9D2E475C2F24854A2FD4548;
+			remoteGlobalIDString = 57AF06CA169048879F32CF68;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -303,9 +303,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 				4AEF726019FFE2AE009B0CC7 /* exec */,
 				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
@@ -478,10 +478,9 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh.dylib;
 			path = libssh.4.5.0.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -493,10 +492,9 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh_threads.dylib;
 			path = libssh_threads.4.5.0.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
