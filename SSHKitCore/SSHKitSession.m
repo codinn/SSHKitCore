@@ -776,6 +776,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 {
     SSHKitIdentityParser *identity = [[SSHKitIdentityParser alloc] initWithIdentityPath:privateKeyPath passphraseHandler:handler];
     
+    self.currentStage = SSHKitSessionStageAuthenticating;
+    
     NSError *error = [identity parse];
     
     if (error) {
