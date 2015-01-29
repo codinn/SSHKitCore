@@ -16,14 +16,15 @@
 	return self;
 }
 
-- (instancetype)initRequestWithMethod:(NSString *)method URL:(NSURL *)url version:(NSString *)version
+- (instancetype)initRequestWithMethod:(NSString *)method URL:(NSString *)url version:(NSString *)version
 {
 	if ((self = [super init]))
 	{
-		message = CFHTTPMessageCreateRequest(NULL,
-		                                    (__bridge CFStringRef)method,
-		                                    (__bridge CFURLRef)url,
-		                                    (__bridge CFStringRef)version);
+        message = CFHTTPMessageCreateEmpty(NULL, YES);
+        
+        // Create request header, avoid using CFHTTPMessageCreateRequest, it's not support CONNECT method
+        NSString *header = [NSString stringWithFormat:@"%@ %@ %@", method, url, version];
+        [self appendData:[header dataUsingEncoding:NSUTF8StringEncoding]];
 	}
 	return self;
 }

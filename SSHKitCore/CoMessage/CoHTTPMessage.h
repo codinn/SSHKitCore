@@ -20,7 +20,7 @@
 
 - (instancetype)initEmptyRequest;
 
-- (instancetype)initRequestWithMethod:(NSString *)method URL:(NSURL *)url version:(NSString *)version;
+- (instancetype)initRequestWithMethod:(NSString *)method URL:(NSString *)url version:(NSString *)version;
 
 - (instancetype)initResponseWithStatusCode:(NSInteger)code description:(NSString *)description version:(NSString *)version;
 

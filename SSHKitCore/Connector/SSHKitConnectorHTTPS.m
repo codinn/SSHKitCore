@@ -18,7 +18,7 @@
 
 static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetPort)
 {
-    NSURL *proxyURL = [NSURL URLWithString:[[NSString alloc] initWithFormat:@"%@:%d", targetHost, targetPort]];
+    NSString *proxyURL = [NSString stringWithFormat:@"%@:%d", targetHost, targetPort];
     return [[CoHTTPMessage alloc] initRequestWithMethod:@"CONNECT" URL:proxyURL version:HTTPVersion1_0];
 }
 
@@ -34,7 +34,7 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
     
     BOOL forProxy = YES;
     
-    if (![super connectToHost:self.targetHost onPort:self.targetPort viaInterface:interface withTimeout:timeout error:errPtr])
+    if (![super connectToHost:self.proxyHost onPort:self.proxyPort viaInterface:interface withTimeout:timeout error:errPtr])
     {
         return NO;
     }
@@ -56,7 +56,6 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
     // As per the http protocol, we know the header is terminated with two CRLF's (carriage return, line feed).
     
     NSData *responseTerminatorData = [@"\r\n\r\n" dataUsingEncoding:NSASCIIStringEncoding];
-    
     NSData *responseData = [self readDataToData:responseTerminatorData error:errPtr];
         
     if (!responseData.length || *errPtr) {
@@ -68,7 +67,7 @@ static CoHTTPMessage *buildRequestMessage(NSString *targetHost, uint16_t targetP
     NSInteger statusCode = response.statusCode;
     
     switch (statusCode) {
-        case 200:   /* sucess */
+        case 200:   /* success */
         case 201:
         case 202:
             break;
