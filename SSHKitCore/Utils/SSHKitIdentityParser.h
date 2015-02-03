@@ -15,4 +15,6 @@
 
 - (NSError *)parse;
 
+@property (nonatomic, readonly) NSString *identityPath;
+
 @end

@@ -1,7 +1,7 @@
 #import <SSHKitCore/Common.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
-@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest;
+@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitIdentityParser;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -122,6 +122,12 @@
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user;
 
 /**
+ * Connects to the given host and port via specified interface with an optional timeout.
+ *
+ **/
+- (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
+
+/**
  * Connects to the given host and port with an optional timeout.
  *
  **/
@@ -164,7 +170,7 @@
  @param privateKeyPath Filepath to private key
  @param passphraseHandler Password handle for encrypted private key
  */
-- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler;
+- (void)authenticateByIdentityParser:(SSHKitIdentityParser *)parser;
 
 /**
  Authenticate by keyboard-interactive

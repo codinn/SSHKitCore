@@ -286,10 +286,15 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user
 {
-    [self connectToHost:host onPort:port withUser:(NSString*)user timeout:0.0];
+    [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:0.0];
 }
 
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout
+{
+    [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:timeout];
+}
+
+- (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout
 {
     self.host = [host copy];
     self.port = port;
@@ -346,7 +351,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             strongSelf.currentStage = SSHKitSessionStageOpeningSocket;
             
             NSError *error = nil;
-            [strongSelf->_connector connectToHost:host onPort:port withTimeout:strongSelf.timeout error:&error];
+            [strongSelf->_connector connectToHost:host onPort:port viaInterface:interface withTimeout:strongSelf.timeout error:&error];
             
             if (error) {
                 [strongSelf disconnectWithError:error];
@@ -772,20 +777,18 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
-- (void)authenticateByPrivateKey:(NSString *)privateKeyPath passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)handler
+- (void)authenticateByIdentityParser:(SSHKitIdentityParser *)parser
 {
-    SSHKitIdentityParser *identity = [[SSHKitIdentityParser alloc] initWithIdentityPath:privateKeyPath passphraseHandler:handler];
-    
     self.currentStage = SSHKitSessionStageAuthenticating;
     
-    NSError *error = [identity parse];
+    NSError *error = [parser parse];
     
     if (error) {
         [self disconnectWithError:error];
         return;
     }
     
-    self.privateKeyPath = privateKeyPath;
+    self.privateKeyPath = parser.identityPath;
     
     __block BOOL publicKeySuccess = NO;
     __weak SSHKitSession *weakSelf = self;
@@ -798,7 +801,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         if (!publicKeySuccess) {
             // try public key
-            int ret = ssh_userauth_try_publickey(strongSelf.rawSession, NULL, identity.publicKey);
+            int ret = ssh_userauth_try_publickey(strongSelf.rawSession, NULL, parser.publicKey);
             switch (ret) {
                 case SSH_AUTH_AGAIN:
                     // try again
@@ -817,7 +820,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         publicKeySuccess = YES;
         
         // authenticate using private key
-        int ret = ssh_userauth_publickey(strongSelf.rawSession, NULL, identity.privateKey);
+        int ret = ssh_userauth_publickey(strongSelf.rawSession, NULL, parser.privateKey);
         switch (ret) {
             case SSH_AUTH_AGAIN:
                 // try again

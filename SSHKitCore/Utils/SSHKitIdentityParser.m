@@ -13,7 +13,7 @@
 - (instancetype)initWithIdentityPath:(NSString *)path passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler
 {
     if (self=[super init]) {
-        _keyPath = [path copy];
+        _identityPath = [path copy];
         _passhpraseHandler = passphraseHandler;
     }
     
@@ -32,7 +32,7 @@
 
 - (NSError *)parse
 {
-    if (!_keyPath.length) {
+    if (!_identityPath.length) {
         NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                              code:SSHKitErrorCodeAuthError
                                          userInfo:@{ NSLocalizedDescriptionKey : @"Path of private key is not specified" }];
@@ -40,7 +40,7 @@
     }
     
     // import private key
-    int ret = ssh_pki_import_privkey_file(_keyPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(_passhpraseHandler), &_privateKey);
+    int ret = ssh_pki_import_privkey_file(_identityPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(_passhpraseHandler), &_privateKey);
     
     
     NSError *error = nil;
@@ -53,7 +53,7 @@
             error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                         code:SSHKitErrorCodeAuthError
                                     userInfo:@{
-                                               NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Private key file “%@” doesn't exist or permission denied", _keyPath.lastPathComponent],
+                                               NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Private key file “%@” doesn't exist or permission denied", _identityPath.lastPathComponent],
                                                NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
                                                 }];
             return error;
@@ -62,7 +62,7 @@
             error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                         code:SSHKitErrorCodeAuthError
                                     userInfo:@{
-                                               NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not parse private key file “%@”", _keyPath.lastPathComponent],
+                                               NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not parse private key file “%@”", _identityPath.lastPathComponent],
                                                NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
                                                }];
             return error;
@@ -80,7 +80,7 @@
         default:
             error = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                         code:SSHKitErrorCodeAuthError
-                                    userInfo:@{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not extract public key from \"%@\"", _keyPath] }];
+                                    userInfo:@{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not extract public key from \"%@\"", _identityPath] }];
             return error;;
     }
     
