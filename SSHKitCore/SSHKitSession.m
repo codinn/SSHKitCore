@@ -50,8 +50,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
 
-@property (nonatomic, readwrite)  NSString    *privateKeyPath;
-
 @property (nonatomic, readwrite)  NSString    *clientBanner;
 @property (nonatomic, readwrite)  NSString    *issueBanner;
 @property (nonatomic, readwrite)  NSString    *serverBanner;
@@ -780,15 +778,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (void)authenticateByIdentityParser:(SSHKitIdentityParser *)parser
 {
     self.currentStage = SSHKitSessionStageAuthenticating;
-    
-    NSError *error = [parser parse];
-    
-    if (error) {
-        [self disconnectWithError:error];
-        return;
-    }
-    
-    self.privateKeyPath = parser.identityPath;
     
     __block BOOL publicKeySuccess = NO;
     __weak SSHKitSession *weakSelf = self;

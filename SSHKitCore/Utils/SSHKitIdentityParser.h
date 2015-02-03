@@ -11,10 +11,8 @@
 
 @interface SSHKitIdentityParser : NSObject
 
-- (instancetype)initWithIdentityPath:(NSString *)path passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler;
++ (instancetype)parserFromIdentityPath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr;
 
-- (NSError *)parse;
-
-@property (nonatomic, readonly) NSString *identityPath;
++ (instancetype)parserFromIdentityBase64:(NSString *)base64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr;
 
 @end

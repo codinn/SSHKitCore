@@ -10,14 +10,77 @@
 
 @implementation SSHKitIdentityParser
 
-- (instancetype)initWithIdentityPath:(NSString *)path passphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler
++ (instancetype)parserFromIdentityPath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
 {
-    if (self=[super init]) {
-        _identityPath = [path copy];
-        _passhpraseHandler = passphraseHandler;
+    return [self parserFromContent:path isBase64:NO withPassphraseHandler:passphraseHandler error:errPtr];
+}
+
++ (instancetype)parserFromIdentityBase64:(NSString *)base64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
+{
+    return [self parserFromContent:base64 isBase64:YES withPassphraseHandler:passphraseHandler error:errPtr];
+}
+
+
++ (instancetype)parserFromContent:(NSString *)content isBase64:(BOOL)isBase64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
+{
+    if (!content.length) {
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                                  code:SSHKitErrorCodeAuthError
+                                              userInfo:@{ NSLocalizedDescriptionKey : @"Content of private key is empty" }];
+        return nil;
     }
     
-    return self;
+    int ret = 0;
+    SSHKitIdentityParser *parser = [[SSHKitIdentityParser alloc] init];
+    
+    // import private key
+    if (isBase64) {
+        ret = ssh_pki_import_privkey_base64(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(passphraseHandler), &parser->_privateKey);
+    } else {
+        ret = ssh_pki_import_privkey_file(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(passphraseHandler), &parser->_privateKey);
+    }
+    
+    switch (ret) {
+        case SSH_OK:
+            // success, try extract publickey
+            break;
+            
+        case SSH_EOF:
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                                      code:SSHKitErrorCodeAuthError
+                                                  userInfo:@{
+                                                             NSLocalizedDescriptionKey : @"Private key file doesn't exist or permission denied",
+                                                             NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
+                                                             }];
+            return nil;
+            
+        default:
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                                      code:SSHKitErrorCodeAuthError
+                                                  userInfo:@{
+                                                             NSLocalizedDescriptionKey : @"Could not parse private key file",
+                                                             NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
+                                                             }];
+            return nil;
+    }
+    
+    // extract public key from private key
+    ret = ssh_pki_export_privkey_to_pubkey(parser->_privateKey, &parser->_publicKey);
+    
+    
+    switch (ret) {
+        case SSH_OK:
+            // success
+            break;
+            
+        default:
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                                      code:SSHKitErrorCodeAuthError
+                                                  userInfo:@{ NSLocalizedDescriptionKey : @"Could not extract public key from private key" }];
+            return nil;;
+    }
+    
+    return parser;
 }
 
 - (void)dealloc
@@ -28,63 +91,6 @@
     if (_privateKey) {
         ssh_key_free(_privateKey);
     }
-}
-
-- (NSError *)parse
-{
-    if (!_identityPath.length) {
-        NSError *error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                             code:SSHKitErrorCodeAuthError
-                                         userInfo:@{ NSLocalizedDescriptionKey : @"Path of private key is not specified" }];
-        return error;
-    }
-    
-    // import private key
-    int ret = ssh_pki_import_privkey_file(_identityPath.UTF8String, NULL, _askPassphrase, (__bridge void *)(_passhpraseHandler), &_privateKey);
-    
-    
-    NSError *error = nil;
-    switch (ret) {
-        case SSH_OK:
-            // success, try extract publickey
-            break;
-            
-        case SSH_EOF:
-            error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                        code:SSHKitErrorCodeAuthError
-                                    userInfo:@{
-                                               NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Private key file “%@” doesn't exist or permission denied", _identityPath.lastPathComponent],
-                                               NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
-                                                }];
-            return error;
-            
-        default:
-            error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                        code:SSHKitErrorCodeAuthError
-                                    userInfo:@{
-                                               NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not parse private key file “%@”", _identityPath.lastPathComponent],
-                                               NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
-                                               }];
-            return error;
-    }
-    
-    // extract public key from private key
-    ret = ssh_pki_export_privkey_to_pubkey(_privateKey, &_publicKey);
-    
-    
-    switch (ret) {
-        case SSH_OK:
-            // success
-            break;
-            
-        default:
-            error = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                        code:SSHKitErrorCodeAuthError
-                                    userInfo:@{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Could not extract public key from \"%@\"", _identityPath] }];
-            return error;;
-    }
-    
-    return nil;
 }
 
 static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, int verify, void *userdata)

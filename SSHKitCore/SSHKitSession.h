@@ -68,9 +68,6 @@
 /** Username that will authenticate against the server. */
 @property (nonatomic, readonly) NSString *username;
 
-/** Private key that will authenticate against the server. */
-@property (nonatomic, readonly) NSString *privateKeyPath;
-
 /** Last session error. */
 @property (nonatomic, readonly) NSError *lastError;
 
