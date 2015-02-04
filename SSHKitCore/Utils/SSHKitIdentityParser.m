@@ -58,7 +58,7 @@
             if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
                                                       code:SSHKitErrorCodeAuthError
                                                   userInfo:@{
-                                                             NSLocalizedDescriptionKey : @"Could not parse private key file",
+                                                             NSLocalizedDescriptionKey : @"Could not parse private key",
                                                              NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
                                                              }];
             return nil;
@@ -106,7 +106,9 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }
     
     NSString *password = handler();
-    if (password.length && password.length<len) {
+    NSUInteger length = [password lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    
+    if (length && length<len) {
         strcpy(buf, password.UTF8String);
         return SSH_OK;
     }
