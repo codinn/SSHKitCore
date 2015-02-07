@@ -1,21 +1,21 @@
 //
-//  SSHKitIdentityParser.m
+//  SSHKitPrivateKeyParser.m
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 12/24/14.
 //
 //
 #import "SSHKit+Protected.h"
-#import "SSHKitIdentityParser.h"
+#import "SSHKitPrivateKeyParser.h"
 
-@implementation SSHKitIdentityParser
+@implementation SSHKitPrivateKeyParser
 
-+ (instancetype)parserFromIdentityPath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
++ (instancetype)parserFromFilePath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
 {
     return [self parserFromContent:path isBase64:NO withPassphraseHandler:passphraseHandler error:errPtr];
 }
 
-+ (instancetype)parserFromIdentityBase64:(NSString *)base64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
++ (instancetype)parserFromBase64:(NSString *)base64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
 {
     return [self parserFromContent:base64 isBase64:YES withPassphraseHandler:passphraseHandler error:errPtr];
 }
@@ -31,7 +31,7 @@
     }
     
     int ret = 0;
-    SSHKitIdentityParser *parser = [[SSHKitIdentityParser alloc] init];
+    SSHKitPrivateKeyParser *parser = [[SSHKitPrivateKeyParser alloc] init];
     
     // import private key
     if (isBase64) {

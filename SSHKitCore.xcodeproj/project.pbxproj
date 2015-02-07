@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4A281DC11A4A570D00EA1583 /* SSHKitIdentityParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A281DBF1A4A570D00EA1583 /* SSHKitIdentityParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A281DC21A4A570D00EA1583 /* SSHKitIdentityParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A281DC01A4A570D00EA1583 /* SSHKitIdentityParser.m */; };
+		4A281DC11A4A570D00EA1583 /* SSHKitPrivateKeyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A281DBF1A4A570D00EA1583 /* SSHKitPrivateKeyParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A281DC21A4A570D00EA1583 /* SSHKitPrivateKeyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A281DC01A4A570D00EA1583 /* SSHKitPrivateKeyParser.m */; };
 		4A2B5B071A4A6F3C007D20DF /* SSHKitHostKeyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B051A4A6F3C007D20DF /* SSHKitHostKeyParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A2B5B081A4A6F3C007D20DF /* SSHKitHostKeyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B5B061A4A6F3C007D20DF /* SSHKitHostKeyParser.m */; };
 		4A2B5B241A4BBE3F007D20DF /* Common.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B231A4BBE3F007D20DF /* Common.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -186,8 +186,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4A281DBF1A4A570D00EA1583 /* SSHKitIdentityParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitIdentityParser.h; sourceTree = "<group>"; };
-		4A281DC01A4A570D00EA1583 /* SSHKitIdentityParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitIdentityParser.m; sourceTree = "<group>"; };
+		4A281DBF1A4A570D00EA1583 /* SSHKitPrivateKeyParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitPrivateKeyParser.h; sourceTree = "<group>"; };
+		4A281DC01A4A570D00EA1583 /* SSHKitPrivateKeyParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitPrivateKeyParser.m; sourceTree = "<group>"; };
 		4A2B5B051A4A6F3C007D20DF /* SSHKitHostKeyParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitHostKeyParser.h; sourceTree = "<group>"; };
 		4A2B5B061A4A6F3C007D20DF /* SSHKitHostKeyParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitHostKeyParser.m; sourceTree = "<group>"; };
 		4A2B5B231A4BBE3F007D20DF /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
@@ -250,8 +250,8 @@
 		4A281DBE1A4A570D00EA1583 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				4A281DBF1A4A570D00EA1583 /* SSHKitIdentityParser.h */,
-				4A281DC01A4A570D00EA1583 /* SSHKitIdentityParser.m */,
+				4A281DBF1A4A570D00EA1583 /* SSHKitPrivateKeyParser.h */,
+				4A281DC01A4A570D00EA1583 /* SSHKitPrivateKeyParser.m */,
 				4A2B5B051A4A6F3C007D20DF /* SSHKitHostKeyParser.h */,
 				4A2B5B061A4A6F3C007D20DF /* SSHKitHostKeyParser.m */,
 			);
@@ -413,7 +413,7 @@
 				E42815C21593D95200CF680C /* SSHKitSession.h in Headers */,
 				E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */,
 				4A2B5B071A4A6F3C007D20DF /* SSHKitHostKeyParser.h in Headers */,
-				4A281DC11A4A570D00EA1583 /* SSHKitIdentityParser.h in Headers */,
+				4A281DC11A4A570D00EA1583 /* SSHKitPrivateKeyParser.h in Headers */,
 				4A2B5B241A4BBE3F007D20DF /* Common.h in Headers */,
 				4AEF72C31A00B6BD009B0CC7 /* SSHKitDirectChannel.h in Headers */,
 				4A49F6661A49282600D9BA80 /* SSHKitConnector.h in Headers */,
@@ -614,7 +614,7 @@
 				4A49F65F1A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m in Sources */,
 				4A49F65A1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m in Sources */,
 				4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */,
-				4A281DC21A4A570D00EA1583 /* SSHKitIdentityParser.m in Sources */,
+				4A281DC21A4A570D00EA1583 /* SSHKitPrivateKeyParser.m in Sources */,
 				4A49F6611A491CD100D9BA80 /* CoHTTPMessage.m in Sources */,
 				4ADCA2481A32E26000DC8FF1 /* SSHKitForwardChannel.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,

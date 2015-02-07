@@ -1,7 +1,7 @@
 #import <SSHKitCore/Common.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
-@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitIdentityParser;
+@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -167,7 +167,7 @@
  @param privateKeyPath Filepath to private key
  @param passphraseHandler Password handle for encrypted private key
  */
-- (void)authenticateByIdentityParser:(SSHKitIdentityParser *)parser;
+- (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser;
 
 /**
  Authenticate by keyboard-interactive

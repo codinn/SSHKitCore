@@ -5,7 +5,7 @@
 #import <libssh/server.h>
 #import "SSHKitConnector.h"
 #import "SSHKitConnector.h"
-#import "SSHKitIdentityParser.h"
+#import "SSHKitPrivateKeyParser.h"
 
 #define SOCKET_NULL -1
 
@@ -775,7 +775,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
-- (void)authenticateByIdentityParser:(SSHKitIdentityParser *)parser
+- (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser
 {
     self.currentStage = SSHKitSessionStageAuthenticating;
     
