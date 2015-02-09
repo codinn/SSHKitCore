@@ -1,5 +1,5 @@
 #import "SSHKitSession.h"
-#import "SSHKit+Protected.h"
+#import "SSHKitCore+Protected.h"
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 #import <libssh/server.h>

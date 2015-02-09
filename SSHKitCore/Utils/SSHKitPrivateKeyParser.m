@@ -5,7 +5,7 @@
 //  Created by Yang Yubo on 12/24/14.
 //
 //
-#import "SSHKit+Protected.h"
+#import "SSHKitCore+Protected.h"
 #import "SSHKitPrivateKeyParser.h"
 
 @implementation SSHKitPrivateKeyParser

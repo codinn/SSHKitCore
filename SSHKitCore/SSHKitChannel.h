@@ -1,4 +1,4 @@
-#import <SSHKitCore/Common.h>
+#import <SSHKitCore/SSHKitCoreCommon.h>
 
 @protocol SSHKitChannelDelegate;
 @class SSHKitSession;

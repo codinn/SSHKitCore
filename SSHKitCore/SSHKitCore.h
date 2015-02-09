@@ -1,4 +1,4 @@
-#import <SSHKitCore/Common.h>
+#import <SSHKitCore/SSHKitCoreCommon.h>
 #import <SSHKitCore/SSHKitSession.h>
 #import <SSHKitCore/SSHKitChannel.h>
 #import <SSHKitCore/SSHKitDirectChannel.h>

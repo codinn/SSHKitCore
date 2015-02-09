@@ -7,7 +7,7 @@
 //
 
 #import "SSHKitHostKeyParser.h"
-#import "SSHKit+Protected.h"
+#import "SSHKitCore+Protected.h"
 
 @implementation SSHKitHostKeyParser
 

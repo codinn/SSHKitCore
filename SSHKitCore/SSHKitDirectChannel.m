@@ -7,7 +7,7 @@
 //
 
 #import "SSHKitDirectChannel.h"
-#import "SSHKit+Protected.h"
+#import "SSHKitCore+Protected.h"
 
 @implementation SSHKitDirectChannel
 
