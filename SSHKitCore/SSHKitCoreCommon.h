@@ -60,14 +60,14 @@ typedef NS_ENUM(NSInteger, SSHKitChannelType)  {
     SSHKitChannelTypeSubsystem // Not supported by SSHKit framework
 };
 
-typedef NS_ENUM(NSInteger, SSHKitAuthMethod) {
-    SSHKitAuthMethodUnknown     = -2,
-    SSHKitAuthMethodNone        = -1,
-    SSHKitAuthMethodPassword    = 0,
-    SSHKitAuthMethodPublicKey,
-    SSHKitAuthMethodInteractive,
-    SSHKitAuthMethodHostBased,
-    SSHKitAuthMethodGSSAPI,
+typedef NS_ENUM(NSInteger, SSHKitAuthMethodType) {
+    SSHKitAuthMethodTypeUnknown     = -2,
+    SSHKitAuthMethodTypeNone        = -1,
+    SSHKitAuthMethodTypePassword    = 0,
+    SSHKitAuthMethodTypePublicKey,
+    SSHKitAuthMethodTypeInteractive,
+    SSHKitAuthMethodTypeHostBased,
+    SSHKitAuthMethodTypeGSSAPI,
 };
 
 typedef NS_ENUM(NSInteger, SSHKitChannelStage) {

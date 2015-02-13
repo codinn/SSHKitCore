@@ -599,22 +599,22 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             int authList = ssh_userauth_list(_rawSession, NULL);
             
             if (authList & SSH_AUTH_METHOD_NONE) {
-                [authMethods addObject:@(SSHKitAuthMethodNone)];
+                [authMethods addObject:@(SSHKitAuthMethodTypeNone)];
             }
             if (authList & SSH_AUTH_METHOD_PASSWORD) {
-                [authMethods addObject:@(SSHKitAuthMethodPassword)];
+                [authMethods addObject:@(SSHKitAuthMethodTypePassword)];
             }
             if (authList & SSH_AUTH_METHOD_PUBLICKEY) {
-                [authMethods addObject:@(SSHKitAuthMethodPublicKey)];
+                [authMethods addObject:@(SSHKitAuthMethodTypePublicKey)];
             }
             if (authList & SSH_AUTH_METHOD_HOSTBASED) {
-                [authMethods addObject:@(SSHKitAuthMethodHostBased)];
+                [authMethods addObject:@(SSHKitAuthMethodTypeHostBased)];
             }
             if (authList & SSH_AUTH_METHOD_INTERACTIVE) {
-                [authMethods addObject:@(SSHKitAuthMethodInteractive)];
+                [authMethods addObject:@(SSHKitAuthMethodTypeInteractive)];
             }
             if (authList & SSH_AUTH_METHOD_GSSAPI_MIC) {
-                [authMethods addObject:@(SSHKitAuthMethodGSSAPI)];
+                [authMethods addObject:@(SSHKitAuthMethodTypeGSSAPI)];
             }
             
             if (_delegateFlags.authenticateWithAllowedMethods) {
