@@ -25,6 +25,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		unsigned int didConnectToHostPort           : 1;
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
+        unsigned int didReceiveIssueBanner          : 1;
         unsigned int authenticateWithAllowedMethods : 1;
         unsigned int didAuthenticateUser            : 1;
         unsigned int didAcceptForwardChannel        : 1;
@@ -51,7 +52,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (nonatomic, readwrite)  NSString    *username;
 
 @property (nonatomic, readwrite)  NSString    *clientBanner;
-@property (nonatomic, readwrite)  NSString    *issueBanner;
 @property (nonatomic, readwrite)  NSString    *serverBanner;
 @property (nonatomic, readwrite)  NSString    *protocolVersion;
 
@@ -216,6 +216,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
+        _delegateFlags.didReceiveIssueBanner = [delegate respondsToSelector:@selector(session:didReceiveIssueBanner:)];
         _delegateFlags.didAcceptForwardChannel = [delegate respondsToSelector:@selector(session:didAcceptForwardChannel:)];
         _delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
 	}
@@ -575,17 +576,37 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark Authentication
 // -----------------------------------------------------------------------------
 
+- (NSArray *)_getUserAuthList
+{
+    NSMutableArray *authMethods = [@[] mutableCopy];
+    int authList = ssh_userauth_list(_rawSession, NULL);
+    
+    if (authList & SSH_AUTH_METHOD_NONE) {
+        [authMethods addObject:@(SSHKitAuthMethodTypeNone)];
+    }
+    if (authList & SSH_AUTH_METHOD_PASSWORD) {
+        [authMethods addObject:@(SSHKitAuthMethodTypePassword)];
+    }
+    if (authList & SSH_AUTH_METHOD_PUBLICKEY) {
+        [authMethods addObject:@(SSHKitAuthMethodTypePublicKey)];
+    }
+    if (authList & SSH_AUTH_METHOD_HOSTBASED) {
+        [authMethods addObject:@(SSHKitAuthMethodTypeHostBased)];
+    }
+    if (authList & SSH_AUTH_METHOD_INTERACTIVE) {
+        [authMethods addObject:@(SSHKitAuthMethodTypeInteractive)];
+    }
+    if (authList & SSH_AUTH_METHOD_GSSAPI_MIC) {
+        [authMethods addObject:@(SSHKitAuthMethodTypeGSSAPI)];
+    }
+    
+    return [authMethods copy];
+}
+
 - (void)_preAuthenticate
 {
     // must call this method before next auth method, or libssh will be failed
     int rc = ssh_userauth_none(_rawSession, NULL);
-    
-    /*
-     *** Does not work without calling ssh_userauth_none() first ***
-     *** That will be fixed ***
-     */
-    const char *banner = ssh_get_issue_banner(self.rawSession);
-    if (banner) self.issueBanner = @(banner);
     
     switch (rc) {
         case SSH_AUTH_AGAIN:
@@ -595,27 +616,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         case SSH_AUTH_DENIED:
         {
             // pre auth success
-            NSMutableArray *authMethods = [@[] mutableCopy];
-            int authList = ssh_userauth_list(_rawSession, NULL);
             
-            if (authList & SSH_AUTH_METHOD_NONE) {
-                [authMethods addObject:@(SSHKitAuthMethodTypeNone)];
+            if (_delegateFlags.didAcceptForwardChannel) {
+                /*
+                 *** Does not work without calling ssh_userauth_none() first ***
+                 *** That will be fixed ***
+                 */
+                const char *banner = ssh_get_issue_banner(self.rawSession);
+                if (banner) [self.delegate session:self didReceiveIssueBanner:@(banner)];
             }
-            if (authList & SSH_AUTH_METHOD_PASSWORD) {
-                [authMethods addObject:@(SSHKitAuthMethodTypePassword)];
-            }
-            if (authList & SSH_AUTH_METHOD_PUBLICKEY) {
-                [authMethods addObject:@(SSHKitAuthMethodTypePublicKey)];
-            }
-            if (authList & SSH_AUTH_METHOD_HOSTBASED) {
-                [authMethods addObject:@(SSHKitAuthMethodTypeHostBased)];
-            }
-            if (authList & SSH_AUTH_METHOD_INTERACTIVE) {
-                [authMethods addObject:@(SSHKitAuthMethodTypeInteractive)];
-            }
-            if (authList & SSH_AUTH_METHOD_GSSAPI_MIC) {
-                [authMethods addObject:@(SSHKitAuthMethodTypeGSSAPI)];
-            }
+            
+            NSArray *authMethods = [self _getUserAuthList];
             
             if (_delegateFlags.authenticateWithAllowedMethods) {
                 NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods];
@@ -646,33 +657,44 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (BOOL)_checkAuthenticateResult:(NSInteger)result
+- (void)_checkAuthenticateResult:(NSInteger)result
 {
     switch (result) {
         case SSH_AUTH_DENIED:
             [self disconnectWithError:self.lastError];
-            return NO;
+            return;
             
         case SSH_AUTH_ERROR:
             [self disconnectWithError:self.lastError];
-            return NO;
+            return;
             
         case SSH_AUTH_SUCCESS:
             [self _didAuthenticate];
-            return YES;
+            return;
             
         case SSH_AUTH_PARTIAL:
-            [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                          code:SSHKitErrorCodeAuthError
-                                                      userInfo:@{ NSLocalizedDescriptionKey : @"Multifactor authentication is not supported currently."} ]];
-            return NO;
+        {
+            // pre auth success
+            NSArray *authMethods = [self _getUserAuthList];
+            
+            if (_delegateFlags.authenticateWithAllowedMethods) {
+                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods];
+                if (error) {
+                    [self disconnectWithError:error];
+                }
+                
+                // Handoff to next auth method
+                return;
+            }
+        }
+            return;
             
         case SSH_AUTH_AGAIN: // should never come here
         default:
             [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                           code:SSHKitErrorCodeAuthError
                                                       userInfo:@{ NSLocalizedDescriptionKey : @"Unknown error while authenticate user"} ]];
-            return NO;
+            return;
     }
 }
 

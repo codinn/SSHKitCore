@@ -74,9 +74,6 @@
 /** The client version string */
 @property (nonatomic, readonly)  NSString *clientBanner;
 
-/** The remote host banner. */
-@property (nonatomic, readonly) NSString  *issueBanner;
-
 /** Get the software version of the remote server. */
 @property (nonatomic, readonly) NSString  *serverBanner;
 
@@ -215,6 +212,8 @@
  @param error A description of the error that caused the disconnect
  */
 - (void)session:(SSHKitSession *)session didDisconnectWithError:(NSError *)error;
+
+- (void)session:(SSHKitSession *)session didReceiveIssueBanner:(NSString *)banner;
 
 /**
  Called when a session is connecting to a host, the fingerprint is used
