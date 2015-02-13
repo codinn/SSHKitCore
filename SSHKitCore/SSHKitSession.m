@@ -26,7 +26,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
         unsigned int didReceiveIssueBanner          : 1;
-        unsigned int authenticateWithAllowedMethods : 1;
+        unsigned int authenticateWithAllowedMethodsPartialSuccess : 1;
         unsigned int didAuthenticateUser            : 1;
         unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
@@ -211,7 +211,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 {
 	if (_delegate != delegate) {
 		_delegate = delegate;
-        _delegateFlags.authenticateWithAllowedMethods = [delegate respondsToSelector:@selector(session:authenticateWithAllowedMethods:)];
+        _delegateFlags.authenticateWithAllowedMethodsPartialSuccess = [delegate respondsToSelector:@selector(session:authenticateWithAllowedMethods:partialSuccess:)];
 		_delegateFlags.didConnectToHostPort = [delegate respondsToSelector:@selector(session:didConnectToHost:port:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
@@ -581,23 +581,24 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     NSMutableArray *authMethods = [@[] mutableCopy];
     int authList = ssh_userauth_list(_rawSession, NULL);
     
-    if (authList & SSH_AUTH_METHOD_NONE) {
-        [authMethods addObject:@(SSHKitAuthMethodTypeNone)];
-    }
+    // WARN: ssh_set_auth_methods only available on server api,
+    // it's a dirty hack for support multi-factor auth
+    ssh_set_auth_methods(_rawSession, 0);
+    
     if (authList & SSH_AUTH_METHOD_PASSWORD) {
-        [authMethods addObject:@(SSHKitAuthMethodTypePassword)];
+        [authMethods addObject:@"password"];
     }
     if (authList & SSH_AUTH_METHOD_PUBLICKEY) {
-        [authMethods addObject:@(SSHKitAuthMethodTypePublicKey)];
+        [authMethods addObject:@"publickey"];
     }
     if (authList & SSH_AUTH_METHOD_HOSTBASED) {
-        [authMethods addObject:@(SSHKitAuthMethodTypeHostBased)];
+        [authMethods addObject:@"hostbased"];
     }
     if (authList & SSH_AUTH_METHOD_INTERACTIVE) {
-        [authMethods addObject:@(SSHKitAuthMethodTypeInteractive)];
+        [authMethods addObject:@"keyboard-interactive"];
     }
     if (authList & SSH_AUTH_METHOD_GSSAPI_MIC) {
-        [authMethods addObject:@(SSHKitAuthMethodTypeGSSAPI)];
+        [authMethods addObject:@"gssapi-with-mic"];
     }
     
     return [authMethods copy];
@@ -628,8 +629,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
             NSArray *authMethods = [self _getUserAuthList];
             
-            if (_delegateFlags.authenticateWithAllowedMethods) {
-                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods];
+            if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
+                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:NO];
                 if (error) {
                     [self disconnectWithError:error];
                 }
@@ -677,8 +678,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             // pre auth success
             NSArray *authMethods = [self _getUserAuthList];
             
-            if (_delegateFlags.authenticateWithAllowedMethods) {
-                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods];
+            if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
+                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:YES];
                 if (error) {
                     [self disconnectWithError:error];
                 }
