@@ -347,6 +347,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             strongSelf->_connector.IPv4Enabled = strongSelf.enableIPv4;
             strongSelf->_connector.IPv6Enabled = strongSelf.enableIPv6;
             
+            if (strongSelf.logHandler) {
+                strongSelf->_connector.logHandler = strongSelf.logHandler;
+            }
+            
             strongSelf.currentStage = SSHKitSessionStageOpeningSocket;
             
             NSError *error = nil;

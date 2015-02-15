@@ -3,6 +3,8 @@
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
 @class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 
+typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
+
 // -----------------------------------------------------------------------------
 #pragma mark -
 // -----------------------------------------------------------------------------
@@ -70,6 +72,8 @@
 
 /** Last session error. */
 @property (nonatomic, readonly) NSError *lastError;
+
+@property (strong, readwrite) SSHKitCoreLogHandler logHandler;
 
 /** The client version string */
 @property (nonatomic, readonly)  NSString *clientBanner;
