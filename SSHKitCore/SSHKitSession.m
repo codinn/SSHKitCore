@@ -94,25 +94,15 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (instancetype)init
 {
-	return [self initWithDelegate:nil sessionQueue:NULL socketFD:SOCKET_NULL];
+	return [self initWithDelegate:nil sessionQueue:NULL];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate
 {
-	return [self initWithDelegate:aDelegate sessionQueue:NULL socketFD:SOCKET_NULL];
-}
-
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFD:(int)socketFD
-{
-    return [self initWithDelegate:aDelegate sessionQueue:NULL socketFD:socketFD];
+	return [self initWithDelegate:aDelegate sessionQueue:NULL];
 }
 
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq
-{
-    return [self initWithDelegate:aDelegate sessionQueue:sq socketFD:SOCKET_NULL];
-}
-
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFD:(int)socketFD
 {
     if ((self = [super init])) {
         self.enableCompression = NO;
@@ -128,7 +118,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.currentStage = SSHKitSessionStageNotConnected;
         self.channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
-        _socketFD = socketFD;
         self.proxyType = SSHKitProxyTypeDirect;
         
 		self.delegate = aDelegate;
@@ -323,7 +312,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        if (strongSelf->_socketFD==SOCKET_NULL) {
+        if (!strongSelf->_connector) {
             if (self.proxyType > SSHKitProxyTypeDirect) {
                 // connect over a proxy server
                 
@@ -386,11 +375,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: error: %@", error);
                 return_from_block;
             }
-            
-            strongSelf->_socketFD = dup(strongSelf->_connector.socketFD);
         }
         
-        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &strongSelf->_socketFD);
+        int socket = strongSelf->_connector.socketFD;
+        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket);
         
         // compression
         
@@ -404,7 +392,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         if ( strongSelf.serverAliveCountMax<=0 ) {
             int on = 1;
             if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: enable keepalive");
-            setsockopt(strongSelf->_socketFD, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
+            setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
         }
         
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
@@ -514,11 +502,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     if (self.isConnected) {
         ssh_disconnect(_rawSession);
-    }
-    
-    if (_socketFD!=SOCKET_NULL) {
-        // libssh will close this fd automatically
-        _socketFD = SOCKET_NULL;
     }
     
     if (_connector) {
@@ -939,7 +922,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         dispatch_source_cancel(_readSource);
     }
     
-    _readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self.socketFD, 0, _sessionQueue);
+    _readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self->_connector.socketFD, 0, _sessionQueue);
     
     __weak SSHKitSession *weakSelf = self;
     dispatch_source_set_event_handler(_readSource, ^{ @autoreleasepool {

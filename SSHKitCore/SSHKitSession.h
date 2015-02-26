@@ -37,9 +37,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  **/
 - (instancetype)init;
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate socketFD:(int)socketFD;
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq socketFD:(int)socketFD;
 
 // -----------------------------------------------------------------------------
 #pragma mark Configuration
