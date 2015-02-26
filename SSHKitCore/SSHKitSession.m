@@ -380,6 +380,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         int socket = strongSelf->_connector.socketFD;
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket);
         
+        // set socket to blocking mode
+        fcntl(socket, F_SETFL, 0);
+        
         // compression
         
         if (strongSelf.enableCompression) {
