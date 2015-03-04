@@ -42,7 +42,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     // make sure disconnect only once
     BOOL _alreadyDidDisconnect;
     
-    SSHKitConnector *_connector;
+    SSHKitConnector     *_connector;
+    
+    NSMutableArray      *_forwardRequests;
+    NSMutableArray      *_channels;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage currentStage;
@@ -113,7 +116,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         self.currentStage = SSHKitSessionStageNotConnected;
-        self.channels = [@[] mutableCopy];
+        _channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
         self.proxyType = SSHKitProxyTypeDirect;
         
@@ -508,11 +511,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         _readSource = nil;
     }
     
-    for (SSHKitChannel* channel in self.channels) {
+    for (SSHKitChannel* channel in _channels) {
         [channel close];
     }
     
-    [self.channels removeAllObjects];
+    [_channels removeAllObjects];
     
     if (self.isConnected) {
         ssh_disconnect(_rawSession);
@@ -889,14 +892,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
     
     // iterate channels, use NSEnumerationReverse to safe remove object in array
-    [self.channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
+    [_channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
     {
         switch (channel.stage) {
             case SSHKitChannelStageOpening:
-                [channel _doOpenDirect];
+                if (channel.type == SSHKitChannelTypeDirect) {
+                    [channel _doOpenDirect];
+                }
+                
                 break;
             case SSHKitChannelStageClosed:
-                [self.channels removeObject:channel];
+                [self removeChannel:channel];
                 break;
                 
             case SSHKitChannelStageReadWrite:
@@ -925,8 +931,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitChannel *forwardChannel = [SSHKitChannel _tryCreateForwardChannelFromSession:self];
     
     if (forwardChannel) {
-        [self.channels addObject:forwardChannel];
-        
         if (_delegateFlags.didAcceptForwardChannel) {
             [_delegate session:self didAcceptForwardChannel:forwardChannel];
         }
@@ -1061,6 +1065,28 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         dispatch_source_cancel(_keepAliveTimer);
         _keepAliveTimer = nil;
     }
+}
+
+#pragma mark - Enqueue / Dequeue Request and Channel
+
+- (void)addChannel:(SSHKitChannel *)channel
+{
+    [_channels addObject:channel];
+}
+- (void)removeChannel:(SSHKitChannel *)channel
+{
+    [_channels removeObject:channel];
+}
+
+- (void)addForwardRequest:(NSArray *)forwardRequest
+{
+    if (NSNotFound == [_forwardRequests indexOfObject:forwardRequest]) {
+        [_forwardRequests addObject:forwardRequest];
+    }
+}
+- (void)removeForwardRequest:(NSArray *)forwardRequest
+{
+    [_forwardRequests removeObject:forwardRequest];
 }
 
 @end

@@ -12,8 +12,6 @@
         unsigned int didOpen : 1;
         unsigned int didCloseWithError : 1;
     } _delegateFlags;
-    
-    ssh_channel _rawChannel;
 }
 
 @property (nonatomic, readwrite) SSHKitChannelType  type;
@@ -133,7 +131,7 @@
         channel->_rawChannel = ssh_channel_new(session.rawSession);
         
         // add channel to session list
-        [session.channels addObject:channel];
+        [session addChannel:channel];
         
         [channel _doOpenDirect];
     }}];
@@ -188,7 +186,7 @@
         case SSH_OK:
         {
             // success
-            [session->_forwardRequests removeObject:remoteForwardRequest];
+            [session removeForwardRequest:remoteForwardRequest];
             
             // boundport may equals 0, if listenPort is NOT 0.
             boundport = boundport ? boundport : port;
@@ -198,17 +196,15 @@
             
         case SSH_AGAIN:
             // try again
-            if (NSNotFound == [session->_forwardRequests indexOfObject:remoteForwardRequest]) {
-                [session->_forwardRequests addObject:remoteForwardRequest];
-            }
-                               
+            [session addForwardRequest:remoteForwardRequest];
+            
             break;
             
         case SSH_ERROR:
         default:
         {
             // failed
-            [session->_forwardRequests removeObject:remoteForwardRequest];
+            [session removeForwardRequest:remoteForwardRequest];
             if (completionHandler) completionHandler(NO, port, session.lastError);
         }
             break;
@@ -254,7 +250,7 @@
     channel.stage = SSHKitChannelStageReadWrite;
     
     // add channel to session list
-    [session.channels addObject:channel];
+    [session addChannel:channel];
     
     return channel;
 }
