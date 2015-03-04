@@ -137,7 +137,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  Close the session
  */
 - (void)disconnect;
-- (void)disconnectAsync;
+- (void)impoliteDisconnect;
 
 
 // -----------------------------------------------------------------------------

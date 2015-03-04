@@ -183,7 +183,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (void)dealloc
 {
     [self dispatchSyncOnSessionQueue: ^{
-        [self disconnect];
+        [self _disconnectWithError:nil];
         ssh_free(self.rawSession);
         self->_rawSession = NULL;
 	}];
@@ -259,7 +259,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             }
             
             if (error) {
-                [self disconnectWithError:error];
+                [self _disconnectWithError:error];
                 return;
             }
             
@@ -281,7 +281,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 if (self.logHandler) self.logHandler(@"SESSION DEBUG: unknown error occurred");
             }
             
-            [self disconnectWithError:self.lastError];
+            [self _disconnectWithError:self.lastError];
         }
             break;
             
@@ -371,7 +371,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             }
             
             if (error) {
-                [strongSelf disconnectWithError:error];
+                [strongSelf _disconnectWithError:error];
                 if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: error: %@", error);
                 return_from_block;
             }
@@ -425,7 +425,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         // disconnect if connected
         if (strongSelf.isConnected) {
-            [strongSelf disconnect];
+            [strongSelf _disconnectWithError:nil];
         }
         
         strongSelf.currentStage = SSHKitSessionStageConnecting;
@@ -469,12 +469,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)disconnect
 {
-	// Synchronous disconnection, as documented in the header file
-    [self disconnectWithError:nil];
-}
-
-- (void)disconnectAsync
-{
+    // Asynchronous disconnection
+    
     @synchronized(self) {    // lock
         [self _invalidateKeepAliveTimer];
         
@@ -488,6 +484,24 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             }}];
         }
     }
+}
+
+- (void)impoliteDisconnect
+{
+    if (_connector) {
+        [_connector disconnect];
+////        _connector = nil;
+    }
+//
+//    if (_readSource) {
+//        dispatch_source_cancel(_readSource);
+//        _readSource = nil;
+//    }
+    
+    
+    // Synchronous disconnection, as documented in the header file
+//    [self _disconnectWithError:nil];
+    [self disconnect];
 }
 
 - (void)_doDisconnectWithError:(NSError *)error
@@ -517,8 +531,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)disconnectWithError:(NSError *)error
+- (void)_disconnectWithError:(NSError *)error
 {
+    // Synchronous disconnection, as documented in the header file
+    
     @synchronized(self) {    // lock
         [self _invalidateKeepAliveTimer];
         
@@ -650,7 +666,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
                 NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:NO];
                 if (error) {
-                    [self disconnectWithError:error];
+                    [self _disconnectWithError:error];
                 }
                 
                 // Handoff to next auth method
@@ -680,11 +696,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 {
     switch (result) {
         case SSH_AUTH_DENIED:
-            [self disconnectWithError:self.lastError];
+            [self _disconnectWithError:self.lastError];
             return;
             
         case SSH_AUTH_ERROR:
-            [self disconnectWithError:self.lastError];
+            [self _disconnectWithError:self.lastError];
             return;
             
         case SSH_AUTH_SUCCESS:
@@ -699,7 +715,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
                 NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:YES];
                 if (error) {
-                    [self disconnectWithError:error];
+                    [self _disconnectWithError:error];
                 }
                 
                 // Handoff to next auth method
@@ -710,7 +726,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
         case SSH_AUTH_AGAIN: // should never come here
         default:
-            [self disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
+            [self _disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                           code:SSHKitErrorCodeAuthError
                                                       userInfo:@{ NSLocalizedDescriptionKey : @"Unknown error while authenticate user"} ]];
             return;
@@ -872,7 +888,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (void)_doReadWrite
 {
     if (!self.isConnected) {
-        [self disconnectWithError:self.lastError];
+        [self _disconnectWithError:self.lastError];
     }
     
     // iterate channels, use NSEnumerationReverse to safe remove object in array
@@ -1014,7 +1030,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
             if (strongSelf->_keepAliveCounter<=0) {
                 NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
-                [strongSelf disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
+                [strongSelf _disconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
                                                                     code:SSHKitErrorCodeTimeout
                                                                 userInfo:@{ NSLocalizedDescriptionKey : errorDesc } ]];
                 return_from_block;
@@ -1022,12 +1038,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
             int result = ssh_send_keepalive(strongSelf->_rawSession);
             if (result!=SSH_OK) {
-                [strongSelf disconnectWithError:strongSelf.lastError];
+                [strongSelf _disconnectWithError:strongSelf.lastError];
                 return;
             }
             
             if (!strongSelf.isConnected) {
-                [strongSelf disconnectWithError:strongSelf.lastError];
+                [strongSelf _disconnectWithError:strongSelf.lastError];
                 return;
             }
             
@@ -1050,17 +1066,24 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (SSHKitDirectChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
-    SSHKitDirectChannel *channel = [[SSHKitDirectChannel alloc] initWithSession:self delegate:aDelegate];
-    [channel _openWithHost:host onPort:port];
+    __block SSHKitDirectChannel *channel = nil;
     
     // add channel to session list
     __weak SSHKitSession *weakSelf = self;
-    [self dispatchAsyncOnSessionQueue:^{
+    [self dispatchSyncOnSessionQueue:^{
         SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
             return_from_block;
         }
         
+        if (!strongSelf.isConnected) {
+            return_from_block;
+        }
+        
+        channel = [[SSHKitDirectChannel alloc] initWithSession:self delegate:aDelegate];
+        
+        [channel setPeerHost:host port:port];
+        [channel _doOpen];
         [strongSelf.channels addObject:channel];
     }];
     
@@ -1074,6 +1097,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
+            return_from_block;
+        }
+        
+        if (!strongSelf.isConnected) {
             return_from_block;
         }
         

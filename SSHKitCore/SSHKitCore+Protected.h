@@ -60,7 +60,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @interface SSHKitDirectChannel ()
 
-- (void)_openWithHost:(NSString *)host onPort:(uint16_t)port;
+@property (readwrite) NSString      *host;
+@property (readwrite) NSUInteger    port;
 
 @end
 

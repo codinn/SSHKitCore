@@ -10,7 +10,9 @@
 
 @interface SSHKitDirectChannel : SSHKitChannel
 
-@property NSString      *host;
-@property NSUInteger    port;
+- (void)setPeerHost:(NSString *)host port:(NSUInteger)port;
+
+@property (readonly) NSString      *host;
+@property (readonly) NSUInteger    port;
 
 @end

@@ -32,9 +32,7 @@
 
 - (void)_doOpen
 {
-    if (self.stage != SSHKitChannelStageOpening) {
-        return;
-    }
+    self.stage = SSHKitChannelStageOpening;
     
     int result = ssh_channel_open_forward(_rawChannel, self.host.UTF8String, (int)self.port, "127.0.0.1", 22);
         
@@ -60,22 +58,10 @@
     }
 }
 
-- (void)_openWithHost:(NSString *)host onPort:(uint16_t)port
+- (void)setPeerHost:(NSString *)host port:(NSUInteger)port
 {
     self.host = host;
     self.port = port;
-    self.type = SSHKitChannelTypeDirect;
-    
-    __weak SSHKitDirectChannel *weakSelf = self;
-    [self.session dispatchAsyncOnSessionQueue: ^ { @autoreleasepool {
-        __strong SSHKitDirectChannel *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        
-        strongSelf.stage = SSHKitChannelStageOpening;
-        [strongSelf _doOpen];
-    }}];
 }
 
 @end
