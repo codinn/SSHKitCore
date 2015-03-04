@@ -29,6 +29,36 @@
     return self;
 }
 
++ (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate
+{
+    __block SSHKitChannel *channel = nil;
+    
+    [session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
+        if (!session.isConnected) {
+            return_from_block;
+        }
+        
+        channel = [[self alloc] initWithSession:session delegate:aDelegate];
+        
+        if (!channel) {
+            return_from_block;
+        }
+        
+        channel.directHost = host;
+        channel.directPort = port;
+        channel.type = SSHKitChannelTypeDirect;
+        
+        channel->_rawChannel = ssh_channel_new(session.rawSession);
+        
+        // add channel to session list
+        [session.channels addObject:channel];
+        
+        [channel _doOpenDirect];
+    }}];
+    
+    return channel;
+}
+
 - (void)dealloc
 {
     [self close];
@@ -79,6 +109,36 @@
             [strongSelf.delegate channelDidClose:strongSelf withError:error];
         }
     }}];
+}
+
+#pragma mark - direct-tcpip channel
+
+- (void)_doOpenDirect
+{
+    self.stage = SSHKitChannelStageOpening;
+    
+    int result = ssh_channel_open_forward(_rawChannel, self.directHost.UTF8String, (int)self.directPort, "127.0.0.1", 22);
+    
+    switch (result) {
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_OK:
+            self.stage = SSHKitChannelStageReadWrite;
+            
+            // opened
+            
+            if (_delegateFlags.didOpen) {
+                [self.delegate channelDidOpen:self];
+            }
+            break;
+            
+        default:
+            // open failed
+            [self closeWithError:self.session.lastError];
+            break;
+    }
 }
 
 #pragma mark - Properties
@@ -170,11 +230,6 @@
             [strongSelf.delegate channelDidWriteData:strongSelf];
         }
     }}];
-}
-
-- (void)_doOpen
-{
-    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:[NSString stringWithFormat:@"%s must be overridden in a subclass/category", __PRETTY_FUNCTION__] userInfo:nil];
 }
 
 @end

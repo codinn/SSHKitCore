@@ -12,6 +12,8 @@
  */
 @interface SSHKitChannel : NSObject
 
++ (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
+
 /** A valid SSHKitSession instance */
 @property (nonatomic, weak, readonly) SSHKitSession *session;
 
@@ -34,6 +36,10 @@
 @property (nonatomic, readonly) SSHKitChannelType type;
 
 @property (nonatomic, readonly) SSHKitChannelStage stage;
+
+/** direct-tcpip channel properties */
+@property (readonly) NSString      *directHost;
+@property (readonly) NSUInteger    directPort;
 
 /**
  A Boolean value indicating whether the channel is opened successfully

@@ -27,6 +27,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_session rawSession;
 
+@property (nonatomic, readwrite) NSMutableArray *channels;
+
 @end
 
 @interface SSHKitChannel () {
@@ -45,8 +47,11 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @property (nonatomic, readwrite) SSHKitChannelType  type;
 @property (nonatomic, readwrite) SSHKitChannelStage stage;
 
+@property (readwrite) NSString      *directHost;
+@property (readwrite) NSUInteger    directPort;
+
 - (void)_doRead;
-- (void)_doOpen;
+- (void)_doOpenDirect;
 
 /**
  Create a new SSHKitChannel instance.
@@ -56,13 +61,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
  */
 - (instancetype)initWithSession:(SSHKitSession *)session;
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
-@end
-
-@interface SSHKitDirectChannel ()
-
-@property (readwrite) NSString      *host;
-@property (readwrite) NSUInteger    port;
-
 @end
 
 @interface SSHKitForwardChannel ()

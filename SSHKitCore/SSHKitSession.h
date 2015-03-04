@@ -1,7 +1,7 @@
 #import <SSHKitCore/SSHKitCoreCommon.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
-@class SSHKitDirectChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
+@class SSHKitChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 
 typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 
@@ -176,8 +176,6 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 - (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
 
 #pragma mark - Open Channels
-
-- (SSHKitDirectChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
 - (void)requestRemoteForwardWithListenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
 

@@ -59,8 +59,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @property (nonatomic, readonly) dispatch_queue_t sessionQueue;
 
-@property (nonatomic, readwrite) NSMutableArray *channels;
-
 // connect over proxy
 @property (nonatomic) SSHKitProxyType proxyType;
 @property (nonatomic, copy) NSString  *proxyHost;
@@ -896,7 +894,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     {
         switch (channel.stage) {
             case SSHKitChannelStageOpening:
-                [channel _doOpen];
+                [channel _doOpenDirect];
                 break;
             case SSHKitChannelStageClosed:
                 [self.channels removeObject:channel];
@@ -1063,32 +1061,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 #pragma mark - Open Channels
-
-- (SSHKitDirectChannel *)openDirectChannelWithHost:(NSString *)host onPort:(uint16_t)port delegate:(id<SSHKitChannelDelegate>)aDelegate
-{
-    __block SSHKitDirectChannel *channel = nil;
-    
-    // add channel to session list
-    __weak SSHKitSession *weakSelf = self;
-    [self dispatchSyncOnSessionQueue:^{
-        SSHKitSession *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return_from_block;
-        }
-        
-        if (!strongSelf.isConnected) {
-            return_from_block;
-        }
-        
-        channel = [[SSHKitDirectChannel alloc] initWithSession:self delegate:aDelegate];
-        
-        [channel setPeerHost:host port:port];
-        [channel _doOpen];
-        [strongSelf.channels addObject:channel];
-    }];
-    
-    return channel;
-}
 
 - (void)requestRemoteForwardWithListenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
 {
