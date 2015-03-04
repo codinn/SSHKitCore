@@ -23,6 +23,10 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 };
 
 @interface SSHKitSession ()
+{
+    @public
+    NSMutableArray      *_forwardRequests;
+}
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_session rawSession;
@@ -78,21 +82,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @interface SSHKitHostKeyParser ()
 
 @property (nonatomic, readonly) ssh_key hostKey;
-
-@end
-
-@interface SSHKitRemoteForwardRequest : NSObject
-
-- (instancetype)initWithSession:(SSHKitSession *)session listenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
-
-- (int)request;
-
-@property (readwrite, weak) SSHKitSession  *session;
-
-@property (readwrite, strong) SSHKitRequestRemoteForwardCompletionBlock completionHandler;
-
-@property (readwrite, copy) NSString       *listenHost;
-@property (readwrite)      uint16_t        listenPort;
 
 @end
 

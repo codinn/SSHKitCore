@@ -143,6 +143,46 @@
 
 #pragma mark - tcpip-forward channel
 
+/** return value
+ * 0    - success
+ * -1   - error
+ * -2   - try again
+ */
++ (int)requestForwardListenOnSession:(SSHKitSession *)session withHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
+{
+    int boundport = 0;
+    int rc = ssh_forward_listen(session.rawSession, host.UTF8String, port, &boundport);
+    
+    switch (rc) {
+        case SSH_OK:
+        {
+            // success
+            [session->_forwardRequests removeObject:@[session, host, @(port), completionHandler]];
+            
+            // boundport may equals 0, if listenPort is NOT 0.
+            boundport = boundport ? boundport : port;
+            if (completionHandler) completionHandler(YES, boundport, nil);
+        }
+            break;
+            
+        case SSH_AGAIN:
+            // try again
+            [session->_forwardRequests addObject:@[session, host, @(port), completionHandler]];
+            break;
+            
+        case SSH_ERROR:
+        default:
+        {
+            // failed
+            [session->_forwardRequests removeObject:@[session, host, @(port), completionHandler]];
+            if (completionHandler) completionHandler(NO, port, session.lastError);
+        }
+            break;
+    }
+    
+    return rc;
+}
+
 + (instancetype)forwardChannelFromSession:(SSHKitSession *)session
 {
     __block SSHKitChannel *channel = nil;
@@ -154,7 +194,7 @@
         
         int destination_port = 0;
         ssh_channel rawChannel = ssh_channel_accept_forward(session.rawSession, 0, &destination_port);
-        if (!channel) {
+        if (!rawChannel) {
             return_from_block;
         }
         
@@ -265,60 +305,6 @@
             [strongSelf.delegate channelDidWriteData:strongSelf];
         }
     }}];
-}
-
-@end
-
-@implementation SSHKitRemoteForwardRequest
-
-- (instancetype)initWithSession:(SSHKitSession *)session listenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
-{
-    if (self=[super init]) {
-        self.session = session;
-        self.listenHost = host;
-        self.listenPort = port;
-        self.completionHandler = completionHandler;
-    }
-    
-    return self;
-}
-
-- (int)request
-{
-    int boundport = 0;
-    int rc = ssh_forward_listen(self.session.rawSession, self.listenHost.UTF8String, self.listenPort, &boundport);
-    
-    switch (rc) {
-        case SSH_OK:
-        {
-            // success
-            [[NSNotificationCenter defaultCenter] postNotificationName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
-                                                                object:self
-                                                              userInfo:nil];
-            
-            // boundport may equals 0, if listenPort is NOT 0.
-            boundport = boundport ? boundport : self.listenPort;
-            self.completionHandler(YES, boundport, nil);
-            break;
-        }
-            
-        case SSH_AGAIN:
-            // try again
-            break;
-            
-        case SSH_ERROR:
-        default:
-        {
-            // failed
-            [[NSNotificationCenter defaultCenter] postNotificationName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
-                                                                object:self
-                                                              userInfo:nil];
-            self.completionHandler(NO, self.listenPort, self.session.lastError);
-            break;
-        }
-    }
-    
-    return rc;
 }
 
 @end

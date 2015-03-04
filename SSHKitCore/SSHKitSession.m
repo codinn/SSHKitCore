@@ -34,7 +34,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 	dispatch_source_t   _readSource;
     dispatch_source_t   _keepAliveTimer;
     NSInteger           _keepAliveCounter;
-    NSMutableArray      *_forwardRequests;
     
     dispatch_block_t    _authBlock;
     
@@ -910,8 +909,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }];
     
     // try again forward-tcpip requests
-    for (SSHKitRemoteForwardRequest *forwardRequest in _forwardRequests) {
-        [forwardRequest request];
+    for (NSArray *forwardRequest in _forwardRequests) {
+        [SSHKitChannel requestForwardListenOnSession:forwardRequest[0] withHost:forwardRequest[1] port:[forwardRequest[2] unsignedShortValue] completionHandler:forwardRequest[3]];
     };
     
     // probe forward channel from accepted forward
@@ -1075,9 +1074,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        SSHKitRemoteForwardRequest *forwardRequest = [[SSHKitRemoteForwardRequest alloc] initWithSession:strongSelf listenHost:host onPort:port completionHandler:completionHandler];
-        [strongSelf->_forwardRequests addObject:forwardRequest];
-        [forwardRequest request];
+        int rc = [SSHKitChannel requestForwardListenOnSession:strongSelf withHost:host port:port completionHandler:completionHandler];
+        
     }}];
 }
 
