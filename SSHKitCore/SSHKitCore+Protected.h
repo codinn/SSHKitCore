@@ -50,6 +50,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @property (readwrite) NSString      *directHost;
 @property (readwrite) NSUInteger    directPort;
 
+@property (readwrite) NSInteger forwardDestinationPort;
+
 - (void)_doRead;
 - (void)_doOpenDirect;
 
@@ -61,15 +63,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
  */
 - (instancetype)initWithSession:(SSHKitSession *)session;
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
-@end
-
-@interface SSHKitForwardChannel ()
-- (instancetype)initWithSession:(SSHKitSession *)session rawChannel:(ssh_channel)rawChannel destinationPort:(NSInteger)destinationPort;
-
-// make sure execute in session dispatch queue
-+ (instancetype)tryAcceptForwardChannelOnSession:(SSHKitSession *)session;
-
-@property (readwrite) NSInteger destinationPort;
 @end
 
 @interface SSHKitPrivateKeyParser ()

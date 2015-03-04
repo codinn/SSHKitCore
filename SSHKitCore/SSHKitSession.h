@@ -1,7 +1,7 @@
 #import <SSHKitCore/SSHKitCoreCommon.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
-@class SSHKitChannel, SSHKitForwardChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
+@class SSHKitChannel, SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 
 typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 
@@ -230,5 +230,5 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /**
  * Called when ssh server has forward a connection.
  **/
-- (void)session:(SSHKitSession *)session didAcceptForwardChannel:(SSHKitForwardChannel *)channel;
+- (void)session:(SSHKitSession *)session didAcceptForwardChannel:(SSHKitChannel *)channel;
 @end

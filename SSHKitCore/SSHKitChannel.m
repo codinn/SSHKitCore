@@ -29,36 +29,6 @@
     return self;
 }
 
-+ (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate
-{
-    __block SSHKitChannel *channel = nil;
-    
-    [session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
-        if (!session.isConnected) {
-            return_from_block;
-        }
-        
-        channel = [[self alloc] initWithSession:session delegate:aDelegate];
-        
-        if (!channel) {
-            return_from_block;
-        }
-        
-        channel.directHost = host;
-        channel.directPort = port;
-        channel.type = SSHKitChannelTypeDirect;
-        
-        channel->_rawChannel = ssh_channel_new(session.rawSession);
-        
-        // add channel to session list
-        [session.channels addObject:channel];
-        
-        [channel _doOpenDirect];
-    }}];
-    
-    return channel;
-}
-
 - (void)dealloc
 {
     [self close];
@@ -113,6 +83,36 @@
 
 #pragma mark - direct-tcpip channel
 
++ (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate
+{
+    __block SSHKitChannel *channel = nil;
+    
+    [session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
+        if (!session.isConnected) {
+            return_from_block;
+        }
+        
+        channel = [[self alloc] initWithSession:session delegate:aDelegate];
+        
+        if (!channel) {
+            return_from_block;
+        }
+        
+        channel.directHost = host;
+        channel.directPort = port;
+        channel.type = SSHKitChannelTypeDirect;
+        
+        channel->_rawChannel = ssh_channel_new(session.rawSession);
+        
+        // add channel to session list
+        [session.channels addObject:channel];
+        
+        [channel _doOpenDirect];
+    }}];
+    
+    return channel;
+}
+
 - (void)_doOpenDirect
 {
     self.stage = SSHKitChannelStageOpening;
@@ -139,6 +139,41 @@
             [self closeWithError:self.session.lastError];
             break;
     }
+}
+
+#pragma mark - tcpip-forward channel
+
++ (instancetype)forwardChannelFromSession:(SSHKitSession *)session
+{
+    __block SSHKitChannel *channel = nil;
+    
+    [session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
+        if (!session.isConnected) {
+            return_from_block;
+        }
+        
+        int destination_port = 0;
+        ssh_channel rawChannel = ssh_channel_accept_forward(session.rawSession, 0, &destination_port);
+        if (!channel) {
+            return_from_block;
+        }
+        
+        channel = [[self alloc] initWithSession:session];
+        
+        if (!channel) {
+            return_from_block;
+        }
+        
+        channel.type = SSHKitChannelTypeForward;
+        channel.forwardDestinationPort = destination_port;
+        channel->_rawChannel = rawChannel;
+        channel.stage = SSHKitChannelStageReadWrite;
+        
+        // add channel to session list
+        [session.channels addObject:channel];
+    }}];
+    
+    return channel;
 }
 
 #pragma mark - Properties
@@ -230,6 +265,60 @@
             [strongSelf.delegate channelDidWriteData:strongSelf];
         }
     }}];
+}
+
+@end
+
+@implementation SSHKitRemoteForwardRequest
+
+- (instancetype)initWithSession:(SSHKitSession *)session listenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
+{
+    if (self=[super init]) {
+        self.session = session;
+        self.listenHost = host;
+        self.listenPort = port;
+        self.completionHandler = completionHandler;
+    }
+    
+    return self;
+}
+
+- (int)request
+{
+    int boundport = 0;
+    int rc = ssh_forward_listen(self.session.rawSession, self.listenHost.UTF8String, self.listenPort, &boundport);
+    
+    switch (rc) {
+        case SSH_OK:
+        {
+            // success
+            [[NSNotificationCenter defaultCenter] postNotificationName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
+                                                                object:self
+                                                              userInfo:nil];
+            
+            // boundport may equals 0, if listenPort is NOT 0.
+            boundport = boundport ? boundport : self.listenPort;
+            self.completionHandler(YES, boundport, nil);
+            break;
+        }
+            
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_ERROR:
+        default:
+        {
+            // failed
+            [[NSNotificationCenter defaultCenter] postNotificationName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
+                                                                object:self
+                                                              userInfo:nil];
+            self.completionHandler(NO, self.listenPort, self.session.lastError);
+            break;
+        }
+    }
+    
+    return rc;
 }
 
 @end
