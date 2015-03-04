@@ -175,10 +175,6 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  */
 - (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
 
-#pragma mark - Open Channels
-
-- (void)requestRemoteForwardWithListenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
-
 @end
 
 #pragma mark -

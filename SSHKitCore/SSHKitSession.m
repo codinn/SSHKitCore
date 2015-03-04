@@ -910,14 +910,19 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     // try again forward-tcpip requests
     for (NSArray *forwardRequest in _forwardRequests) {
-        [SSHKitChannel requestForwardListenOnSession:forwardRequest[0] withHost:forwardRequest[1] port:[forwardRequest[2] unsignedShortValue] completionHandler:forwardRequest[3]];
+        NSString *safeHost = forwardRequest[0];
+        if ([safeHost isEqual:[NSNull null]]) {
+            safeHost = NULL;
+        }
+        
+        [SSHKitChannel _doRequestRemoteForwardOnSession:self withListenHost:safeHost listenPort:[forwardRequest[1] unsignedShortValue] completionHandler:forwardRequest[2]];
     };
     
     // probe forward channel from accepted forward
     // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
     //       another method is create a temporary channel, and let it consumes the wild data.
     //       The real cause is unkown, may be it's caused by data arrived while channels already closed
-    SSHKitChannel *forwardChannel = [SSHKitChannel forwardChannelFromSession:self];
+    SSHKitChannel *forwardChannel = [SSHKitChannel _tryCreateForwardChannelFromSession:self];
     
     if (forwardChannel) {
         [self.channels addObject:forwardChannel];
@@ -1056,27 +1061,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         dispatch_source_cancel(_keepAliveTimer);
         _keepAliveTimer = nil;
     }
-}
-
-#pragma mark - Open Channels
-
-- (void)requestRemoteForwardWithListenHost:(NSString *)host onPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
-{
-    __weak SSHKitSession *weakSelf = self;
-    
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        SSHKitSession *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return_from_block;
-        }
-        
-        if (!strongSelf.isConnected) {
-            return_from_block;
-        }
-        
-        int rc = [SSHKitChannel requestForwardListenOnSession:strongSelf withHost:host port:port completionHandler:completionHandler];
-        
-    }}];
 }
 
 @end

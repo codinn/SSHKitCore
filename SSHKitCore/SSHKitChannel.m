@@ -3,8 +3,36 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 
+
 @interface SSHKitChannel () {
+    struct {
+        unsigned int didReadStdoutData : 1;
+        unsigned int didReadStderrData : 1;
+        unsigned int didWriteData : 1;
+        unsigned int didOpen : 1;
+        unsigned int didCloseWithError : 1;
+    } _delegateFlags;
+    
+    ssh_channel _rawChannel;
 }
+
+@property (nonatomic, readwrite) SSHKitChannelType  type;
+@property (nonatomic, readwrite) SSHKitChannelStage stage;
+
+@property (readwrite) NSString      *directHost;
+@property (readwrite) NSUInteger    directPort;
+
+@property (readwrite) NSInteger forwardDestinationPort;
+
+/**
+ Create a new SSHKitChannel instance.
+ 
+ @param session A valid, connected, SSHKitSession instance
+ @returns New SSHKitChannel instance
+ */
+- (instancetype)initWithSession:(SSHKitSession *)session;
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
+
 @end
 
 @implementation SSHKitChannel
@@ -143,21 +171,24 @@
 
 #pragma mark - tcpip-forward channel
 
-/** return value
- * 0    - success
- * -1   - error
- * -2   - try again
- */
-+ (int)requestForwardListenOnSession:(SSHKitSession *)session withHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
++ (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
 {
     int boundport = 0;
     int rc = ssh_forward_listen(session.rawSession, host.UTF8String, port, &boundport);
+    
+    NSArray *remoteForwardRequest = NULL;
+    
+    if (host) {
+        remoteForwardRequest = @[host, @(port), completionHandler];
+    } else {
+        remoteForwardRequest = @[[NSNull null], @(port), completionHandler];
+    }
     
     switch (rc) {
         case SSH_OK:
         {
             // success
-            [session->_forwardRequests removeObject:@[session, host, @(port), completionHandler]];
+            [session->_forwardRequests removeObject:remoteForwardRequest];
             
             // boundport may equals 0, if listenPort is NOT 0.
             boundport = boundport ? boundport : port;
@@ -167,51 +198,63 @@
             
         case SSH_AGAIN:
             // try again
-            [session->_forwardRequests addObject:@[session, host, @(port), completionHandler]];
+            if (NSNotFound == [session->_forwardRequests indexOfObject:remoteForwardRequest]) {
+                [session->_forwardRequests addObject:remoteForwardRequest];
+            }
+                               
             break;
             
         case SSH_ERROR:
         default:
         {
             // failed
-            [session->_forwardRequests removeObject:@[session, host, @(port), completionHandler]];
+            [session->_forwardRequests removeObject:remoteForwardRequest];
             if (completionHandler) completionHandler(NO, port, session.lastError);
         }
             break;
     }
-    
-    return rc;
 }
 
-+ (instancetype)forwardChannelFromSession:(SSHKitSession *)session
++ (void)requestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
 {
-    __block SSHKitChannel *channel = nil;
+    __weak SSHKitSession *weakSession = session;
     
-    [session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
-        if (!session.isConnected) {
+    [session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+        SSHKitSession *strongSession = weakSession;
+        if (!strongSession) {
             return_from_block;
         }
         
-        int destination_port = 0;
-        ssh_channel rawChannel = ssh_channel_accept_forward(session.rawSession, 0, &destination_port);
-        if (!rawChannel) {
+        if (!strongSession.isConnected) {
             return_from_block;
         }
         
-        channel = [[self alloc] initWithSession:session];
+        [self _doRequestRemoteForwardOnSession:strongSession withListenHost:host listenPort:port completionHandler:completionHandler];
         
-        if (!channel) {
-            return_from_block;
-        }
-        
-        channel.type = SSHKitChannelTypeForward;
-        channel.forwardDestinationPort = destination_port;
-        channel->_rawChannel = rawChannel;
-        channel.stage = SSHKitChannelStageReadWrite;
-        
-        // add channel to session list
-        [session.channels addObject:channel];
     }}];
+}
+
++ (instancetype)_tryCreateForwardChannelFromSession:(SSHKitSession *)session
+{
+    int destination_port = 0;
+    ssh_channel rawChannel = ssh_channel_accept_forward(session.rawSession, 0, &destination_port);
+    if (!rawChannel) {
+        return nil;
+    }
+    
+    SSHKitChannel *channel = [[self alloc] initWithSession:session];
+    
+    if (!channel) {
+        return nil;
+    }
+    
+    channel.type = SSHKitChannelTypeForward;
+    channel.forwardDestinationPort = destination_port;
+    channel->_rawChannel = rawChannel;
+    channel.stage = SSHKitChannelStageReadWrite;
+    
+    // add channel to session list
+    [session.channels addObject:channel];
     
     return channel;
 }

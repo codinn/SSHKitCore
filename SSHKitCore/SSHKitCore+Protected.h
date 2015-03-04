@@ -35,38 +35,13 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
-@interface SSHKitChannel () {
-    @protected
-    struct {
-        unsigned int didReadStdoutData : 1;
-        unsigned int didReadStderrData : 1;
-        unsigned int didWriteData : 1;
-        unsigned int didOpen : 1;
-        unsigned int didCloseWithError : 1;
-    } _delegateFlags;
-    
-    ssh_channel _rawChannel;
-}
+@interface SSHKitChannel ()
 
-@property (nonatomic, readwrite) SSHKitChannelType  type;
-@property (nonatomic, readwrite) SSHKitChannelStage stage;
-
-@property (readwrite) NSString      *directHost;
-@property (readwrite) NSUInteger    directPort;
-
-@property (readwrite) NSInteger forwardDestinationPort;
++ (instancetype)_tryCreateForwardChannelFromSession:(SSHKitSession *)session;
++ (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
 
 - (void)_doRead;
 - (void)_doOpenDirect;
-
-/**
- Create a new SSHKitChannel instance.
- 
- @param session A valid, connected, SSHKitSession instance
- @returns New SSHKitChannel instance
- */
-- (instancetype)initWithSession:(SSHKitSession *)session;
-- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
 @end
 
 @interface SSHKitPrivateKeyParser ()

@@ -14,9 +14,7 @@
 
 + (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
-+ (instancetype)forwardChannelFromSession:(SSHKitSession *)session;
-
-+ (int)requestForwardListenOnSession:(SSHKitSession *)session withHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
++ (void)requestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
 
 /** A valid SSHKitSession instance */
 @property (nonatomic, weak, readonly) SSHKitSession *session;
