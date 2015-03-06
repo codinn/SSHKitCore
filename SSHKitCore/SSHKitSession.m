@@ -391,6 +391,22 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_COMPRESSION, "no");
         }
         
+        // ciphers
+        if (strongSelf.ciphers.length) {
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_CIPHERS_C_S, strongSelf.ciphers.UTF8String);
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_CIPHERS_S_C, strongSelf.ciphers.UTF8String);
+        }
+        
+        // host key algorithms
+        if (strongSelf.keyExchangeAlgorithms.length) {
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_KEY_EXCHANGE, strongSelf.keyExchangeAlgorithms.UTF8String);
+        }
+        
+        // host key algorithms
+        if (strongSelf.hostKeyAlgorithms.length) {
+            ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_HOSTKEYS, strongSelf.hostKeyAlgorithms.UTF8String);
+        }
+        
         // tcp keepalive
         if ( strongSelf.serverAliveCountMax<=0 ) {
             int on = 1;
@@ -405,15 +421,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         int verbosity = SSH_LOG_NOLOG;
 #endif
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
-        ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_HOSTKEYS,
-                        "ssh-rsa,ssh-dss,"
-                        "ecdsa-sha2-nistp256-cert-v01@openssh.com,"
-                        "ecdsa-sha2-nistp384-cert-v01@openssh.com,"
-                        "ecdsa-sha2-nistp521-cert-v01@openssh.com,"
-                        "ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,"
-                        "ssh-rsa-cert-v00@openssh.com,ssh-dss-cert-v00@openssh.com,"
-                        "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521"
-                        );
         
         if (strongSelf->_timeout > 0) {
             ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_TIMEOUT, &strongSelf->_timeout);

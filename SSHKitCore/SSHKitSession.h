@@ -102,6 +102,9 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 - (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password;
 
 @property BOOL      enableCompression;
+@property NSString  *ciphers;
+@property NSString  *hostKeyAlgorithms;
+@property NSString  *keyExchangeAlgorithms;
 @property BOOL      enableIPv4;
 @property BOOL      enableIPv6;
 @property NSInteger serverAliveCountMax;
