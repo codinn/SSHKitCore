@@ -486,24 +486,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)impoliteDisconnect
-{
-    if (_connector) {
-        [_connector disconnect];
-////        _connector = nil;
-    }
-//
-//    if (_readSource) {
-//        dispatch_source_cancel(_readSource);
-//        _readSource = nil;
-//    }
-    
-    
-    // Synchronous disconnection, as documented in the header file
-//    [self _disconnectWithError:nil];
-    [self disconnect];
-}
-
 - (void)_doDisconnectWithError:(NSError *)error
 {
     if (_readSource) {
@@ -523,7 +505,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     if (_connector) {
         [_connector disconnect];
-        _connector = nil;
     }
     
     if (_delegateFlags.didDisconnectWithError) {
