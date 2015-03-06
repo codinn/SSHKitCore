@@ -34,7 +34,7 @@
     // get key type
     // --------------------------------------------------
     
-    parser->_keyType = (SSHKitHostKeyType)ssh_key_type(parser->_hostKey);
+    parser->_keyType = (NSInteger)ssh_key_type(parser->_hostKey);
     
     // --------------------------------------------------
     // get base64 key string
@@ -68,7 +68,7 @@
     return parser;
 }
 
-+ (instancetype)parserFromBase64:(NSString *)base64 withType:(SSHKitHostKeyType)type error:(NSError **)errPtr
++ (instancetype)parserFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr
 {
     SSHKitHostKeyParser *parser = [[SSHKitHostKeyParser alloc] init];
     if (!parser) {
@@ -150,24 +150,15 @@
     }
 }
 
-+ (NSString *)nameForKeyType:(SSHKitHostKeyType)keyType
++ (NSString *)nameForKeyType:(NSInteger)keyType
 {
-    switch (keyType) {
-        case SSHKitHostKeyTypeDSS:
-            return @"DSS";
-            
-        case SSHKitHostKeyTypeECDSA:
-            return @"ECDSA";
-            
-        case SSHKitHostKeyTypeRSA:
-            return @"RSA";
-            
-        case SSHKitHostKeyTypeRSA1:
-            return @"RSA1";
-            
-        default:
-            return @"UNKNOWN";
+    const char *name = ssh_key_type_to_char((enum ssh_keytypes_e)keyType);
+    
+    if (!name) {
+        return nil;
     }
+    
+    return @(name);
 }
 
 @end

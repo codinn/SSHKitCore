@@ -7,16 +7,6 @@
 //
 #import <Foundation/Foundation.h>
 
-/* some types for keys */
-/* same as ssh_keytypes_e from header libssh.h */
-typedef NS_ENUM(NSInteger, SSHKitHostKeyType) {
-    SSHKitHostKeyTypeUnknown=0,
-    SSHKitHostKeyTypeDSS=1,
-    SSHKitHostKeyTypeRSA,
-    SSHKitHostKeyTypeRSA1,
-    SSHKitHostKeyTypeECDSA,
-};
-
 /**
  * Seeing a return statements within an inner block
  * can sometimes be mistaken for a return point of the enclosing method.

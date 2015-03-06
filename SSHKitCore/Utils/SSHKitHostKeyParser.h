@@ -14,13 +14,13 @@
 @interface SSHKitHostKeyParser : NSObject
 
 + (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr;
-+ (instancetype)parserFromBase64:(NSString *)base64 withType:(SSHKitHostKeyType)type error:(NSError **)errPtr;
++ (instancetype)parserFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr;
 
-@property (nonatomic, readonly) SSHKitHostKeyType   keyType;
+@property (nonatomic, readonly) NSInteger           keyType;
 @property (nonatomic, readonly) NSString            *typeName;
 @property (nonatomic, readonly) NSString            *base64;
 @property (nonatomic, readonly) NSString            *fingerprint;
 
-+ (NSString *)nameForKeyType:(SSHKitHostKeyType)keyType;
++ (NSString *)nameForKeyType:(NSInteger)keyType;
 
 @end
