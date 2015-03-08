@@ -11,7 +11,6 @@
 
 @implementation SSHKitHostKeyParser
 
-
 + (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr
 {
     // --------------------------------------------------
@@ -111,6 +110,15 @@
 - (NSString *)typeName
 {
     return [self.class nameForKeyType:self.keyType];
+}
+
+- (NSString *)description
+{
+    if (!self.typeName.length) {
+        return nil;
+    }
+    
+    return [NSString stringWithFormat:@"%@ [%@]", self.fingerprint, self.typeName];
 }
 
 + (NSString *)md5FingerprintForHostKey:(ssh_key)hostKey error:(NSError **)errPtr

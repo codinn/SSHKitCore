@@ -21,6 +21,4 @@
 @property (nonatomic, readonly) NSString            *base64;
 @property (nonatomic, readonly) NSString            *fingerprint;
 
-+ (NSString *)nameForKeyType:(NSInteger)keyType;
-
 @end
