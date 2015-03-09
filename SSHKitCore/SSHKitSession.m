@@ -296,14 +296,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         if (!strongSelf->_connector) {
-            if (self.proxyType > SSHKitProxyTypeDirect) {
+            if (strongSelf.proxyType > SSHKitProxyTypeDirect) {
                 // connect over a proxy server
                 
                 if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: Connecting through proxy with type %d", strongSelf.proxyType);
                 
                 id ConnectProxyClass = SSHKitConnectorProxy.class;
                 
-                switch (self.proxyType) {
+                switch (strongSelf.proxyType) {
                     case SSHKitProxyTypeHTTP:
                     case SSHKitProxyTypeHTTPS:
                         ConnectProxyClass = SSHKitConnectorHTTPS.class;
@@ -468,9 +468,15 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             // do stuff once
             _alreadyDidDisconnect = YES;
             
+            __weak SSHKitSession *weakSelf = self;
             // Synchronous disconnection, as documented in the header file
             [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-                [self _doDisconnectWithError:nil];
+                __strong SSHKitSession *strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return_from_block;
+                }
+                
+                [strongSelf _doDisconnectWithError:nil];
             }}];
         }
     }
