@@ -942,7 +942,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         // reset keepalive counter
-        strongSelf->_keepAliveCounter = self.serverAliveCountMax;
+        strongSelf->_keepAliveCounter = strongSelf.serverAliveCountMax;
         
         switch (strongSelf.currentStage) {
             case SSHKitSessionStageNotConnected:
