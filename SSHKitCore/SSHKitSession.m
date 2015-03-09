@@ -158,23 +158,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		dispatch_queue_set_specific(_sessionQueue, _isOnSessionQueueKey, nonNullUnusedPointer, NULL);
         
         _alreadyDidDisconnect = NO;
-        
-        // remote forward has requested, remote server responsed the request
-        __weak SSHKitSession *weakSelf = self;
-        [[NSNotificationCenter defaultCenter] addObserverForName:SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION
-                                                          object:nil
-                                                           queue:nil
-                                                      usingBlock:^(NSNotification *notification) {
-                                                          __strong SSHKitSession *strongSelf = weakSelf;
-                                                          if (!strongSelf) {
-                                                              return;
-                                                          }
-                                                          
-                                                          // dispatch async, since remote forward request will be removed from array while iterating
-                                                          [strongSelf dispatchAsyncOnSessionQueue:^{
-                                                              [strongSelf->_forwardRequests removeObject:notification.object];
-                                                          }];
-                                                      }];
     }
     
     return self;

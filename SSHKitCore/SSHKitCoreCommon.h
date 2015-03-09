@@ -19,7 +19,6 @@
 #define SSHKitLibsshErrorDomain  @"SSHKit.libssh"
 #define SSHKitSessionErrorDomain @"SSHKit.Session"
 #define SSHKitChannelErrorDomain @"SSHKit.Channel"
-#define SSHKIT_REMOTE_FORWARD_COMPLETE_NOTIFICATION @"com.codinn.sshkit.remote-forward.complete.notification"
 
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     SSHKitErrorCodeNoError   = 0,
