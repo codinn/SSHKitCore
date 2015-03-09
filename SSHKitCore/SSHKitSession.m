@@ -482,6 +482,15 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
+- (void)impoliteDisconnect
+{
+    if (_connector) {
+        [_connector disconnect];
+    }
+    
+    [self disconnect];
+}
+
 - (void)_doDisconnectWithError:(NSError *)error
 {
     if (_readSource) {
