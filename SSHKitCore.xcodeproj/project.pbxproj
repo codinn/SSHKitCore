@@ -26,11 +26,11 @@
 		4A49F6671A49282600D9BA80 /* SSHKitConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6651A49282600D9BA80 /* SSHKitConnector.m */; };
 		4A623BFC1A26F90B0071C135 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E4D99AA315DE15B300EB5615 /* libz.dylib */; };
 		4A652E9319AD891400FAEB28 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A652E9219AD891400FAEB28 /* Security.framework */; };
-		4A9BE8BE1AB182B300345886 /* libssh_threads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */; };
-		4A9BE8BF1AB182B300345886 /* libssh.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725A19FFE2AE009B0CC7 /* libssh.a */; };
 		4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */; };
 		4AD19C351A6E008800EC7E65 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AD19C331A6E008800EC7E65 /* libcrypto.a */; };
 		4AD19C361A6E008800EC7E65 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AD19C341A6E008800EC7E65 /* libssl.a */; };
+		4AD19C371A6E02F600EC7E65 /* libssh_threads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */; };
+		4AD19C381A6E02F600EC7E65 /* libssh.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725A19FFE2AE009B0CC7 /* libssh.a */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
@@ -224,8 +224,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A9BE8BE1AB182B300345886 /* libssh_threads.a in Frameworks */,
-				4A9BE8BF1AB182B300345886 /* libssh.a in Frameworks */,
+				4AD19C371A6E02F600EC7E65 /* libssh_threads.a in Frameworks */,
+				4AD19C381A6E02F600EC7E65 /* libssh.a in Frameworks */,
 				4AD19C351A6E008800EC7E65 /* libcrypto.a in Frameworks */,
 				4AD19C361A6E008800EC7E65 /* libssl.a in Frameworks */,
 				4A623BFC1A26F90B0071C135 /* libz.dylib in Frameworks */,
@@ -293,9 +293,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 				4AEF726019FFE2AE009B0CC7 /* exec */,
 				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
@@ -460,7 +460,7 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
 			name = libssh.dylib;
@@ -475,7 +475,7 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
 			name = libssh_threads.dylib;
