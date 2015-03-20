@@ -901,14 +901,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }];
     
     // try again forward-tcpip requests
-    for (NSArray *forwardRequest in _forwardRequests) {
+    [_forwardRequests enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSArray *forwardRequest, NSUInteger index, BOOL *stop) {
         NSString *safeHost = forwardRequest[0];
         if ([safeHost isEqual:[NSNull null]]) {
             safeHost = NULL;
         }
         
         [SSHKitChannel _doRequestRemoteForwardOnSession:self withListenHost:safeHost listenPort:[forwardRequest[1] unsignedShortValue] completionHandler:forwardRequest[2]];
-    };
+    }];
     
     // probe forward channel from accepted forward
     // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
