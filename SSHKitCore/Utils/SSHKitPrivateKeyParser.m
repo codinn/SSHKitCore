@@ -83,6 +83,39 @@
     return parser;
 }
 
++ (instancetype)generate:(SSHKitKeyType) type parameter:(int)param error:(NSError **)errPtr{
+    SSHKitPrivateKeyParser *parser = [[SSHKitPrivateKeyParser alloc] init];
+    enum ssh_keytypes_e sshKeyType = SSH_KEYTYPE_UNKNOWN;
+    switch (type) {
+        case SSHKitKeyTypeUnknown:
+            sshKeyType = SSH_KEYTYPE_UNKNOWN;
+            break;
+        case SSHKitKeyTypeDSS:
+            sshKeyType = SSH_KEYTYPE_DSS;
+            break;
+        case SSHKitKeyTypeRSA:
+            sshKeyType = SSH_KEYTYPE_RSA;
+            break;
+        case SSHKitKeyTypeRSA1:
+            sshKeyType = SSH_KEYTYPE_RSA1;
+            break;
+        case SSHKitKeyTypeECDSA:
+            sshKeyType = SSH_KEYTYPE_ECDSA;
+            break;
+    }
+    int ret = ssh_pki_generate(sshKeyType, param, &parser->_privateKey);
+    switch (ret) {
+        case SSH_OK:
+            break;
+        default:
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                                      code:SSHKitErrorCodeAuthError
+                                                  userInfo:@{ NSLocalizedDescriptionKey : @"Could not generate private key" }];
+            return nil;;
+    }
+    return parser;
+}
+
 - (void)dealloc
 {
     if (_publicKey) {
@@ -114,6 +147,18 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }
     
     return SSH_ERROR;
+}
+
+- (void)exportPrivateKey:(NSString *)path passpharse:(NSString *)passowrd error:(NSError **)errPtr{
+    int ret = ssh_pki_export_privkey_file(self->_privateKey, passowrd.UTF8String, NULL, NULL, path.UTF8String);
+    switch (ret) {
+        case SSH_OK:
+            break;
+        default:
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                                                      code:SSHKitErrorCodeAuthError
+                                                  userInfo:@{ NSLocalizedDescriptionKey : @"Could not export private key" }];
+    }
 }
 
 @end

@@ -15,4 +15,8 @@
 
 + (instancetype)parserFromBase64:(NSString *)base64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr;
 
++ (instancetype)generate:(SSHKitKeyType) type parameter:(int)param error:(NSError **)errPtr;
+
+- (void)exportPrivateKey:(NSString *)path passpharse:(NSString *)passpharse error:(NSError **)errPtr;
+
 @end

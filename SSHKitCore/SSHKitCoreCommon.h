@@ -57,6 +57,14 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageClosed,         // the channel has been closed
 };
 
+typedef NS_ENUM(NSInteger, SSHKitKeyType) {
+  SSHKitKeyTypeUnknown=0,
+  SSHKitKeyTypeDSS=1,
+  SSHKitKeyTypeRSA,
+  SSHKitKeyTypeRSA1,
+  SSHKitKeyTypeECDSA
+};
+
 /* All implementations MUST be able to process packets with an
  * uncompressed payload length of 32768 bytes or less and a total packet
  * size of 35000 bytes or less (including 'packet_length',
