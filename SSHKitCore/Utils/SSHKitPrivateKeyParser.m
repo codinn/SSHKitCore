@@ -150,6 +150,8 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
 }
 
 - (void)exportPrivateKey:(NSString *)path passpharse:(NSString *)passowrd error:(NSError **)errPtr{
+    // passpharse not work
+    // http://www.libssh.org/archive/libssh/2015-02/0000004.html
     int ret = ssh_pki_export_privkey_file(self->_privateKey, passowrd.UTF8String, NULL, NULL, path.UTF8String);
     switch (ret) {
         case SSH_OK:
