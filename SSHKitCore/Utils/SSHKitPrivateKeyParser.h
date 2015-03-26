@@ -11,6 +11,8 @@
 
 @interface SSHKitPrivateKeyParser : NSObject
 
+@property (nonatomic) NSString *passpharse;
+
 + (instancetype)parserFromFilePath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr;
 
 + (instancetype)parserFromBase64:(NSString *)base64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr;
