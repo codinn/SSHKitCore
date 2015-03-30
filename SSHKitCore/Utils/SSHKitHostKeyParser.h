@@ -14,7 +14,10 @@
 @interface SSHKitHostKeyParser : NSObject
 
 + (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr;
++ (instancetype)parserFromFile:(NSString *)path error:(NSError **)errPtr;
 + (instancetype)parserFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr;
+
+- (void)exportPublicKey:(NSString *)path error:(NSError **)errPtr;
 
 @property (nonatomic, readonly) NSInteger           keyType;
 @property (nonatomic, readonly) NSString            *typeName;
