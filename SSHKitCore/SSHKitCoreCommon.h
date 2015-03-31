@@ -52,7 +52,9 @@ typedef NS_ENUM(NSInteger, SSHKitChannelType)  {
 typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageInvalid,        // channel has not been inited correctly
     SSHKitChannelStageCreated,        // channel has been created
-    SSHKitChannelStageOpening,        // the channel is opening
+    SSHKitChannelStageOpening1,       // the channel is opening
+    SSHKitChannelStageOpening2,       // the channel is opening
+    SSHKitChannelStageOpening3,       // the channel is opening
     SSHKitChannelStageReadWrite,      // the channel has been opened, we can read / write from the channel
     SSHKitChannelStageClosed,         // the channel has been closed
 };

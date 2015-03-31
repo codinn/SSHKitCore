@@ -44,6 +44,11 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 + (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
 
 - (void)_doRead;
+
+- (void)_doOpenSession;
+- (void)_doRequestPty;
+- (void)_doRequestShell;
+
 - (void)_doOpenDirect;
 @end
 

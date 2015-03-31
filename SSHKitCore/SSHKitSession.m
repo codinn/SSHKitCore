@@ -881,12 +881,44 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [_channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
     {
         switch (channel.stage) {
-            case SSHKitChannelStageOpening:
-                if (channel.type == SSHKitChannelTypeDirect) {
-                    [channel _doOpenDirect];
+            case SSHKitChannelStageOpening1:
+                switch (channel.type) {
+                    case SSHKitChannelTypeDirect:
+                        [channel _doOpenDirect];
+                        break;
+                        
+                    case SSHKitChannelTypeShell:
+                        [channel _doOpenSession];
+                        break;
+                        
+                    default:
+                        break;
                 }
-                
                 break;
+                
+            case SSHKitChannelStageOpening2:
+                switch (channel.type) {
+                    case SSHKitChannelTypeShell:
+                        [channel _doRequestPty];
+                        break;
+                        
+                    default:
+                        break;
+                }
+                break;
+                
+                
+            case SSHKitChannelStageOpening3:
+                switch (channel.type) {
+                    case SSHKitChannelTypeShell:
+                        [channel _doRequestShell];
+                        break;
+                        
+                    default:
+                        break;
+                }
+                break;
+                
             case SSHKitChannelStageClosed:
                 [self removeChannel:channel];
                 break;
