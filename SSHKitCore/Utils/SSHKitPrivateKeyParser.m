@@ -106,9 +106,6 @@
     int ret = ssh_pki_generate(sshKeyType, param, &parser->_privateKey);
     switch (ret) {
         case SSH_OK:
-            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
-                                                      code:SSHKitErrorCodeAuthError
-                                                  userInfo:@{ NSLocalizedDescriptionKey : @"Could not generate private key" }];
             break;
         default:
             if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
