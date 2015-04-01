@@ -12,6 +12,8 @@
  */
 @interface SSHKitChannel : NSObject
 
++ (instancetype)shellChannelFromeSession:(SSHKitSession *)session withPtyType:(NSString *)ptyType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
+
 + (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
 + (void)requestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;

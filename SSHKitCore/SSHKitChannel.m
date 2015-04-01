@@ -107,6 +107,123 @@
     }}];
 }
 
+#pragma mark - shell channel
+
++ (instancetype)shellChannelFromeSession:(SSHKitSession *)session withPtyType:(NSString *)ptyType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate
+{
+    __block SSHKitChannel *channel = nil;
+    
+    [session dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
+        if (!session.isConnected) {
+            return_from_block;
+        }
+        
+        channel = [[self alloc] initWithSession:session delegate:aDelegate];
+        
+        if (!channel) {
+            return_from_block;
+        }
+        
+        channel.type = SSHKitChannelTypeShell;
+        
+        channel->_rawChannel = ssh_channel_new(session.rawSession);
+        
+        // add channel to session list
+        [session addChannel:channel];
+        
+        channel.stage = SSHKitChannelStageOpening1;
+        [channel _doOpenSession];
+    }}];
+    
+    return channel;
+}
+
+- (void)_doOpenSession
+{
+    if (self.stage != SSHKitChannelStageOpening1) {
+        return;
+    }
+    
+    int result = ssh_channel_open_session(_rawChannel);
+    
+    switch (result) {
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_OK:
+            self.stage = SSHKitChannelStageOpening2;
+            
+            // opened
+            [self _doRequestPty];
+            
+            break;
+            
+        default:
+            // open failed
+            [self closeWithError:self.session.lastError];
+            break;
+    }
+}
+
+- (void)_doRequestPty
+{
+    if (self.stage != SSHKitChannelStageOpening2) {
+        return;
+    }
+    
+    int result = ssh_channel_request_pty_size(_rawChannel, "xterm", 80, 24);
+    
+    switch (result) {
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_OK:
+            self.stage = SSHKitChannelStageOpening3;
+            
+            // opened
+            [self _doRequestShell];
+            
+            break;
+            
+        default:
+            // open failed
+            [self closeWithError:self.session.lastError];
+            break;
+    }
+}
+
+- (void)_doRequestShell
+{
+    if (self.stage != SSHKitChannelStageOpening3) {
+        return;
+    }
+    
+    int result = ssh_channel_request_shell(_rawChannel);
+    
+    switch (result) {
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_OK:
+            self.stage = SSHKitChannelStageReadWrite;
+            
+            // opened
+            
+            if (_delegateFlags.didOpen) {
+                [self.delegate channelDidOpen:self];
+            }
+            break;
+            
+        default:
+            // open failed
+            [self closeWithError:self.session.lastError];
+            break;
+    }
+}
+
 #pragma mark - direct-tcpip channel
 
 + (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate
@@ -133,6 +250,7 @@
         // add channel to session list
         [session addChannel:channel];
         
+        channel.stage = SSHKitChannelStageOpening1;
         [channel _doOpenDirect];
     }}];
     
@@ -141,7 +259,9 @@
 
 - (void)_doOpenDirect
 {
-    self.stage = SSHKitChannelStageOpening;
+    if (self.stage != SSHKitChannelStageOpening1) {
+        return;
+    }
     
     int result = ssh_channel_open_forward(_rawChannel, self.directHost.UTF8String, (int)self.directPort, "127.0.0.1", 22);
     
@@ -310,6 +430,15 @@
                 break;
             default:
                 break;
+        }
+        
+        if (self.type == SSHKitChannelTypeShell) {
+            // test
+            NSString *outstring = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            NSLog(@"%@", outstring);
+            
+            NSString *sendString = @"echo $TERM\n";
+            [self writeData:[sendString dataUsingEncoding:NSUTF8StringEncoding]];
         }
     }
 }
