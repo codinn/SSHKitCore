@@ -22,6 +22,16 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     SSHKitChannelStderrData,
 };
 
+@interface SSHKitForwardRequest : NSObject
+
+- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
+
+@property (readonly, copy) NSString    *listenHost;
+@property (readonly)       uint16_t    listenPort;
+@property (readonly, strong)       SSHKitRequestRemoteForwardCompletionBlock completionHandler;
+
+@end
+
 @interface SSHKitSession ()
 
 /** Raw libssh session instance. */
@@ -30,8 +40,10 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 - (void)addChannel:(SSHKitChannel *)channel;
 - (void)removeChannel:(SSHKitChannel *)channel;
 
-- (void)addForwardRequest:(NSArray *)forwardRequest;
-- (void)removeForwardRequest:(NSArray *)forwardRequest;
+- (SSHKitForwardRequest *)firstForwardRequest;
+- (void)addForwardRequest:(SSHKitForwardRequest *)request;
+- (void)removeForwardRequest:(SSHKitForwardRequest *)request;
+- (void)removeAllForwardRequest;
 
 @end
 
@@ -41,7 +53,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @property (nonatomic, readonly) ssh_channel rawChannel;
 
 + (instancetype)_tryCreateForwardChannelFromSession:(SSHKitSession *)session;
-+ (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
++ (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session;
 
 - (void)_doRead;
 - (void)_doOpenDirect;

@@ -169,43 +169,51 @@
 
 #pragma mark - tcpip-forward channel
 
-+ (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
+/** !WARNING!
+ tcpip-forward is session global request, requests must go one by one serially.
+ Otherwise, forward request will be failed
+ */
++ (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session
 {
-    int boundport = 0;
-    int rc = ssh_forward_listen(session.rawSession, host.UTF8String, port, &boundport);
+    SSHKitForwardRequest *request = [session firstForwardRequest];
     
-    NSArray *remoteForwardRequest = NULL;
-    
-    if (host) {
-        remoteForwardRequest = @[host, @(port), completionHandler];
-    } else {
-        remoteForwardRequest = @[[NSNull null], @(port), completionHandler];
+    if (!request) {
+        return;
     }
+    
+    int boundport = 0;
+    
+    int rc = ssh_forward_listen(session.rawSession, request.listenHost.UTF8String, request.listenPort, &boundport);
     
     switch (rc) {
         case SSH_OK:
         {
             // success
-            [session removeForwardRequest:remoteForwardRequest];
+            [session removeForwardRequest:request];
             
             // boundport may equals 0, if listenPort is NOT 0.
-            boundport = boundport ? boundport : port;
-            if (completionHandler) completionHandler(YES, boundport, nil);
+            boundport = boundport ? boundport : request.listenPort;
+            if (request.completionHandler) request.completionHandler(YES, boundport, nil);
+            
+            // try next
+            
+            SSHKitForwardRequest *request = [session firstForwardRequest];
+            if (request) {
+                [self _doRequestRemoteForwardOnSession:session];
+            }
         }
             break;
             
         case SSH_AGAIN:
             // try again
-            [session addForwardRequest:remoteForwardRequest];
-            
             break;
             
         case SSH_ERROR:
         default:
         {
             // failed
-            [session removeForwardRequest:remoteForwardRequest];
-            if (completionHandler) completionHandler(NO, port, session.lastError);
+            [session removeAllForwardRequest];
+            if (request.completionHandler) request.completionHandler(NO, request.listenPort, session.lastError);
         }
             break;
     }
@@ -225,8 +233,11 @@
             return_from_block;
         }
         
-        [self _doRequestRemoteForwardOnSession:strongSession withListenHost:host listenPort:port completionHandler:completionHandler];
+        SSHKitForwardRequest *request = [[SSHKitForwardRequest alloc] initWithListenHost:host port:port completionHandler:completionHandler];
         
+        [strongSession addForwardRequest:request];
+        
+        [self _doRequestRemoteForwardOnSession:strongSession];
     }}];
 }
 

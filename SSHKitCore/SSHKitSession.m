@@ -363,9 +363,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         int socket = strongSelf->_connector.socketFD;
         ssh_options_set(strongSelf.rawSession, SSH_OPTIONS_FD, &socket);
         
-        // set socket to blocking mode
-        fcntl(socket, F_SETFL, 0);
-        
         // compression
         
         if (strongSelf.enableCompression) {
@@ -901,14 +898,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }];
     
     // try again forward-tcpip requests
-    [_forwardRequests enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(NSArray *forwardRequest, NSUInteger index, BOOL *stop) {
-        NSString *safeHost = forwardRequest[0];
-        if ([safeHost isEqual:[NSNull null]]) {
-            safeHost = NULL;
-        }
-        
-        [SSHKitChannel _doRequestRemoteForwardOnSession:self withListenHost:safeHost listenPort:[forwardRequest[1] unsignedShortValue] completionHandler:forwardRequest[2]];
-    }];
+    [SSHKitChannel _doRequestRemoteForwardOnSession:self];
     
     // probe forward channel from accepted forward
     // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
@@ -1064,15 +1054,60 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [_channels removeObject:channel];
 }
 
-- (void)addForwardRequest:(NSArray *)forwardRequest
+- (SSHKitForwardRequest *)firstForwardRequest
 {
-    if (NSNotFound == [_forwardRequests indexOfObject:forwardRequest]) {
-        [_forwardRequests addObject:forwardRequest];
+    return _forwardRequests.firstObject;
+}
+- (void)addForwardRequest:(SSHKitForwardRequest *)request
+{
+    [_forwardRequests addObject:request];
+}
+- (void)removeForwardRequest:(SSHKitForwardRequest *)request
+{
+    NSUInteger index = [_forwardRequests indexOfObject:request];
+    
+    if (index!=NSNotFound) {
+        [_forwardRequests removeObjectAtIndex:index];
     }
 }
-- (void)removeForwardRequest:(NSArray *)forwardRequest
+- (void)removeAllForwardRequest
 {
-    [_forwardRequests removeObject:forwardRequest];
+    [_forwardRequests removeAllObjects];
+}
+
+@end
+
+@interface SSHKitForwardRequest()
+
+@property (readwrite, copy) NSString    *listenHost;
+@property (readwrite)       uint16_t    listenPort;
+@property (readwrite, strong)       SSHKitRequestRemoteForwardCompletionBlock completionHandler;
+
+@end
+            
+@implementation SSHKitForwardRequest
+
+- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
+{
+    self = [super init];
+    
+    if (self) {
+        if (!host.length) {
+            self.listenHost = @"localhost";
+        } else {
+            self.listenHost = host.lowercaseString;
+        }
+        
+        self.listenPort = port;
+        self.completionHandler = completionHandler;
+    }
+    
+    return self;
+}
+
+- (BOOL)isEqual:(id)object
+{
+    return [self.listenHost isEqualToString:[object listenHost]] && self.listenPort==[object listenPort];
 }
 
 @end
