@@ -194,7 +194,8 @@
 
 - (void)exportPublicKey:(NSString *)path error:(NSError **)errPtr {
     // TODO write public key to file
-    [self.base64 writeToFile:path
+    NSString *data = [NSString stringWithFormat:@"%@ %@", self.typeName, self.base64];
+    [data writeToFile:path
               atomically:NO
                 encoding:NSStringEncodingConversionAllowLossy
                    error:errPtr];
