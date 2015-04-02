@@ -118,11 +118,11 @@
 
 - (void)dealloc
 {
-    if (_publicKey) {
-        ssh_key_free(_publicKey);
-    }
     if (_privateKey) {
         ssh_key_free(_privateKey);
+    }
+    if (_publicKey) {
+        ssh_key_free(_publicKey);
     }
 }
 

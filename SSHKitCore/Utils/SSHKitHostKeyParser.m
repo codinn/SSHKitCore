@@ -35,8 +35,12 @@
     if (!parser) {
         return nil;
     }
+    // memcpy(&parser->_hostKey, &sshKey, sizeof sshKey);
     parser->_hostKey = sshKey;
-    return [parser initInfos:errPtr];
+    parser = [parser initInfos:errPtr];
+    // create a new _hostKey, org hostKey will freed by PrivateKeyParser
+    ssh_pki_import_pubkey_base64([parser->_base64 cStringUsingEncoding:NSASCIIStringEncoding], (enum ssh_keytypes_e)parser->_keyType, &parser->_hostKey);
+    return parser;
 }
 
 +(instancetype)parserFromFile:(NSString *)path error:(NSError *__autoreleasing *)errPtr {
@@ -172,6 +176,7 @@
 - (void)dealloc
 {
     if (_hostKey) {
+        // FIXME if private key freed it, will get a error.
         ssh_key_free(_hostKey);
     }
 }
