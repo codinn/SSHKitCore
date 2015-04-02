@@ -6,7 +6,6 @@
 //
 //
 
-#include <openssl/safestack.h>
 #import "SSHKitHostKeyParser.h"
 #import "SSHKitCore+Protected.h"
 
@@ -190,6 +189,10 @@
 
 - (void)exportPublicKey:(NSString *)path error:(NSError **)errPtr {
     // TODO write public key to file
+    [self.base64 writeToFile:path
+              atomically:NO
+                encoding:NSStringEncodingConversionAllowLossy
+                   error:errPtr];
 }
 
 @end
