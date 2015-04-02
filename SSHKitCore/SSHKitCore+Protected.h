@@ -60,6 +60,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @interface SSHKitHostKeyParser ()
 
 @property (nonatomic, readonly) ssh_key hostKey;
++ (instancetype)parserFromSSHKey:(ssh_key)sshKey error:(NSError **)errPtr;
 
 @end
 

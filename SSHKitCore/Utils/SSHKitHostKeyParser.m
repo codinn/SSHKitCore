@@ -6,13 +6,13 @@
 //
 //
 
+#include <openssl/safestack.h>
 #import "SSHKitHostKeyParser.h"
 #import "SSHKitCore+Protected.h"
 
 @implementation SSHKitHostKeyParser
 
-+ (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr
-{
++ (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr {
     // --------------------------------------------------
     // get host key from session
     // --------------------------------------------------
@@ -28,6 +28,15 @@
                                               userInfo:@{ NSLocalizedDescriptionKey : @"Cannot decode server host key" }];
         return nil;
     }
+    return [parser initInfos:errPtr];
+}
+
++ (instancetype)parserFromSSHKey:(ssh_key)sshKey error:(NSError **)errPtr {
+    SSHKitHostKeyParser *parser = [[SSHKitHostKeyParser alloc] init];
+    if (!parser) {
+        return nil;
+    }
+    parser->_hostKey = sshKey;
     return [parser initInfos:errPtr];
 }
 

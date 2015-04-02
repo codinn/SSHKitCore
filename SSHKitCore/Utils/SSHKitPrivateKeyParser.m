@@ -163,4 +163,10 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }
 }
 
+- (SSHKitHostKeyParser *) publicKeyParser {
+    NSError *error = nil;
+    SSHKitHostKeyParser *parser = [SSHKitHostKeyParser parserFromSSHKey:self.publicKey error:&error];
+    return parser;
+}
+
 @end
