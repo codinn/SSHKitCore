@@ -39,7 +39,9 @@
     parser->_hostKey = sshKey;
     parser = [parser initInfos:errPtr];
     // create a new _hostKey, org hostKey will freed by PrivateKeyParser
-    ssh_pki_import_pubkey_base64([parser->_base64 cStringUsingEncoding:NSASCIIStringEncoding], (enum ssh_keytypes_e)parser->_keyType, &parser->_hostKey);
+    ssh_key newKey;
+    ssh_pki_import_pubkey_base64([parser->_base64 cStringUsingEncoding:NSASCIIStringEncoding], (enum ssh_keytypes_e)parser->_keyType, &newKey);
+    parser->_hostKey = newKey;
     return parser;
 }
 
@@ -176,7 +178,6 @@
 - (void)dealloc
 {
     if (_hostKey) {
-        // FIXME if private key freed it, will get a error.
         ssh_key_free(_hostKey);
     }
 }
