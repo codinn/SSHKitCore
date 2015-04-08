@@ -7,6 +7,33 @@
 #import "SSHKitChannel.h"
 #import "SSHKitPrivateKeyParser.h"
 #import "SSHKitHostKeyParser.h"
+#include <openssl/ec.h>
+#include <openssl/dsa.h>
+#include <openssl/rsa.h>
+
+#define HAVE_OPENSSL_ECC 1
+#define HAVE_LIBCRYPTO 1
+
+struct ssh_key_struct {
+    enum ssh_keytypes_e type;
+    int flags;
+    const char *type_c; /* Don't free it ! it is static */
+    int ecdsa_nid;
+#ifdef HAVE_LIBGCRYPT
+    gcry_sexp_t dsa;
+    gcry_sexp_t rsa;
+    void *ecdsa;
+#elif HAVE_LIBCRYPTO
+    DSA *dsa;
+    RSA *rsa;
+#ifdef HAVE_OPENSSL_ECC
+    EC_KEY *ecdsa;
+#else
+    void *ecdsa;
+#endif /* HAVE_OPENSSL_EC_H */
+#endif
+    void *cert;
+};
 
 NSString * SSHKitGetBase64FromHostKey(ssh_key key);
 

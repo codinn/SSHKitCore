@@ -23,5 +23,6 @@
 @property (nonatomic, readonly) NSString            *typeName;
 @property (nonatomic, readonly) NSString            *base64;
 @property (nonatomic, readonly) NSString            *fingerprint;
+@property (nonatomic, readonly) NSUInteger          keySize;
 
 @end

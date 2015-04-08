@@ -156,14 +156,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = D5A83A2FF333420FB0C992ED;
+			remoteGlobalIDString = F87E69667C0341B1BAD4DBC7;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 4963084A1B6647B4BB91F8CF;
+			remoteGlobalIDString = 9BD5DC2E7CEC45288AB46BC3;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */

@@ -197,9 +197,39 @@
     // TODO write public key to file
     NSString *data = [NSString stringWithFormat:@"%@ %@", self.typeName, self.base64];
     [data writeToFile:path
-              atomically:NO
-                encoding:NSStringEncodingConversionAllowLossy
-                   error:errPtr];
+           atomically:NO
+             encoding:NSStringEncodingConversionAllowLossy
+                error:errPtr];
+}
+
+/*
+    SSH_KEYTYPE_UNKNOWN=0,
+    SSH_KEYTYPE_DSS=1,
+    SSH_KEYTYPE_RSA,
+    SSH_KEYTYPE_RSA1,
+    SSH_KEYTYPE_ECDSA
+ */
+
+- (NSUInteger)keySize {
+#define WITH_OPENSSL 1
+    ssh_key k = self.hostKey;
+    switch (k->type) {
+#ifdef WITH_OPENSSL
+        case SSH_KEYTYPE_RSA1:
+        case SSH_KEYTYPE_RSA:
+            return BN_num_bits(k->rsa->n);
+        case SSH_KEYTYPE_DSS:
+            return BN_num_bits(k->dsa->p);
+        case SSH_KEYTYPE_ECDSA:
+#ifdef OPENSSL_HAS_ECC
+            return sshkey_curve_nid_to_bits(k->ecdsa_nid);
+#endif
+        case SSH_KEYTYPE_UNKNOWN:
+        default:
+            return 0;
+#endif /* WITH_OPENSSL */
+    }
+    return 0;
 }
 
 @end
