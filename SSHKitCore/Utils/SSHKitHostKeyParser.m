@@ -211,6 +211,12 @@
  */
 
 - (NSUInteger)keySize {
+    ssh_buffer readbuf = ssh_buffer_new();
+    if (readbuf == NULL) {
+    }
+    ssh_string s = sshkit_pki_publickey_to_blob(self.hostKey);
+    if (s == NULL) {
+    }
 #define WITH_OPENSSL 1
     ssh_key k = self.hostKey;
     switch (k->type) {
@@ -233,3 +239,195 @@
 }
 
 @end
+
+ssh_string sshkit_pki_publickey_to_blob(const ssh_key key) {
+    ssh_buffer buffer;
+    ssh_string type_s;
+    ssh_string str = NULL;
+    ssh_string e = NULL;
+    ssh_string n = NULL;
+    ssh_string p = NULL;
+    ssh_string g = NULL;
+    ssh_string q = NULL;
+    int rc;
+    
+    buffer = ssh_buffer_new();
+    if (buffer == NULL) {
+        return NULL;
+    }
+    
+    type_s = ssh_string_from_char(key->type_c);
+    if (type_s == NULL) {
+        ssh_buffer_free(buffer);
+        return NULL;
+    }
+    
+    rc = buffer_add_ssh_string(buffer, type_s);
+    ssh_string_free(type_s);
+    if (rc < 0) {
+        ssh_buffer_free(buffer);
+        return NULL;
+    }
+    
+    switch (key->type) {
+        case SSH_KEYTYPE_DSS:
+            p = make_bignum_string(key->dsa->p);
+            if (p == NULL) {
+                goto fail;
+            }
+            
+            q = make_bignum_string(key->dsa->q);
+            if (q == NULL) {
+                goto fail;
+            }
+            
+            g = make_bignum_string(key->dsa->g);
+            if (g == NULL) {
+                goto fail;
+            }
+            
+            n = make_bignum_string(key->dsa->pub_key);
+            if (n == NULL) {
+                goto fail;
+            }
+            
+            if (buffer_add_ssh_string(buffer, p) < 0) {
+                goto fail;
+            }
+            if (buffer_add_ssh_string(buffer, q) < 0) {
+                goto fail;
+            }
+            if (buffer_add_ssh_string(buffer, g) < 0) {
+                goto fail;
+            }
+            if (buffer_add_ssh_string(buffer, n) < 0) {
+                goto fail;
+            }
+            
+            ssh_string_burn(p);
+            ssh_string_free(p);
+            p = NULL;
+            ssh_string_burn(g);
+            ssh_string_free(g);
+            g = NULL;
+            ssh_string_burn(q);
+            ssh_string_free(q);
+            q = NULL;
+            ssh_string_burn(n);
+            ssh_string_free(n);
+            n = NULL;
+            
+            break;
+        case SSH_KEYTYPE_RSA:
+        case SSH_KEYTYPE_RSA1:
+            e = make_bignum_string(key->rsa->e);
+            if (e == NULL) {
+                goto fail;
+            }
+            
+            n = make_bignum_string(key->rsa->n);
+            if (n == NULL) {
+                goto fail;
+            }
+            
+            if (buffer_add_ssh_string(buffer, e) < 0) {
+                goto fail;
+            }
+            if (buffer_add_ssh_string(buffer, n) < 0) {
+                goto fail;
+            }
+            
+            ssh_string_burn(e);
+            ssh_string_free(e);
+            e = NULL;
+            ssh_string_burn(n);
+            ssh_string_free(n);
+            n = NULL;
+            
+            break;
+        case SSH_KEYTYPE_ECDSA:
+#undef HAVE_OPENSSL_ECC
+#ifdef HAVE_OPENSSL_ECC
+            rc = buffer_reinit(buffer);
+            if (rc < 0) {
+                ssh_buffer_free(buffer);
+                return NULL;
+            }
+            
+            type_s = ssh_string_from_char(pki_key_ecdsa_nid_to_name(key->ecdsa_nid));
+            if (type_s == NULL) {
+                ssh_buffer_free(buffer);
+                return NULL;
+            }
+            
+            rc = buffer_add_ssh_string(buffer, type_s);
+            ssh_string_free(type_s);
+            if (rc < 0) {
+                ssh_buffer_free(buffer);
+                return NULL;
+            }
+            
+            type_s = ssh_string_from_char(pki_key_ecdsa_nid_to_char(key->ecdsa_nid));
+            if (type_s == NULL) {
+                ssh_buffer_free(buffer);
+                return NULL;
+            }
+            
+            rc = buffer_add_ssh_string(buffer, type_s);
+            ssh_string_free(type_s);
+            if (rc < 0) {
+                ssh_buffer_free(buffer);
+                return NULL;
+            }
+            
+            e = make_ecpoint_string(EC_KEY_get0_group(key->ecdsa),
+                                    EC_KEY_get0_public_key(key->ecdsa));
+            if (e == NULL) {
+                ssh_buffer_free(buffer);
+                return NULL;
+            }
+            
+            rc = buffer_add_ssh_string(buffer, e);
+            if (rc < 0) {
+                goto fail;
+            }
+            
+            ssh_string_burn(e);
+            ssh_string_free(e);
+            e = NULL;
+            
+            break;
+#endif
+        case SSH_KEYTYPE_UNKNOWN:
+            goto fail;
+    }
+    
+    str = ssh_string_new(buffer_get_rest_len(buffer));
+    if (str == NULL) {
+        goto fail;
+    }
+    
+    rc = ssh_string_fill(str, buffer_get_rest(buffer), buffer_get_rest_len(buffer));
+    if (rc < 0) {
+        goto fail;
+    }
+    ssh_buffer_free(buffer);
+    
+    return str;
+fail:
+    ssh_buffer_free(buffer);
+    ssh_string_burn(str);
+    ssh_string_free(str);
+    ssh_string_burn(e);
+    ssh_string_free(e);
+    ssh_string_burn(p);
+    ssh_string_free(p);
+    ssh_string_burn(g);
+    ssh_string_free(g);
+    ssh_string_burn(q);
+    ssh_string_free(q);
+    ssh_string_burn(n);
+    ssh_string_free(n);
+    
+    return NULL;
+}

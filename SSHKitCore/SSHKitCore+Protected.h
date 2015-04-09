@@ -91,3 +91,4 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
+ssh_string sshkit_pki_publickey_to_blob(const ssh_key key);
