@@ -93,11 +93,4 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
-int buffer_add_ssh_string(struct ssh_buffer_struct *buffer, struct ssh_string_struct *string);
-void ssh_buffer_free(struct ssh_buffer_struct *buffer);
-void *buffer_get_rest(struct ssh_buffer_struct *buffer);
-uint32_t buffer_get_rest_len(struct ssh_buffer_struct *buffer);
-ssh_string make_bignum_string(bignum num);
-ssh_string ssh_string_new(size_t size);
-ssh_buffer ssh_buffer_new(void);
 ssh_string sshkit_pki_publickey_to_blob(const ssh_key key);
