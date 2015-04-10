@@ -211,7 +211,6 @@
  */
 
 - (NSUInteger)keySize {
-    ssh_string s = pki_publickey_to_blob(self.hostKey);
 #define WITH_OPENSSL 1
     ssh_key k = self.hostKey;
     switch (k->type) {
