@@ -8,6 +8,14 @@
 #import "SSHKitCore+Protected.h"
 #import "SSHKitPrivateKeyParser.h"
 
+int bufferAddSshString(NSMutableData *buffer, ssh_string string) {
+    //ntohl
+    uint32_t len = (uint32_t)ssh_string_len(string);
+    [buffer appendBytes:&len length:sizeof(uint32_t)];
+    [buffer appendBytes:string length:len];
+    return 0;
+}
+
 @implementation SSHKitPrivateKeyParser
 
 + (instancetype)parserFromFilePath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
@@ -163,10 +171,25 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     }
 }
 
-- (SSHKitHostKeyParser *) publicKeyParser {
+- (SSHKitHostKeyParser *)publicKeyParser {
     NSError *error = nil;
     SSHKitHostKeyParser *parser = [SSHKitHostKeyParser parserFromSSHKey:self.publicKey error:&error];
     return parser;
+}
+
+
+- (NSData *)exportBlob {
+    NSMutableData *data = [NSMutableData data];
+    ssh_string blob = pki_publickey_to_blob(self.privateKey);
+    if (!blob) {
+        return nil;
+    }
+    bufferAddSshString(data, blob);
+    ssh_string_free(blob);
+    // TODO get comment
+    ssh_string comment = ssh_string_new(0);
+    bufferAddSshString(data, comment);
+    return data;
 }
 
 @end

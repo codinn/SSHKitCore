@@ -16,6 +16,11 @@
 
 #define SSHKIT_AGENT_IDENTITIES_ANSWER		12
 
+struct ssh_string_struct {
+    uint32_t size;
+    unsigned char data[1];
+};
+
 struct ssh_key_struct {
     enum ssh_keytypes_e type;
     int flags;
@@ -99,3 +104,4 @@ int buffer_add_u32(ssh_buffer buffer, uint32_t data);
 int buffer_add_ssh_string(ssh_buffer buffer, ssh_string string);
 ssh_buffer ssh_buffer_new(void);
 void ssh_buffer_free(ssh_buffer buffer);
+size_t ssh_string_len(ssh_string s);
