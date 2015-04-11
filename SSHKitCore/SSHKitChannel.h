@@ -12,7 +12,7 @@
  */
 @interface SSHKitChannel : NSObject
 
-+ (instancetype)shellChannelFromeSession:(SSHKitSession *)session withPtyType:(NSString *)ptyType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
++ (instancetype)shellChannelFromeSession:(SSHKitSession *)session withTerminalType:(NSString *)terminalType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
 + (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
@@ -82,7 +82,7 @@
  @param channel The channel that read the error
  @param error The error that the channel has read
  */
-- (void)channel:(SSHKitChannel *)channel didReadStderrData:(NSData *)error;
+- (void)channel:(SSHKitChannel *)channel didReadStderrData:(NSData *)data;
 
 /**
  * Called when a channel has completed writing the requested data. Not called if there is an error.
@@ -92,7 +92,7 @@
 /**
  * Called when a channel closes with or without error.
  **/
-- (void)channelDidClose:(SSHKitChannel *)channel withError:(NSError *)err;
+- (void)channelDidClose:(SSHKitChannel *)channel withError:(NSError *)error;
 
 - (void)channelDidOpen:(SSHKitChannel *)channel;
 

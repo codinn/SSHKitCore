@@ -109,7 +109,7 @@
 
 #pragma mark - shell channel
 
-+ (instancetype)shellChannelFromeSession:(SSHKitSession *)session withPtyType:(NSString *)ptyType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate
++ (instancetype)shellChannelFromeSession:(SSHKitSession *)session withTerminalType:(NSString *)terminalType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
     __block SSHKitChannel *channel = nil;
     
