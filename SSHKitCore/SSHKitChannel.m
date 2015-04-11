@@ -431,15 +431,6 @@
             default:
                 break;
         }
-        
-        if (self.type == SSHKitChannelTypeShell) {
-            // test
-            NSString *outstring = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            NSLog(@"%@", outstring);
-            
-            NSString *sendString = @"echo $TERM\n";
-            [self writeData:[sendString dataUsingEncoding:NSUTF8StringEncoding]];
-        }
     }
 }
 
