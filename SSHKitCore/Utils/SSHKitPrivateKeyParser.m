@@ -11,8 +11,7 @@
 int bufferAddSshString(NSMutableData *buffer, ssh_string string) {
     //ntohl
     uint32_t len = (uint32_t)ssh_string_len(string);
-    [buffer appendBytes:&len length:sizeof(uint32_t)];
-    [buffer appendBytes:string length:len];
+    [buffer appendBytes:string length:len + sizeof(uint32_t)];
     return 0;
 }
 
