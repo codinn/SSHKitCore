@@ -213,7 +213,6 @@
 		E4E96D8B158E10FD002E6E0A /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		E4E96D8C158E10FD002E6E0A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		E4E96D8F158E10FD002E6E0A /* SSHKitCore-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SSHKitCore-Info.plist"; sourceTree = "<group>"; };
-		E4E96D93158E10FD002E6E0A /* SSHKitCore-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore-Prefix.pch"; sourceTree = "<group>"; };
 		E4E96D94158E10FD002E6E0A /* SSHKitCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SSHKitCore.h; sourceTree = "<group>"; };
 		E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitChannel.h; sourceTree = "<group>"; };
 		E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitChannel.m; sourceTree = "<group>"; };
@@ -376,7 +375,6 @@
 			isa = PBXGroup;
 			children = (
 				E4E96D8F158E10FD002E6E0A /* SSHKitCore-Info.plist */,
-				E4E96D93158E10FD002E6E0A /* SSHKitCore-Prefix.pch */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -695,13 +693,12 @@
 		E4E96DAF158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "SSHKitCore/SSHKitCore-Prefix.pch";
 				INFOPLIST_FILE = "SSHKitCore/SSHKitCore-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/openssl/dist/openssl-1.0.1l-osx/lib";
@@ -713,13 +710,12 @@
 		E4E96DB0158E10FD002E6E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "SSHKitCore/SSHKitCore-Prefix.pch";
 				INFOPLIST_FILE = "SSHKitCore/SSHKitCore-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/openssl/dist/openssl-1.0.1l-osx/lib";
