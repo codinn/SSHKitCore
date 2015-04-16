@@ -16,6 +16,7 @@
 + (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr;
 + (instancetype)parserFromFile:(NSString *)path error:(NSError **)errPtr;
 + (instancetype)parserFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr;
++ (instancetype)parserFromBlob:(NSData *)blob error:(NSError **)errPtr;
 
 - (void)exportPublicKey:(NSString *)path error:(NSError **)errPtr;
 

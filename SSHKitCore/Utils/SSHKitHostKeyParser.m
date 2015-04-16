@@ -11,6 +11,20 @@
 
 @implementation SSHKitHostKeyParser
 
++ (instancetype)parserFromBlob:(NSData *)blob error:(NSError **)errPtr {
+    ssh_key key;
+    ssh_string key_blob = ssh_string_new(blob.length);
+    ssh_string_fill(key_blob, blob.bytes, blob.length);
+    // handle err
+    int rc = ssh_pki_import_pubkey_blob(key_blob, &key);
+    if (rc < 0) {
+        // TODO handle err
+    }
+    SSHKitHostKeyParser *parser = [self parserFromSSHKey:key error:errPtr];
+    ssh_key_free(key);
+    return parser;
+}
+
 + (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr {
     // --------------------------------------------------
     // get host key from session
