@@ -7,6 +7,10 @@
 //
 #import "SSHKitCore+Protected.h"
 #import "SSHKitPrivateKeyParser.h"
+#import <CommonCrypto/CommonDigest.h>
+#include <openssl/rsa.h>
+#include <openssl/sha.h>
+#include <openssl/pem.h>
 
 int bufferAddSshString(NSMutableData *buffer, ssh_string string) {
     //ntohl
@@ -189,6 +193,62 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     ssh_string comment = ssh_string_new(0);
     bufferAddSshString(data, comment);
     return data;
+}
+
+- (NSData *)signWithSHA128:(NSData *)message error:(NSError **)error
+{
+    SHA_CTX shaCtx;
+    unsigned char messageDigest[SHA_DIGEST_LENGTH];
+    if (!SHA1_Init(&shaCtx)) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    if (!SHA1_Update(&shaCtx, message.bytes, message.length)) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    if (!SHA1_Final(messageDigest, &shaCtx)) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    
+    NSMutableData *signature = [NSMutableData dataWithLength:(NSUInteger) RSA_size(self.privateKey->rsa)];
+    unsigned int signatureLength = 0;
+    if (RSA_sign(NID_sha1, messageDigest, SHA_DIGEST_LENGTH, signature.mutableBytes, &signatureLength, self.privateKey->rsa) == 0) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    [signature setLength:(NSUInteger) signatureLength];
+    
+    return signature;
+}
+
+- (NSData *)sign:(NSData *)data compat:(NSUInteger)compat {
+    //pki_do_sign_sessionid
+    switch (self.privateKey->type) {
+        case SSH_KEYTYPE_RSA:
+            break;
+        case SSH_KEYTYPE_RSA1:
+            break;
+        case SSH_KEYTYPE_DSS:
+            break;
+        default:
+            break;
+    }
+    if (self.privateKey->type == SSH_KEYTYPE_ECDSA) {
+        //
+    } else {
+        NSMutableData *d = [NSMutableData data];
+        uint32_t size = htonl(strlen("ssh-rsa"));
+        [d appendBytes:&size length:sizeof(uint32_t)];
+        [d appendData:[@"ssh-rsa" dataUsingEncoding:NSASCIIStringEncoding]];
+        NSData *sign = [self signWithSHA128:data error:nil];
+        size = htonl(sign.length);
+        [d appendBytes:&size length:sizeof(uint32_t)];
+        [d appendData:sign];
+        return d;
+    }
+    return nil;
 }
 
 @end

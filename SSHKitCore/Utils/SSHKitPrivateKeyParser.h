@@ -23,5 +23,7 @@
 - (void)exportPrivateKey:(NSString *)path passpharse:(NSString *)passpharse error:(NSError **)errPtr;
 
 - (NSData *)exportBlob;
+- (NSData *)sign:(NSData *)data compat:(NSUInteger)compat;
+
 
 @end

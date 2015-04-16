@@ -11,7 +11,6 @@
 #include <openssl/dsa.h>
 #include <openssl/rsa.h>
 
-#define HAVE_OPENSSL_ECC 1
 #define HAVE_LIBCRYPTO 1
 
 #define SSHKIT_AGENT_IDENTITIES_ANSWER		12
@@ -99,6 +98,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @end
 
 ssh_string pki_publickey_to_blob(const ssh_key key);
+int ssh_pki_import_pubkey_blob(const ssh_string key_blob, ssh_key *pkey);
 int buffer_add_u8(ssh_buffer buffer, uint8_t data);
 int buffer_add_u32(ssh_buffer buffer, uint32_t data);
 int buffer_add_ssh_string(ssh_buffer buffer, ssh_string string);
