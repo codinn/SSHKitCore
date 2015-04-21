@@ -9,8 +9,12 @@
 #import "SSHKitPrivateKeyParser.h"
 #import <CommonCrypto/CommonDigest.h>
 #include <openssl/rsa.h>
+#include <openssl/dsa.h>
 #include <openssl/sha.h>
 #include <openssl/pem.h>
+
+#define INTBLOB_LEN	20
+#define SIGBLOB_LEN	(2*INTBLOB_LEN)
 
 int bufferAddSshString(NSMutableData *buffer, ssh_string string) {
     //ntohl
@@ -223,6 +227,42 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     return signature;
 }
 
+- (NSData *)signDSS:(NSData *)message error:(NSError **)error
+{
+    SHA_CTX shaCtx;
+    DSA_SIG *sig = NULL;
+    unsigned char messageDigest[SHA_DIGEST_LENGTH];
+    if (!SHA1_Init(&shaCtx)) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    if (!SHA1_Update(&shaCtx, message.bytes, message.length)) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    if (!SHA1_Final(messageDigest, &shaCtx)) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    
+    unsigned int signatureLength = 0;
+    if ((sig = DSA_do_sign(messageDigest, SHA_DIGEST_LENGTH, self.privateKey->dsa)) == NULL) {
+        // if (error) *error = [NSError errorFromOpenSSL];
+        return nil;
+    }
+    size_t rlen, slen;
+    rlen = BN_num_bytes(sig->r);
+    slen = BN_num_bytes(sig->s);
+    if (rlen > INTBLOB_LEN || slen > INTBLOB_LEN) {
+        return nil;
+    }
+    NSMutableData *sigblob = [NSMutableData dataWithLength:(NSUInteger) SIGBLOB_LEN];
+    BN_bn2bin(sig->r, sigblob.bytes + SIGBLOB_LEN - INTBLOB_LEN - rlen);
+    BN_bn2bin(sig->s, sigblob.bytes + SIGBLOB_LEN - slen);
+    // TODO compat
+    return sigblob;
+}
+
 - (NSData *)sign:(NSData *)data compat:(NSUInteger)compat {
     //pki_do_sign_sessionid
     switch (self.privateKey->type) {
@@ -235,18 +275,34 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         default:
             break;
     }
-    if (self.privateKey->type == SSH_KEYTYPE_ECDSA) {
-        //
-    } else {
-        NSMutableData *d = [NSMutableData data];
-        uint32_t size = htonl(strlen("ssh-rsa"));
-        [d appendBytes:&size length:sizeof(uint32_t)];
-        [d appendData:[@"ssh-rsa" dataUsingEncoding:NSASCIIStringEncoding]];
-        NSData *sign = [self signWithSHA128:data error:nil];
-        size = htonl(sign.length);
-        [d appendBytes:&size length:sizeof(uint32_t)];
-        [d appendData:sign];
-        return d;
+    switch (self.privateKey->type) {
+        case SSH_KEYTYPE_ECDSA:
+            break;
+        case SSH_KEYTYPE_RSA:
+        case SSH_KEYTYPE_RSA1: {
+            NSMutableData *d = [NSMutableData data];
+            uint32_t size = htonl(strlen("ssh-rsa"));
+            [d appendBytes:&size length:sizeof(uint32_t)];
+            [d appendData:[@"ssh-rsa" dataUsingEncoding:NSASCIIStringEncoding]];
+            NSData *sign = [self signWithSHA128:data error:nil];
+            size = htonl(sign.length);
+            [d appendBytes:&size length:sizeof(uint32_t)];
+            [d appendData:sign];
+            return d;
+        }
+        case SSH_KEYTYPE_DSS: {
+            NSMutableData *d = [NSMutableData data];
+            uint32_t size = htonl(strlen("ssh-dss"));
+            [d appendBytes:&size length:sizeof(uint32_t)];
+            [d appendData:[@"ssh-dss" dataUsingEncoding:NSASCIIStringEncoding]];
+            NSData *sign = [self signDSS:data error:nil];
+            size = htonl(sign.length);
+            [d appendBytes:&size length:sizeof(uint32_t)];
+            [d appendData:sign];
+            return d;
+        }
+        default:
+            break;
     }
     return nil;
 }
