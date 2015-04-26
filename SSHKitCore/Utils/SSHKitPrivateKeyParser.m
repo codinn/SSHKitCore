@@ -307,4 +307,23 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
     return nil;
 }
 
++ (SSHKitKeyType)keyTypeFromText:(NSString *)txt {
+    if ([txt hasPrefix:@"-----BEGIN RSA PRIVATE KEY-----"]) {
+        return SSHKitKeyTypeRSA;
+    }
+    if ([txt hasPrefix:@"-----BEGIN ENCRYPTED PRIVATE KEY-----"]) {
+        return SSHKitKeyTypeRSA;
+    }
+    if ([txt hasPrefix:@"SSH PRIVATE KEY FILE FORMAT 1.1"]) {
+        return SSHKitKeyTypeRSA1;
+    }
+    if ([txt hasPrefix:@"-----BEGIN DSA PRIVATE KEY-----"]) {
+        return SSHKitKeyTypeDSS;
+    }
+    if ([txt hasPrefix:@"-----BEGIN EC PRIVATE KEY-----"]) {
+        return SSHKitKeyTypeECDSA;
+    }
+    return SSHKitKeyTypeUnknown;
+}
+
 @end

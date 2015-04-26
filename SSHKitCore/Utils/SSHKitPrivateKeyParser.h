@@ -20,6 +20,8 @@
 
 + (instancetype)generate:(SSHKitKeyType) type parameter:(int)param error:(NSError **)errPtr;
 
++ (NSString *)keyLenFromText:(NSString *)txt;
+
 - (void)exportPrivateKey:(NSString *)path passpharse:(NSString *)passpharse error:(NSError **)errPtr;
 
 - (NSData *)exportBlob;

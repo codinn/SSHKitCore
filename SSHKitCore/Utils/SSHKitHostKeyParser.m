@@ -216,14 +216,6 @@
                 error:errPtr];
 }
 
-/*
-    SSH_KEYTYPE_UNKNOWN=0,
-    SSH_KEYTYPE_DSS=1,
-    SSH_KEYTYPE_RSA,
-    SSH_KEYTYPE_RSA1,
-    SSH_KEYTYPE_ECDSA
- */
-
 - (NSUInteger)keySize {
 #define WITH_OPENSSL 1
     ssh_key k = self.hostKey;
