@@ -815,6 +815,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
+- (void)authenticateByPrivateKeyBase64:(NSString *)base64 {
+    SSHKitPrivateKeyParser *parser = [SSHKitPrivateKeyParser parserFromBase64:base64 withPassphraseHandler:NULL error:nil];
+    if (parser) {
+        [self authenticateByPrivateKeyParser:parser];
+    }
+    
+}
+
 - (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser
 {
     self.currentStage = SSHKitSessionStageAuthenticating;

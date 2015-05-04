@@ -169,6 +169,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  @param passphraseHandler Password handle for encrypted private key
  */
 - (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser;
+- (void)authenticateByPrivateKeyBase64:(NSString *)base64;
 
 /**
  Authenticate by keyboard-interactive
