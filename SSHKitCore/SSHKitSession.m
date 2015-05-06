@@ -960,6 +960,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_source_set_event_handler(_readSource, ^{ @autoreleasepool {
         __strong SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
+            dispatch_source_cancel(strongSelf->_readSource);
             return_from_block;
         }
         
