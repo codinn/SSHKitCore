@@ -415,32 +415,39 @@
     // empty read buffer
     _readBuffer.length = 0;
     
+    void (^didReadData)(void) = ^ {
+        if (self->_readBuffer.length) {
+            if (dataType == SSHKitChannelStdoutData) {
+                if (self->_delegateFlags.didReadStdoutData) {
+                    [self.delegate channel:self didReadStdoutData:[self->_readBuffer copy]];
+                }
+            } else if (dataType == SSHKitChannelStderrData) {
+                if (self->_delegateFlags.didReadStderrData) {
+                    [self.delegate channel:self didReadStderrData:[self->_readBuffer copy]];
+                }
+            }
+        }
+    };
+    
     while (_rawChannel && ssh_channel_is_open(_rawChannel) && (to_read = ssh_channel_poll(_rawChannel, dataType))!=0)
     {
-        int i = ssh_channel_read(_rawChannel, buffer, sizeof(buffer) > to_read ? to_read : sizeof(buffer), dataType);
-    
-        if (i==SSH_EOF) {     // eof
+        if (to_read==SSH_EOF) {     // eof
+            didReadData();
             [self close];
-        } else if (i < 0) {   // error occurs, close channel
+            return;
+        } else if (to_read < 0) {   // error occurs, close channel
+            didReadData();
             [self closeWithError:self.session.lastError];
-        } else if (i==0) {
-            // no data
+            return;
+        } else if (to_read==0) {
+            break;
         } else {
+            int i = ssh_channel_read(_rawChannel, buffer, sizeof(buffer) > to_read ? to_read : sizeof(buffer), dataType);
             [_readBuffer appendBytes:buffer length:i];
         }
     }
     
-    if (_readBuffer.length) {
-        if (dataType == SSHKitChannelStdoutData) {
-            if (_delegateFlags.didReadStdoutData) {
-                [self.delegate channel:self didReadStdoutData:[_readBuffer copy]];
-            }
-        } else if (dataType == SSHKitChannelStderrData) {
-            if (_delegateFlags.didReadStderrData) {
-                [self.delegate channel:self didReadStderrData:[_readBuffer copy]];
-            }
-        }
-    }
+    didReadData();
 }
 
 /**
@@ -453,7 +460,7 @@
     }
     
     [self _tryReadData:SSHKitChannelStdoutData];
-    [self _tryReadData:SSHKitChannelStdoutData];
+    [self _tryReadData:SSHKitChannelStderrData];
 }
 
 - (void)writeData:(NSData *)data
@@ -479,8 +486,6 @@
             
             wrote += i;
         } while (wrote < data.length && strongSelf->_rawChannel);
-        
-        ssh_blocking_flush(strongSelf.session.rawSession, -1);
         
         if (strongSelf->_delegateFlags.didWriteData) {
             [strongSelf.delegate channelDidWriteData:strongSelf];
