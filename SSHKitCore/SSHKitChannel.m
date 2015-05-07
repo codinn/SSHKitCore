@@ -12,6 +12,8 @@
         unsigned int didOpen : 1;
         unsigned int didCloseWithError : 1;
     } _delegateFlags;
+    
+    NSMutableData   *_readBuffer;
 }
 
 @property (nonatomic, readwrite) SSHKitChannelType  type;
@@ -50,6 +52,8 @@
         _session = session;
 		self.delegate = aDelegate;
         self.stage = SSHKitChannelStageCreated;
+        
+        _readBuffer = [NSMutableData data];
     }
 
     return self;
@@ -405,33 +409,45 @@
 
 - (void)_tryReadData:(SSHKitChannelDataType)dataType
 {
-    int to_read = ssh_channel_poll(_rawChannel, dataType);
+    char buffer[SSHKit_MAX_BUF_SIZE];
+    int to_read     = 0;
     
-    if (to_read==SSH_EOF) {     // eof
-        [self close];
-    } else if (to_read < 0) {   // error occurs, close channel
-        [self closeWithError:self.session.lastError];
-    } else if (to_read==0) {
-        // no data
-    } else {
-        NSMutableData *data = [NSMutableData dataWithLength:to_read];
-        ssh_channel_read(_rawChannel, data.mutableBytes, to_read, dataType);
-        
-        switch (dataType) {
-            case SSHKitChannelStdoutData:
-                if (_delegateFlags.didReadStdoutData) {
-                    [self.delegate channel:self didReadStdoutData:data];
+    // empty read buffer
+    _readBuffer.length = 0;
+    
+    void (^didReadData)(void) = ^ {
+        if (self->_readBuffer.length) {
+            if (dataType == SSHKitChannelStdoutData) {
+                if (self->_delegateFlags.didReadStdoutData) {
+                    [self.delegate channel:self didReadStdoutData:[self->_readBuffer copy]];
                 }
-                break;
-            case SSHKitChannelStderrData:
-                if (_delegateFlags.didReadStderrData) {
-                    [self.delegate channel:self didReadStderrData:data];
+            } else if (dataType == SSHKitChannelStderrData) {
+                if (self->_delegateFlags.didReadStderrData) {
+                    [self.delegate channel:self didReadStderrData:[self->_readBuffer copy]];
                 }
-                break;
-            default:
-                break;
+            }
+        }
+    };
+    
+    while (_rawChannel && ssh_channel_is_open(_rawChannel) && (to_read = ssh_channel_poll(_rawChannel, dataType))!=0)
+    {
+        if (to_read==SSH_EOF) {     // eof
+            didReadData();
+            [self close];
+            return;
+        } else if (to_read < 0) {   // error occurs, close channel
+            didReadData();
+            [self closeWithError:self.session.lastError];
+            return;
+        } else if (to_read==0) {
+            break;
+        } else {
+            int i = ssh_channel_read(_rawChannel, buffer, sizeof(buffer) > to_read ? to_read : sizeof(buffer), dataType);
+            [_readBuffer appendBytes:buffer length:i];
         }
     }
+    
+    didReadData();
 }
 
 /**
@@ -461,7 +477,7 @@
         uint32_t wrote = 0;
         
         do {
-            ssize_t i = ssh_channel_write(strongSelf->_rawChannel, &[data bytes][wrote], (uint32_t)data.length-wrote);
+            ssize_t i = ssh_channel_write(strongSelf->_rawChannel, &data.bytes[wrote], (uint32_t)data.length-wrote);
             
             if (i < 0) {
                 [strongSelf closeWithError:strongSelf.session.lastError];
