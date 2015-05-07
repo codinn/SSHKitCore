@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
     
-	dispatch_source_t   _readSource;
+    dispatch_source_t   _readSource;
     dispatch_source_t   _keepAliveTimer;
     NSInteger           _keepAliveCounter;
     
@@ -416,7 +416,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         strongSelf.currentStage = SSHKitSessionStageConnecting;
-        [strongSelf _startReadSource];
+        [strongSelf _setupReadSource];
         [strongSelf _doConnect];
     }}];
 }
@@ -665,10 +665,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)_didAuthenticate
 {
+    self.currentStage = SSHKitSessionStageAuthenticated;
+    
     // start diagnoses timer
     [self _fireKeepAliveTimer];
-    
-    self.currentStage = SSHKitSessionStageAuthenticated;
     
     if (_delegateFlags.didAuthenticateUser) {
         [self.delegate session:self didAuthenticateUser:nil];
@@ -864,9 +864,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
-// -----------------------------------------------------------------------------
-#pragma mark - CALLBACKS
-// -----------------------------------------------------------------------------
+#pragma mark - Read / Write
 
 - (void)_doReadWrite
 {
@@ -922,6 +920,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 
             case SSHKitChannelStageReadWrite:
                 [channel _doRead];
+                
+                if ([channel _hasDataToWrite]) {
+                    [channel _doWrite];
+                }
                 break;
                 
             default:
@@ -948,7 +950,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 /**
  * Reads the first available bytes that become available on the channel.
  **/
-- (void)_startReadSource
+- (void)_setupReadSource
 {
     if (_readSource) {
         dispatch_source_cancel(_readSource);
@@ -960,7 +962,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_source_set_event_handler(_readSource, ^{ @autoreleasepool {
         __strong SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
-            dispatch_source_cancel(strongSelf->_readSource);
             return_from_block;
         }
         
@@ -986,6 +987,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             case SSHKitSessionStageAuthenticated:
                 [strongSelf _doReadWrite];
                 break;
+                
             case SSHKitSessionStageUnknown:
                 // should never comes to here
                 break;
