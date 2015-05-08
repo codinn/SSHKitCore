@@ -13,7 +13,6 @@
         unsigned int didCloseWithError : 1;
     } _delegateFlags;
     
-    NSMutableData   *_readBuffer;
     NSData          *_dataTorWrite;
 }
 
@@ -53,8 +52,6 @@
         _session = session;
 		self.delegate = aDelegate;
         self.stage = SSHKitChannelStageCreated;
-        
-        _readBuffer = [NSMutableData data];
     }
 
     return self;
@@ -410,20 +407,19 @@
 
 - (void)_tryReadData:(SSHKitChannelDataType)dataType
 {
-    char buffer[SSHKit_MAX_BUF_SIZE];
+    NSMutableData *readBuffer = [NSMutableData dataWithCapacity:SSHKIT_CORE_SSH_MAX_PAYLOAD];
     
-    // empty read buffer
-    _readBuffer.length = 0;
+    char buffer[SSHKIT_CORE_SSH_MAX_PAYLOAD];
     
     void (^didReadData)(void) = ^ {
-        if (self->_readBuffer.length) {
+        if (readBuffer.length) {
             if (dataType == SSHKitChannelStdoutData) {
                 if (self->_delegateFlags.didReadStdoutData) {
-                    [self.delegate channel:self didReadStdoutData:[self->_readBuffer copy]];
+                    [self.delegate channel:self didReadStdoutData:readBuffer];
                 }
             } else if (dataType == SSHKitChannelStderrData) {
                 if (self->_delegateFlags.didReadStderrData) {
-                    [self.delegate channel:self didReadStderrData:[self->_readBuffer copy]];
+                    [self.delegate channel:self didReadStderrData:readBuffer];
                 }
             }
         }
@@ -433,13 +429,13 @@
         int i = ssh_channel_read_nonblocking(_rawChannel, buffer, sizeof(buffer), dataType);
         
         if (i>0) {
-            [_readBuffer appendBytes:buffer length:i];
+            [readBuffer appendBytes:buffer length:i];
             continue;
         }
         
         if (i==SSH_EOF) {
             // eof
-//            didReadData();
+            didReadData();
             [self close];
             return;
         }
@@ -449,7 +445,7 @@
         }
         
         // i < 0, error occurs, close channel
-//        didReadData();
+        didReadData();
         [self closeWithError:self.session.lastError];
         return;
     }
