@@ -92,9 +92,14 @@
 }
 
 - (void)_doCloseWithError:(NSError *)error {
-    if (self.stage == SSHKitChannelStageClosed) { // already closed
+    if (self.stage == SSHKitChannelStageClosed || !_rawChannel) { // already closed
         return;
     }
+    
+    _callback = (struct ssh_channel_callbacks_struct) {0};
+    
+    ssh_callbacks_init(&_callback);
+    ssh_set_channel_callbacks(_rawChannel, &_callback);
     
     // SSH_OK or SSH_ERROR, never return SSH_AGAIN
     
