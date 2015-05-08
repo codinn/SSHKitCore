@@ -56,10 +56,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 + (instancetype)_tryCreateForwardChannelFromSession:(SSHKitSession *)session;
 + (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session;
 
-- (void)_doRead;
-- (void)_doWrite;
-
-- (BOOL)_hasDataToWrite;
+- (void)_tryToWrite;
 
 - (void)_doOpenSession;
 - (void)_doRequestPty;

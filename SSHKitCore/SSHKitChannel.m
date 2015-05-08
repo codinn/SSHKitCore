@@ -13,7 +13,8 @@
         unsigned int didCloseWithError : 1;
     } _delegateFlags;
     
-    NSData          *_dataTorWrite;
+    NSData          *_pendingData;
+    struct ssh_channel_callbacks_struct _callback;
 }
 
 @property (nonatomic, readwrite) SSHKitChannelType  type;
@@ -59,7 +60,7 @@
 
 - (void)dealloc
 {
-    [self close];
+    [self closeWithError:nil];
 }
 
 - (BOOL)isOpened
@@ -81,32 +82,36 @@
     [self closeWithError:nil];
 }
 
-- (void)closeWithError:(NSError *) error
+- (void)closeWithError:(NSError *)error
 {
     [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
         __strong SSHKitChannel *strongSelf = self;
         
-        if (strongSelf.stage == SSHKitChannelStageClosed) { // already closed
-            return;
-        }
-        
-        strongSelf.stage = SSHKitChannelStageClosed;
-        
-        // SSH_OK or SSH_ERROR, never return SSH_AGAIN
-        
-        // prevent server receive more then one close message
-        if (strongSelf.isOpened) {
-            ssh_channel_close(strongSelf->_rawChannel);
-        }
-        
-        ssh_channel_free(strongSelf->_rawChannel);
-        
-        strongSelf->_rawChannel = NULL;
-        
-        if (strongSelf->_delegateFlags.didCloseWithError) {
-            [strongSelf.delegate channelDidClose:strongSelf withError:error];
-        }
+        [strongSelf _doCloseWithError:error];
     }}];
+}
+
+- (void)_doCloseWithError:(NSError *)error {
+    if (self.stage == SSHKitChannelStageClosed) { // already closed
+        return;
+    }
+    
+    // SSH_OK or SSH_ERROR, never return SSH_AGAIN
+    
+    // prevent server receive more then one close message
+    if (ssh_channel_is_open(_rawChannel)) {
+        ssh_channel_close(_rawChannel);
+    }
+    
+    ssh_channel_free(_rawChannel);
+    _rawChannel = NULL;
+    
+    self.stage = SSHKitChannelStageClosed;
+    [self.session removeChannel:self];
+    
+    if (_delegateFlags.didCloseWithError) {
+        [self.delegate channelDidClose:self withError:error];
+    }
 }
 
 #pragma mark - shell channel
@@ -213,6 +218,7 @@
             self.stage = SSHKitChannelStageReadWrite;
             
             // opened
+            [self _didOpen];
             
             if (_delegateFlags.didOpen) {
                 [self.delegate channelDidOpen:self];
@@ -276,6 +282,7 @@
             self.stage = SSHKitChannelStageReadWrite;
             
             // opened
+            [self _didOpen];
             
             if (_delegateFlags.didOpen) {
                 [self.delegate channelDidOpen:self];
@@ -287,6 +294,18 @@
             [self closeWithError:self.session.lastError];
             break;
     }
+}
+
+- (void)_didOpen {
+    _callback = (struct ssh_channel_callbacks_struct) {
+        .userdata               = (__bridge void *)(self),
+        .channel_data_function  = channel_data_available,
+        .channel_close_function = channel_close_received,
+        .channel_eof_function   = channel_eof_received,
+    };
+    
+    ssh_callbacks_init(&_callback);
+    ssh_set_channel_callbacks(_rawChannel, &_callback);
 }
 
 #pragma mark - tcpip-forward channel
@@ -405,65 +424,52 @@
 
 #pragma mark - Others
 
-- (void)_tryReadData:(SSHKitChannelDataType)dataType
-{
-    NSMutableData *readBuffer = [NSMutableData dataWithCapacity:SSHKIT_CORE_SSH_MAX_PAYLOAD];
-    
-    char buffer[SSHKIT_CORE_SSH_MAX_PAYLOAD];
-    
-    void (^didReadData)(void) = ^ {
-        if (readBuffer.length) {
-            if (dataType == SSHKitChannelStdoutData) {
-                if (self->_delegateFlags.didReadStdoutData) {
-                    [self.delegate channel:self didReadStdoutData:readBuffer];
-                }
-            } else if (dataType == SSHKitChannelStderrData) {
-                if (self->_delegateFlags.didReadStderrData) {
-                    [self.delegate channel:self didReadStderrData:readBuffer];
-                }
-            }
-        }
-    };
-    
-    while (YES) {
-        int i = ssh_channel_read_nonblocking(_rawChannel, buffer, sizeof(buffer), dataType);
-        
-        if (i>0) {
-            [readBuffer appendBytes:buffer length:i];
-            continue;
-        }
-        
-        if (i==SSH_EOF) {
-            // eof
-            didReadData();
-            [self close];
-            return;
-        }
-        
-        if (i==SSH_AGAIN || i==0) {
-            break;
-        }
-        
-        // i < 0, error occurs, close channel
-        didReadData();
-        [self closeWithError:self.session.lastError];
-        return;
-    }
-    
-    didReadData();
-}
-
 /**
  * Reads the first available bytes that become available on the channel.
  **/
-- (void)_doRead
+static int channel_data_available(ssh_session session,
+                                  ssh_channel channel,
+                                  void *data,
+                                  uint32_t len,
+                                  int is_stderr,
+                                  void *userdata)
 {
-    if (self.stage != SSHKitChannelStageReadWrite) {
-        return;
+    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
+    if (selfChannel.stage != SSHKitChannelStageReadWrite) {
+        return 0;
     }
     
-    [self _tryReadData:SSHKitChannelStdoutData];
-    [self _tryReadData:SSHKitChannelStderrData];
+    NSData *readData = [NSData dataWithBytes:data length:len];
+    
+    if (is_stderr) {
+        if (selfChannel->_delegateFlags.didReadStderrData) {
+            [selfChannel.delegate channel:selfChannel didReadStderrData:readData];
+        }
+    } else {
+        if (selfChannel->_delegateFlags.didReadStdoutData) {
+            [selfChannel.delegate channel:selfChannel didReadStdoutData:readData];
+        }
+    }
+    
+    return len;
+}
+
+static void channel_close_received(ssh_session session,
+                                   ssh_channel channel,
+                                   void *userdata)
+{
+    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
+    
+    [selfChannel _doCloseWithError:nil];
+}
+
+static void channel_eof_received(ssh_session session,
+                                 ssh_channel channel,
+                                 void *userdata)
+{
+    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
+    
+    [selfChannel _doCloseWithError:nil];
 }
 
 - (void)writeData:(NSData *)data {
@@ -480,39 +486,48 @@
             return_from_block;
         }
         
-        strongSelf->_dataTorWrite = data;
+        strongSelf->_pendingData = data;
         
-        [strongSelf _doWrite];
+        // resume session write dispatch source
+        [strongSelf _tryToWrite];
     }}];
 }
 
-- (void)_doWrite
+NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
+    return raw_channel && (ssh_channel_window_size(raw_channel) > 0);
+}
+
+- (void)_tryToWrite
 {
-    uint32_t datalen = (uint32_t)_dataTorWrite.length;
-    int wrote = ssh_channel_write(_rawChannel, _dataTorWrite.bytes, datalen);
+    if ( !_pendingData.length || !is_channel_writable(_rawChannel) ) {
+        return;
+    }
+    
+    uint32_t datalen = (uint32_t)_pendingData.length;
+    
+    int wrote = ssh_channel_write(_rawChannel, _pendingData.bytes, datalen);
     
     if ( (wrote < 0) || (wrote>datalen) ) {
         [self closeWithError:self.session.lastError];
         return;
     }
     
+    if (wrote==0) {
+        return;
+    }
+    
     if (wrote!=datalen) {
         // libssh resize remote window, it's equivalent to E_AGAIN
-        _dataTorWrite = [_dataTorWrite subdataWithRange:NSMakeRange(wrote, datalen-wrote)];
+        _pendingData = [_pendingData subdataWithRange:NSMakeRange(wrote, datalen-wrote)];
         return;
     }
     
     // all data wrote
-    
-    _dataTorWrite = nil;
+    _pendingData = nil;
     
     if (_delegateFlags.didWriteData) {
         [self.delegate channelDidWriteData:self];
     }
-}
-
-- (BOOL)_hasDataToWrite {
-    return _dataTorWrite.length && _rawChannel && (ssh_channel_window_size(_rawChannel) > 0);
 }
 
 @end

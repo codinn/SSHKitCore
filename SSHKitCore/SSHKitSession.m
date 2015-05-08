@@ -872,6 +872,21 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         [self _disconnectWithError:self.lastError];
     }
     
+    // try again forward-tcpip requests
+    [SSHKitChannel _doRequestRemoteForwardOnSession:self];
+    
+    // probe forward channel from accepted forward
+    // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
+    //       another method is create a temporary channel, and let it consumes the wild data.
+    //       The real cause is unkown, may be it's caused by data arrived while channels already closed
+    SSHKitChannel *forwardChannel = [SSHKitChannel _tryCreateForwardChannelFromSession:self];
+    
+    if (forwardChannel) {
+        if (_delegateFlags.didAcceptForwardChannel) {
+            [_delegate session:self didAcceptForwardChannel:forwardChannel];
+        }
+    }
+    
     // iterate channels, use NSEnumerationReverse to safe remove object in array
     [_channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
     {
@@ -919,32 +934,13 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 break;
                 
             case SSHKitChannelStageReadWrite:
-                [channel _doRead];
-                
-                if ([channel _hasDataToWrite]) {
-                    [channel _doWrite];
-                }
+                [channel _tryToWrite];
                 break;
                 
             default:
                 break;
         }
     }];
-    
-    // try again forward-tcpip requests
-    [SSHKitChannel _doRequestRemoteForwardOnSession:self];
-    
-    // probe forward channel from accepted forward
-    // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
-    //       another method is create a temporary channel, and let it consumes the wild data.
-    //       The real cause is unkown, may be it's caused by data arrived while channels already closed
-    SSHKitChannel *forwardChannel = [SSHKitChannel _tryCreateForwardChannelFromSession:self];
-    
-    if (forwardChannel) {
-        if (_delegateFlags.didAcceptForwardChannel) {
-            [_delegate session:self didAcceptForwardChannel:forwardChannel];
-        }
-    }
 }
 
 /**
@@ -954,6 +950,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 {
     if (_readSource) {
         dispatch_source_cancel(_readSource);
+        _readSource = nil;
     }
     
     _readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self->_connector.socketFD, 0, _sessionQueue);
