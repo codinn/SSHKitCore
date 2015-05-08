@@ -14,6 +14,7 @@
     } _delegateFlags;
     
     NSMutableData   *_readBuffer;
+    NSData          *_dataTorWrite;
 }
 
 @property (nonatomic, readwrite) SSHKitChannelType  type;
@@ -410,7 +411,6 @@
 - (void)_tryReadData:(SSHKitChannelDataType)dataType
 {
     char buffer[SSHKit_MAX_BUF_SIZE];
-    int to_read     = 0;
     
     // empty read buffer
     _readBuffer.length = 0;
@@ -429,22 +429,29 @@
         }
     };
     
-    while (_rawChannel && ssh_channel_is_open(_rawChannel) && (to_read = ssh_channel_poll(_rawChannel, dataType))!=0)
-    {
-        if (to_read==SSH_EOF) {     // eof
-            didReadData();
+    while (YES) {
+        int i = ssh_channel_read_nonblocking(_rawChannel, buffer, sizeof(buffer), dataType);
+        
+        if (i>0) {
+            [_readBuffer appendBytes:buffer length:i];
+            continue;
+        }
+        
+        if (i==SSH_EOF) {
+            // eof
+//            didReadData();
             [self close];
             return;
-        } else if (to_read < 0) {   // error occurs, close channel
-            didReadData();
-            [self closeWithError:self.session.lastError];
-            return;
-        } else if (to_read==0) {
-            break;
-        } else {
-            int i = ssh_channel_read(_rawChannel, buffer, sizeof(buffer) > to_read ? to_read : sizeof(buffer), dataType);
-            [_readBuffer appendBytes:buffer length:i];
         }
+        
+        if (i==SSH_AGAIN || i==0) {
+            break;
+        }
+        
+        // i < 0, error occurs, close channel
+//        didReadData();
+        [self closeWithError:self.session.lastError];
+        return;
     }
     
     didReadData();
@@ -463,8 +470,11 @@
     [self _tryReadData:SSHKitChannelStderrData];
 }
 
-- (void)writeData:(NSData *)data
-{
+- (void)writeData:(NSData *)data {
+    if (!data.length) {
+        return;
+    }
+    
     __weak SSHKitChannel *weakSelf = self;
     
     [self.session dispatchAsyncOnSessionQueue:^{ @autoreleasepool {
@@ -474,23 +484,39 @@
             return_from_block;
         }
         
-        uint32_t wrote = 0;
+        strongSelf->_dataTorWrite = data;
         
-        do {
-            ssize_t i = ssh_channel_write(strongSelf->_rawChannel, &data.bytes[wrote], (uint32_t)data.length-wrote);
-            
-            if (i < 0) {
-                [strongSelf closeWithError:strongSelf.session.lastError];
-                return;
-            }
-            
-            wrote += i;
-        } while (wrote < data.length && strongSelf->_rawChannel);
-        
-        if (strongSelf->_delegateFlags.didWriteData) {
-            [strongSelf.delegate channelDidWriteData:strongSelf];
-        }
+        [strongSelf _doWrite];
     }}];
+}
+
+- (void)_doWrite
+{
+    uint32_t datalen = (uint32_t)_dataTorWrite.length;
+    int wrote = ssh_channel_write(_rawChannel, _dataTorWrite.bytes, datalen);
+    
+    if ( (wrote < 0) || (wrote>datalen) ) {
+        [self closeWithError:self.session.lastError];
+        return;
+    }
+    
+    if (wrote!=datalen) {
+        // libssh resize remote window, it's equivalent to E_AGAIN
+        _dataTorWrite = [_dataTorWrite subdataWithRange:NSMakeRange(wrote, datalen-wrote)];
+        return;
+    }
+    
+    // all data wrote
+    
+    _dataTorWrite = nil;
+    
+    if (_delegateFlags.didWriteData) {
+        [self.delegate channelDidWriteData:self];
+    }
+}
+
+- (BOOL)_hasDataToWrite {
+    return _dataTorWrite.length && _rawChannel && (ssh_channel_window_size(_rawChannel) > 0);
 }
 
 @end
