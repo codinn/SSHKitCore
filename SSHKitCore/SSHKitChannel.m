@@ -119,6 +119,39 @@
     }
 }
 
+- (void)_doProcess {
+    switch (_stage) {
+        case SSHKitChannelStageOpening:
+            if (_type == SSHKitChannelTypeDirect) {
+                [self _doOpenDirect];
+            } else if (_type == SSHKitChannelTypeShell) {
+                [self _doOpenSession];
+            }
+            
+            break;
+            
+        case SSHKitChannelStageRequestPTY:
+            [self _doRequestPty];
+            break;
+            
+            
+        case SSHKitChannelStageRequestShell:
+            [self _doRequestShell];
+            break;
+            
+        case SSHKitChannelStageReadWrite:
+            [self _tryToWrite];
+            break;
+            
+        case SSHKitChannelStageClosed:
+            [self.session removeChannel:self];
+            break;
+            
+        default:
+            break;
+    }
+}
+
 #pragma mark - shell channel
 
 + (instancetype)shellChannelFromeSession:(SSHKitSession *)session withTerminalType:(NSString *)terminalType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate
@@ -143,19 +176,14 @@
         // add channel to session list
         [session addChannel:channel];
         
-        channel.stage = SSHKitChannelStageOpening1;
+        channel.stage = SSHKitChannelStageOpening;
         [channel _doOpenSession];
     }}];
     
     return channel;
 }
 
-- (void)_doOpenSession
-{
-    if (self.stage != SSHKitChannelStageOpening1) {
-        return;
-    }
-    
+- (void)_doOpenSession {
     int result = ssh_channel_open_session(_rawChannel);
     
     switch (result) {
@@ -164,7 +192,7 @@
             break;
             
         case SSH_OK:
-            self.stage = SSHKitChannelStageOpening2;
+            self.stage = SSHKitChannelStageRequestPTY;
             
             // opened
             [self _doRequestPty];
@@ -178,12 +206,7 @@
     }
 }
 
-- (void)_doRequestPty
-{
-    if (self.stage != SSHKitChannelStageOpening2) {
-        return;
-    }
-    
+- (void)_doRequestPty {
     int result = ssh_channel_request_pty_size(_rawChannel, "xterm", 80, 24);
     
     switch (result) {
@@ -192,7 +215,7 @@
             break;
             
         case SSH_OK:
-            self.stage = SSHKitChannelStageOpening3;
+            self.stage = SSHKitChannelStageRequestShell;
             
             // opened
             [self _doRequestShell];
@@ -206,12 +229,7 @@
     }
 }
 
-- (void)_doRequestShell
-{
-    if (self.stage != SSHKitChannelStageOpening3) {
-        return;
-    }
-    
+- (void)_doRequestShell {
     int result = ssh_channel_request_shell(_rawChannel);
     
     switch (result) {
@@ -263,7 +281,7 @@
         // add channel to session list
         [session addChannel:channel];
         
-        channel.stage = SSHKitChannelStageOpening1;
+        channel.stage = SSHKitChannelStageOpening;
         [channel _doOpenDirect];
     }}];
     
@@ -272,10 +290,6 @@
 
 - (void)_doOpenDirect
 {
-    if (self.stage != SSHKitChannelStageOpening1) {
-        return;
-    }
-    
     int result = ssh_channel_open_forward(_rawChannel, self.directHost.UTF8String, (int)self.directPort, "127.0.0.1", 22);
     
     switch (result) {

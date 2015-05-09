@@ -31,7 +31,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         unsigned int didAcceptForwardChannel        : 1;
 	} _delegateFlags;
     
-    dispatch_source_t   _readSource;
+    dispatch_source_t   _socketReadSource;
     dispatch_source_t   _keepAliveTimer;
     NSInteger           _keepAliveCounter;
     
@@ -416,7 +416,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         strongSelf.currentStage = SSHKitSessionStageConnecting;
-        [strongSelf _setupReadSource];
+        [strongSelf _setupSocketReadSource];
         [strongSelf _doConnect];
     }}];
 }
@@ -490,9 +490,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)_doDisconnectWithError:(NSError *)error
 {
-    if (_readSource) {
-        dispatch_source_cancel(_readSource);
-        _readSource = nil;
+    if (_socketReadSource) {
+        dispatch_source_cancel(_socketReadSource);
+        _socketReadSource = nil;
     }
     
     for (SSHKitChannel* channel in _channels) {
@@ -864,9 +864,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
-#pragma mark - Read / Write
+#pragma mark - SSH Main Loop
 
-- (void)_doReadWrite
+- (void)_mainLoop
 {
     if (!self.isConnected) {
         [self _disconnectWithError:self.lastError];
@@ -890,73 +890,24 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     // iterate channels, use NSEnumerationReverse to safe remove object in array
     [_channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
     {
-        switch (channel.stage) {
-            case SSHKitChannelStageOpening1:
-                switch (channel.type) {
-                    case SSHKitChannelTypeDirect:
-                        [channel _doOpenDirect];
-                        break;
-                        
-                    case SSHKitChannelTypeShell:
-                        [channel _doOpenSession];
-                        break;
-                        
-                    default:
-                        break;
-                }
-                break;
-                
-            case SSHKitChannelStageOpening2:
-                switch (channel.type) {
-                    case SSHKitChannelTypeShell:
-                        [channel _doRequestPty];
-                        break;
-                        
-                    default:
-                        break;
-                }
-                break;
-                
-                
-            case SSHKitChannelStageOpening3:
-                switch (channel.type) {
-                    case SSHKitChannelTypeShell:
-                        [channel _doRequestShell];
-                        break;
-                        
-                    default:
-                        break;
-                }
-                break;
-                
-            case SSHKitChannelStageClosed:
-                [self removeChannel:channel];
-                break;
-                
-            case SSHKitChannelStageReadWrite:
-                [channel _tryToWrite];
-                break;
-                
-            default:
-                break;
-        }
+        [channel _doProcess];
     }];
 }
 
 /**
  * Reads the first available bytes that become available on the channel.
  **/
-- (void)_setupReadSource
+- (void)_setupSocketReadSource
 {
-    if (_readSource) {
-        dispatch_source_cancel(_readSource);
-        _readSource = nil;
+    if (_socketReadSource) {
+        dispatch_source_cancel(_socketReadSource);
+        _socketReadSource = nil;
     }
     
-    _readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self->_connector.socketFD, 0, _sessionQueue);
+    _socketReadSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self->_connector.socketFD, 0, _sessionQueue);
     
     __weak SSHKitSession *weakSelf = self;
-    dispatch_source_set_event_handler(_readSource, ^{ @autoreleasepool {
+    dispatch_source_set_event_handler(_socketReadSource, ^{ @autoreleasepool {
         __strong SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
             return_from_block;
@@ -982,16 +933,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 
                 break;
             case SSHKitSessionStageAuthenticated:
-                [strongSelf _doReadWrite];
+                [strongSelf _mainLoop];
                 break;
                 
             case SSHKitSessionStageUnknown:
+            default:
                 // should never comes to here
                 break;
         }
     }});
     
-    dispatch_resume(_readSource);
+    dispatch_resume(_socketReadSource);
 }
 
 // -----------------------------------------------------------------------------
