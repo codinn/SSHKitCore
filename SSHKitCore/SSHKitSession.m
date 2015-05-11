@@ -17,6 +17,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitSessionStagePreAuthenticate,
     SSHKitSessionStageAuthenticating,
     SSHKitSessionStageAuthenticated,
+    SSHKitSessionStageDisconnected,
 };
 
 @interface SSHKitSession () {
@@ -75,21 +76,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 + (void)initialize
 {
-    static dispatch_once_t onceToken;
-    
-    dispatch_once(&onceToken, ^{
-        dispatch_block_t block = ^{
-            // use libssh with threads, GCD should be pthread based
-            ssh_threads_set_callbacks(ssh_threads_get_pthread());
-            ssh_init();
-        };
-        
-        if ([NSThread isMainThread]) {
-            block();
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), block);
-        }
-    });
+    SSHKitCoreInit();
 }
 
 - (instancetype)init
@@ -108,12 +95,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.enableCompression = NO;
         self.enableIPv4 = YES;
         self.enableIPv6 = YES;
-        
-        _rawSession = ssh_new();
-        
-        if (!_rawSession) {
-            return nil;
-        }
         
         self.currentStage = SSHKitSessionStageNotConnected;
         _channels = [@[] mutableCopy];
@@ -295,6 +276,18 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
+        // disconnect if connected
+        if (strongSelf.isConnected) {
+            [strongSelf _disconnectWithError:nil];
+        }
+        
+        strongSelf->_rawSession = ssh_new();
+        
+        if (!strongSelf->_rawSession) {
+            [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitLibsshErrorDomain code:SSHKitErrorCodeFatal userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
+            return_from_block;
+        }
+        
         if (!strongSelf->_connector) {
             if (strongSelf.proxyType > SSHKitProxyTypeDirect) {
                 // connect over a proxy server
@@ -410,11 +403,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         ssh_set_blocking(strongSelf.rawSession, 0);
         if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: set to non-blocking mode");
         
-        // disconnect if connected
-        if (strongSelf.isConnected) {
-            [strongSelf _disconnectWithError:nil];
-        }
-        
         strongSelf.currentStage = SSHKitSessionStageConnecting;
         [strongSelf _setupSocketReadSource];
         [strongSelf _doConnect];
@@ -443,19 +431,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (BOOL)isConnected
 {
-    __block BOOL flag = NO;
-    
-    [self dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
-        int status = ssh_get_status(self.rawSession);
-        
-        if ( (status & SSH_CLOSED_ERROR) || (status & SSH_CLOSED) || (ssh_is_connected(self.rawSession) == 0) ) {
-            flag = NO;
-        } else {
-            flag = YES;
-        }
-    }}];
-    
-    return flag;
+    return self.currentStage == SSHKitSessionStageAuthenticated;
 }
 
 - (void)disconnect

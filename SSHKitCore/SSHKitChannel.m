@@ -81,7 +81,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
     __weak SSHKitChannel *weakSelf = self;
     [self.session dispatchAsyncOnSessionQueue:^ { @autoreleasepool {
         __strong SSHKitChannel *strongSelf = weakSelf;
-        if (!strongSelf || !strongSelf.session.isConnected) {
+        if (!strongSelf) {
             return_from_block;
         }
         
@@ -162,6 +162,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
+            [channel _doCloseWithError:nil];
             return_from_block;
         }
         
@@ -256,6 +257,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
+            [channel _doCloseWithError:nil];
             return_from_block;
         }
         
@@ -355,10 +357,6 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     [session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         SSHKitSession *strongSession = weakSession;
-        if (!strongSession) {
-            return_from_block;
-        }
-        
         if (!strongSession.isConnected) {
             return_from_block;
         }

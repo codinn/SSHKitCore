@@ -69,3 +69,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
 
 typedef void (^ SSHKitRequestRemoteForwardCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
+
+void SSHKitCoreInit();
+void SSHKitCoreFinalize();
