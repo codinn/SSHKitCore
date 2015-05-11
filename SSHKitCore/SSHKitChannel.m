@@ -3,10 +3,6 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 
-/** When a SSHKitChannel dealloced, the raw channel itself actually might remain
- * in session channel list, it doesn't acually be "freed".
- * So we need to set callback to a static value to avoid BAD MEM ACCESS
-*/
 static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
 
 @interface SSHKitChannel () {
@@ -45,11 +41,6 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
  @returns New SSHKitChannel instance
  */
 
-- (instancetype)initWithSession:(SSHKitSession *)session channelType:(SSHKitChannelType)channelType
-{
-    return [self initWithSession:session channelType:channelType delegate:nil];
-}
-
 - (instancetype)initWithSession:(SSHKitSession *)session channelType:(SSHKitChannelType)channelType delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
     if ((self = [super init])) {
@@ -60,18 +51,6 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     }
 
     return self;
-}
-
-- (void)dealloc
-{
-    // you should make sure channel closed before dealloc it
-    [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
-        ssh_callbacks_init(&_null_channel_callback);
-        ssh_set_channel_callbacks(self->_rawChannel, &_null_channel_callback);
-        
-        ssh_channel_free(self->_rawChannel);
-        self->_rawChannel = NULL;
-    }}];
 }
 
 - (BOOL)isOpened
@@ -98,10 +77,9 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     __weak SSHKitChannel *weakSelf = self;
     [self.session dispatchAsyncOnSessionQueue:^ { @autoreleasepool {
         __strong SSHKitChannel *strongSelf = weakSelf;
-        if (!strongSelf) {
+        if (!strongSelf || !strongSelf.session.isConnected) {
             return_from_block;
         }
-        
         
         [strongSelf _doCloseWithError:error];
     }}];
@@ -110,19 +88,28 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
 - (void)_doCloseWithError:(NSError *)error {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
 
-    if (self.stage == SSHKitChannelStageClosed || !_rawChannel) { // already closed
+    if (self.stage == SSHKitChannelStageClosed) { // already closed
         return;
     }
     
     self.stage = SSHKitChannelStageClosed;
-    
-    // SSH_OK or SSH_ERROR, never return SSH_AGAIN
     
     // prevent server receive more then one close message
     if (ssh_channel_is_open(_rawChannel)) {
         ssh_channel_send_eof(_rawChannel);
         ssh_channel_close(_rawChannel);
     }
+    
+    /** When we free a channel, raw channel itself actually might retained
+     * in session channel list, it doesn't acually be "freed", it might wating for
+     * remote closed message.
+     * So we need to set callback here to a static value to avoid BAD MEM ACCESS
+     */
+    ssh_callbacks_init(&_null_channel_callback);
+    ssh_set_channel_callbacks(self->_rawChannel, &_null_channel_callback);
+    
+    ssh_channel_free(self->_rawChannel);
+    self->_rawChannel = NULL;
     
     if (_delegateFlags.didCloseWithError) {
         [self.delegate channelDidClose:self withError:error];
@@ -518,7 +505,7 @@ static void channel_eof_received(ssh_session session,
     [self.session dispatchAsyncOnSessionQueue:^{ @autoreleasepool {
         __strong SSHKitChannel *strongSelf = weakSelf;
         
-        if (strongSelf.stage != SSHKitChannelStageReadWrite) {
+        if (strongSelf.stage != SSHKitChannelStageReadWrite || !strongSelf.session.isConnected) {
             return_from_block;
         }
         

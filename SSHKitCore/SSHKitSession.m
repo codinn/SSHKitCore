@@ -499,8 +499,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         _socketReadSource = nil;
     }
     
-    for (SSHKitChannel* channel in _channels) {
-        [channel close];
+    NSArray *channels = [_channels copy];
+    for (SSHKitChannel* channel in channels) {
+        [channel _doCloseWithError:nil];
     }
     
     [_channels removeAllObjects];

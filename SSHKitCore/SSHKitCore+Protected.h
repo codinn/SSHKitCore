@@ -67,6 +67,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 - (void)_doRequestShell;
 
 - (void)_doOpenDirect;
+- (void)_doCloseWithError:(NSError *)error;
 @end
 
 @interface SSHKitPrivateKeyParser ()
