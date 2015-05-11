@@ -1,6 +1,7 @@
-#import <SSHKitCore/SSHKitCoreCommon.h>
-#import <SSHKitCore/SSHKitSession.h>
-#import <SSHKitCore/SSHKitChannel.h>
-#import <SSHKitCore/SSHKitPrivateKeyParser.h>
-#import <SSHKitCore/SSHKitHostKeyParser.h>
-#import <SSHKitCore/CoSOCKSMessage.h>
+#import "SSHKitCoreCommon.h"
+#import "SSHKitSession.h"
+#import "SSHKitChannel.h"
+#import "SSHKitPrivateKeyParser.h"
+#import "SSHKitHostKeyParser.h"
+#import "CoSOCKSMessage.h"
+#import "CoHTTPMessage.h"

@@ -156,14 +156,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = D5A83A2FF333420FB0C992ED;
+			remoteGlobalIDString = 949A12CA1A624FD7944109F4;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 4963084A1B6647B4BB91F8CF;
+			remoteGlobalIDString = C5169C8D7BAF4DD9A9C4732E;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -292,9 +292,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.4.5.1.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.1.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 				4AEF726019FFE2AE009B0CC7 /* exec */,
 				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
@@ -458,10 +458,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.4.5.0.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.4.5.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh.4.5.0.dylib;
+			path = libssh.4.5.1.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -472,10 +472,10 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.0.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh_threads.4.5.0.dylib;
+			path = libssh_threads.4.5.1.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -620,19 +620,22 @@
 		E4E96DAC158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -640,9 +643,9 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -660,23 +663,26 @@
 		E4E96DAD158E10FD002E6E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -685,6 +691,7 @@
 					"$(SRCROOT)/libssh/build/dist/include",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 			};
@@ -693,9 +700,10 @@
 		E4E96DAF158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
@@ -703,6 +711,7 @@
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/openssl/dist/openssl-1.0.1l-osx/lib";
 				PRODUCT_NAME = SSHKitCore;
+				VERSIONING_SYSTEM = "apple-generic";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Debug;
@@ -710,9 +719,10 @@
 		E4E96DB0158E10FD002E6E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				FRAMEWORK_VERSION = A;
@@ -720,6 +730,7 @@
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/openssl/dist/openssl-1.0.1l-osx/lib";
 				PRODUCT_NAME = SSHKitCore;
+				VERSIONING_SYSTEM = "apple-generic";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;

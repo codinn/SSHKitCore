@@ -51,7 +51,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelType)  {
 
 typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageInvalid = 0,  // channel has not been inited correctly
-    SSHKitChannelStageCreated,      // channel has been created
+    SSHKitChannelStageAlloced,      // channel has been alloced, but not yet inited
     SSHKitChannelStageOpening,      // channel is opening
     SSHKitChannelStageRequestPTY,   // channel is requesting a pty
     SSHKitChannelStageRequestShell, // channel is requesting a shell

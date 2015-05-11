@@ -46,6 +46,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     NSMutableArray      *_forwardRequests;
     NSMutableArray      *_channels;
+    
+//    ssh_event _event;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage currentStage;
@@ -110,6 +112,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.enableIPv6 = YES;
         
         _rawSession = ssh_new();
+        
+//        _event = ssh_event_new();
         
         if (!_rawSession) {
             return nil;
@@ -433,6 +437,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_async(_sessionQueue, block);
 }
 
+- (BOOL)isOnSessionQueue {
+    return dispatch_get_specific(_isOnSessionQueueKey) != NULL;
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark Disconnecting
 // -----------------------------------------------------------------------------
@@ -673,6 +681,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if (_delegateFlags.didAuthenticateUser) {
         [self.delegate session:self didAuthenticateUser:nil];
     }
+    
+//    if(ssh_event_add_session(_event, _rawSession) != SSH_OK) {
+//        printf("Couldn't add the session to the event\n");
+//        ssh_event_free(_event);
+//    }
 }
 
 - (void)_checkAuthenticateResult:(NSInteger)result
@@ -872,6 +885,23 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         [self _disconnectWithError:self.lastError];
     }
     
+    
+//    int rc = ssh_event_dopoll(_event, 0);
+//    if (rc == SSH_ERROR){
+        //        fprintf(stderr, "Error : %s\n", ssh_get_error(session));
+        //        ssh_event_free(_event);
+        //        ssh_disconnect(session);
+        //        return -1;
+//    }
+    
+    NSArray *channels = [_channels copy];
+    
+    // iterate channels, use NSEnumerationReverse to safe remove object in array
+    [channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
+    {
+        [channel _doProcess];
+    }];
+    
     // try again forward-tcpip requests
     [SSHKitChannel _doRequestRemoteForwardOnSession:self];
     
@@ -888,10 +918,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
     
     // iterate channels, use NSEnumerationReverse to safe remove object in array
-    [_channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
-    {
-        [channel _doProcess];
-    }];
+//    [channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
+//     {
+//         [channel _doProcess2];
+//     }];
 }
 
 /**
@@ -1031,23 +1061,28 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)addChannel:(SSHKitChannel *)channel
 {
+    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_channels addObject:channel];
 }
 - (void)removeChannel:(SSHKitChannel *)channel
 {
+    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_channels removeObject:channel];
 }
 
 - (SSHKitForwardRequest *)firstForwardRequest
 {
+    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     return _forwardRequests.firstObject;
 }
 - (void)addForwardRequest:(SSHKitForwardRequest *)request
 {
+    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_forwardRequests addObject:request];
 }
 - (void)removeForwardRequest:(SSHKitForwardRequest *)request
 {
+    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     NSUInteger index = [_forwardRequests indexOfObject:request];
     
     if (index!=NSNotFound) {
@@ -1056,6 +1091,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 - (void)removeAllForwardRequest
 {
+    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_forwardRequests removeAllObjects];
 }
 
