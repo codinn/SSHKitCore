@@ -873,10 +873,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)_mainLoop
 {
-    if (!self.isConnected) {
-        [self _disconnectWithError:self.lastError];
-    }
-    
     // try again forward-tcpip requests
     [SSHKitChannel _doRequestRemoteForwardOnSession:self];
     
@@ -884,7 +880,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
     //       another method is create a temporary channel, and let it consumes the wild data.
     //       The real cause is unkown, may be it's caused by data arrived while channels already closed
-    SSHKitChannel *forwardChannel = [SSHKitChannel _tryCreateForwardChannelFromSession:self];
+    SSHKitChannel *forwardChannel = [SSHKitChannel _doCreateForwardChannelFromSession:self];
     
     if (forwardChannel) {
         if (_delegateFlags.didAcceptForwardChannel) {
@@ -970,7 +966,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     self.proxyPassword = password;
 }
 
-#pragma mark - Internal Helpers
+#pragma mark - Internal Utils
 
 - (void)_fireKeepAliveTimer
 {

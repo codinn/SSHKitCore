@@ -3,7 +3,9 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 
-static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
+typedef struct ssh_channel_callbacks_struct channel_callbacks;
+
+static channel_callbacks s_null_channel_callbacks = {0};
 
 @interface SSHKitChannel () {
     struct {
@@ -14,8 +16,8 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
         unsigned int didCloseWithError : 1;
     } _delegateFlags;
     
-    NSData          *_pendingData;
-    struct ssh_channel_callbacks_struct _callback;
+    NSData              *_pendingWriteData;
+    channel_callbacks   _callback;
 }
 
 @property (nonatomic, readwrite) SSHKitChannelType  type;
@@ -24,14 +26,14 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
 @property (readwrite) NSString      *directHost;
 @property (readwrite) NSUInteger    directPort;
 
-@property (readwrite) NSInteger forwardDestinationPort;
+@property (readwrite) NSInteger     forwardDestinationPort;
 
 @end
 
 @implementation SSHKitChannel
 
 // -----------------------------------------------------------------------------
-#pragma mark - INITIALIZER
+#pragma mark - Initializer
 // -----------------------------------------------------------------------------
 
 /**
@@ -66,6 +68,8 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     
     return flag;
 }
+
+#pragma mark - Close Channel
 
 - (void)close
 {
@@ -105,8 +109,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
      * remote closed message.
      * So we need to set callback here to a static value to avoid BAD MEM ACCESS
      */
-    ssh_callbacks_init(&_null_channel_callback);
-    ssh_set_channel_callbacks(self->_rawChannel, &_null_channel_callback);
+    [self _unregesterCallbacks];
     
     ssh_channel_free(self->_rawChannel);
     self->_rawChannel = NULL;
@@ -124,24 +127,24 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     switch (_stage) {
         case SSHKitChannelStageOpening:
             if (_type == SSHKitChannelTypeDirect) {
-                [self _doOpenDirect];
+                [self _openDirect];
             } else if (_type == SSHKitChannelTypeShell) {
-                [self _doOpenSession];
+                [self _openSession];
             }
             
             break;
             
         case SSHKitChannelStageRequestPTY:
-            [self _doRequestPty];
+            [self _requestPty];
             break;
             
             
         case SSHKitChannelStageRequestShell:
-            [self _doRequestShell];
+            [self _requestShell];
             break;
             
         case SSHKitChannelStageReadWrite:
-            [self _tryToWrite];
+            [self _doWrite];
             break;
             
         case SSHKitChannelStageClosed:
@@ -150,27 +153,27 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     }
 }
 
-#pragma mark - shell channel
+#pragma mark - shell Channel
 
-+ (instancetype)shellChannelFromeSession:(SSHKitSession *)session withTerminalType:(NSString *)terminalType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate
++ (instancetype)shellChannelFromSession:(SSHKitSession *)session withTerminalType:(NSString *)terminalType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
     SSHKitChannel *channel = [[self alloc] initWithSession:session channelType:SSHKitChannelTypeShell delegate:aDelegate];
-    channel.stage = SSHKitChannelStageAlloced;
+    channel.stage = SSHKitChannelStageWating;
     
     [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        if (!channel.session.isConnected || channel.stage != SSHKitChannelStageAlloced) {
+        if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
             return_from_block;
         }
         
-        if ([channel _doInitiate]) {
-            [channel _doOpenSession];
+        if ([channel _initiate]) {
+            [channel _openSession];
         }
     }}];
     
     return channel;
 }
 
-- (void)_doOpenSession {
+- (void)_openSession {
     int result = ssh_channel_open_session(_rawChannel);
     
     switch (result) {
@@ -182,7 +185,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
             self.stage = SSHKitChannelStageRequestPTY;
             
             // opened
-            [self _doRequestPty];
+            [self _requestPty];
             
             break;
             
@@ -193,7 +196,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     }
 }
 
-- (void)_doRequestPty {
+- (void)_requestPty {
     int result = ssh_channel_request_pty_size(_rawChannel, "xterm", 80, 24);
     
     switch (result) {
@@ -205,7 +208,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
             self.stage = SSHKitChannelStageRequestShell;
             
             // opened
-            [self _doRequestShell];
+            [self _requestShell];
             
             break;
             
@@ -216,7 +219,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     }
 }
 
-- (void)_doRequestShell {
+- (void)_requestShell {
     int result = ssh_channel_request_shell(_rawChannel);
     
     switch (result) {
@@ -226,6 +229,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
             
         case SSH_OK:
             self.stage = SSHKitChannelStageReadWrite;
+            [self _registerCallbacks];
             
             // opened
             if (_delegateFlags.didOpen) {
@@ -240,30 +244,30 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     }
 }
 
-#pragma mark - direct-tcpip channel
+#pragma mark - direct-tcpip Channel
 
 + (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate
 {
     SSHKitChannel *channel = [[self alloc] initWithSession:session channelType:SSHKitChannelTypeDirect delegate:aDelegate];
     
-    channel.stage = SSHKitChannelStageAlloced;
+    channel.stage = SSHKitChannelStageWating;
     channel.directHost = host;
     channel.directPort = port;
     
     [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        if (!channel.session.isConnected || channel.stage != SSHKitChannelStageAlloced) {
+        if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
             return_from_block;
         }
         
-        if ([channel _doInitiate]) {
-            [channel _doOpenDirect];
+        if ([channel _initiate]) {
+            [channel _openDirect];
         }
     }}];
     
     return channel;
 }
 
-- (void)_doOpenDirect
+- (void)_openDirect
 {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
@@ -276,6 +280,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
             
         case SSH_OK:
             self.stage = SSHKitChannelStageReadWrite;
+            [self _registerCallbacks];
             
             // opened
             
@@ -291,55 +296,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     }
 }
 
-- (BOOL)_doInitiate {
-    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
-    
-    _rawChannel = ssh_channel_new(self.session.rawSession);
-    
-    if (!_rawChannel) return NO;
-    
-    // add channel to session list
-    [self.session addChannel:self];
-    
-    _callback = (struct ssh_channel_callbacks_struct) {
-        .userdata               = (__bridge void *)(self),
-        .channel_data_function  = channel_data_available,
-        .channel_close_function = channel_close_received,
-        .channel_eof_function   = channel_eof_received,
-    };
-    
-    ssh_callbacks_init(&_callback);
-    ssh_set_channel_callbacks(_rawChannel, &_callback);
-    
-    self.stage = SSHKitChannelStageOpening;
-    
-    return YES;
-}
-
-- (BOOL)_doInitiateWithRawChannel:(ssh_channel)rawChannel {
-    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
-    
-    _rawChannel = rawChannel;
-    
-    // add channel to session list
-    [self.session addChannel:self];
-    
-    _callback = (struct ssh_channel_callbacks_struct) {
-        .userdata               = (__bridge void *)(self),
-        .channel_data_function  = channel_data_available,
-        .channel_close_function = channel_close_received,
-        .channel_eof_function   = channel_eof_received,
-    };
-    
-    ssh_callbacks_init(&_callback);
-    ssh_set_channel_callbacks(_rawChannel, &_callback);
-    
-    self.stage = SSHKitChannelStageOpening;
-    
-    return YES;
-}
-
-#pragma mark - tcpip-forward channel
+#pragma mark - tcpip-forward Channel
 
 /** !WARNING!
  tcpip-forward is session global request, requests must go one by one serially.
@@ -370,7 +327,6 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
             if (request.completionHandler) request.completionHandler(YES, boundport, nil);
             
             // try next
-            
             SSHKitForwardRequest *request = [session firstForwardRequest];
             if (request) {
                 [self _doRequestRemoteForwardOnSession:session];
@@ -415,7 +371,7 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     }}];
 }
 
-+ (instancetype)_tryCreateForwardChannelFromSession:(SSHKitSession *)session
++ (instancetype)_doCreateForwardChannelFromSession:(SSHKitSession *)session
 {
     NSAssert([session isOnSessionQueue], @"Must be dispatched on session queue");
     
@@ -429,28 +385,16 @@ static struct ssh_channel_callbacks_struct _null_channel_callback = {0};
     
     channel.forwardDestinationPort = destination_port;
     
-    [channel _doInitiateWithRawChannel:rawChannel];
+    [channel _initiateWithRawChannel:rawChannel];
+    
     channel.stage = SSHKitChannelStageReadWrite;
+    [channel _registerCallbacks];
     
     return channel;
 }
 
-#pragma mark - Properties
 
-- (void)setDelegate:(id<SSHKitChannelDelegate>)delegate
-{
-	if (_delegate != delegate) {
-		_delegate = delegate;
-		_delegateFlags.didReadStdoutData = [delegate respondsToSelector:@selector(channel:didReadStdoutData:)];
-		_delegateFlags.didReadStderrData = [delegate respondsToSelector:@selector(channel:didReadStderrData:)];
-		_delegateFlags.didWriteData = [delegate respondsToSelector:@selector(channelDidWriteData:)];
-        _delegateFlags.didOpen = [delegate respondsToSelector:@selector(channelDidOpen:)];
-		_delegateFlags.didCloseWithError = [delegate respondsToSelector:@selector(channelDidClose:withError:)];
-	}
-}
-
-
-#pragma mark - Others
+#pragma mark - Read / Write
 
 /**
  * Reads the first available bytes that become available on the channel.
@@ -463,7 +407,6 @@ static int channel_data_available(ssh_session session,
                                   void *userdata)
 {
     SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
-    
     NSData *readData = [NSData dataWithBytes:data length:len];
     
     if (is_stderr) {
@@ -509,10 +452,10 @@ static void channel_eof_received(ssh_session session,
             return_from_block;
         }
         
-        strongSelf->_pendingData = data;
+        strongSelf->_pendingWriteData = data;
         
         // resume session write dispatch source
-        [strongSelf _tryToWrite];
+        [strongSelf _doWrite];
     }}];
 }
 
@@ -520,17 +463,17 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     return raw_channel && (ssh_channel_window_size(raw_channel) > 0);
 }
 
-- (void)_tryToWrite
+- (void)_doWrite
 {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
-    if ( !_pendingData.length || !is_channel_writable(_rawChannel) ) {
+    if ( !_pendingWriteData.length || !is_channel_writable(_rawChannel) ) {
         return;
     }
     
-    uint32_t datalen = (uint32_t)_pendingData.length;
+    uint32_t datalen = (uint32_t)_pendingWriteData.length;
     
-    int wrote = ssh_channel_write(_rawChannel, _pendingData.bytes, datalen);
+    int wrote = ssh_channel_write(_rawChannel, _pendingWriteData.bytes, datalen);
     
     if ( (wrote < 0) || (wrote>datalen) ) {
         [self _doCloseWithError:self.session.lastError];
@@ -543,15 +486,76 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     
     if (wrote!=datalen) {
         // libssh resize remote window, it's equivalent to E_AGAIN
-        _pendingData = [_pendingData subdataWithRange:NSMakeRange(wrote, datalen-wrote)];
+        _pendingWriteData = [_pendingWriteData subdataWithRange:NSMakeRange(wrote, datalen-wrote)];
         return;
     }
     
     // all data wrote
-    _pendingData = nil;
+    _pendingWriteData = nil;
     
     if (_delegateFlags.didWriteData) {
         [self.delegate channelDidWriteData:self];
+    }
+}
+
+#pragma mark - Internal Utils
+
+- (void)_registerCallbacks {
+    _callback = (channel_callbacks) {
+        .userdata               = (__bridge void *)(self),
+        .channel_data_function  = channel_data_available,
+        .channel_close_function = channel_close_received,
+        .channel_eof_function   = channel_eof_received,
+    };
+    
+    ssh_callbacks_init(&_callback);
+    ssh_set_channel_callbacks(_rawChannel, &_callback);
+}
+
+- (void)_unregesterCallbacks {
+    ssh_callbacks_init(&s_null_channel_callbacks);
+    ssh_set_channel_callbacks(self->_rawChannel, &s_null_channel_callbacks);
+}
+
+- (BOOL)_initiate {
+    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
+    
+    _rawChannel = ssh_channel_new(self.session.rawSession);
+    
+    if (!_rawChannel) return NO;
+    
+    // add channel to session list
+    [self.session addChannel:self];
+    
+    self.stage = SSHKitChannelStageOpening;
+    
+    return YES;
+}
+
+- (BOOL)_initiateWithRawChannel:(ssh_channel)rawChannel {
+    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
+    
+    _rawChannel = rawChannel;
+    
+    // add channel to session list
+    [self.session addChannel:self];
+    
+    self.stage = SSHKitChannelStageOpening;
+    
+    return YES;
+}
+
+#pragma mark - Properties
+
+- (void)setDelegate:(id<SSHKitChannelDelegate>)delegate
+{
+    if (_delegate != delegate) {
+        _delegate = delegate;
+        _delegateFlags.didReadStdoutData = [delegate respondsToSelector:@selector(channel:didReadStdoutData:)];
+        _delegateFlags.didReadStderrData = [delegate respondsToSelector:@selector(channel:didReadStderrData:)];
+        _delegateFlags.didWriteData = [delegate respondsToSelector:@selector(channelDidWriteData:)];
+        _delegateFlags.didOpen = [delegate respondsToSelector:@selector(channelDidOpen:)];
+        _delegateFlags.didCloseWithError = [delegate respondsToSelector:@selector(channelDidClose:withError:)];
     }
 }
 

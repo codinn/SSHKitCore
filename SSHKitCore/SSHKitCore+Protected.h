@@ -55,18 +55,10 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_channel rawChannel;
 
-+ (instancetype)_tryCreateForwardChannelFromSession:(SSHKitSession *)session;
++ (instancetype)_doCreateForwardChannelFromSession:(SSHKitSession *)session;
 + (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session;
 
 - (void)_doProcess;
-
-- (void)_tryToWrite;
-
-- (void)_doOpenSession;
-- (void)_doRequestPty;
-- (void)_doRequestShell;
-
-- (void)_doOpenDirect;
 - (void)_doCloseWithError:(NSError *)error;
 @end
 
