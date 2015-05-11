@@ -891,11 +891,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
     }
     
-    // iterate channels, use NSEnumerationReverse to safe remove object in array
-//    [channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
-//     {
-//         [channel _doProcess2];
-//     }];
+    // copy channels here, NSEnumerationReverse still not safe while removing object in array
+    NSArray *channels = [_channels copy];
+    for (SSHKitChannel *channel in channels) {
+        [channel _doProcess];
+    }
 }
 
 /**
