@@ -46,8 +46,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     NSMutableArray      *_forwardRequests;
     NSMutableArray      *_channels;
-    
-//    ssh_event _event;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage currentStage;
@@ -112,8 +110,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.enableIPv6 = YES;
         
         _rawSession = ssh_new();
-        
-//        _event = ssh_event_new();
         
         if (!_rawSession) {
             return nil;
@@ -681,11 +677,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if (_delegateFlags.didAuthenticateUser) {
         [self.delegate session:self didAuthenticateUser:nil];
     }
-    
-//    if(ssh_event_add_session(_event, _rawSession) != SSH_OK) {
-//        printf("Couldn't add the session to the event\n");
-//        ssh_event_free(_event);
-//    }
 }
 
 - (void)_checkAuthenticateResult:(NSInteger)result
@@ -884,23 +875,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if (!self.isConnected) {
         [self _disconnectWithError:self.lastError];
     }
-    
-    
-//    int rc = ssh_event_dopoll(_event, 0);
-//    if (rc == SSH_ERROR){
-        //        fprintf(stderr, "Error : %s\n", ssh_get_error(session));
-        //        ssh_event_free(_event);
-        //        ssh_disconnect(session);
-        //        return -1;
-//    }
-    
-    NSArray *channels = [_channels copy];
-    
-    // iterate channels, use NSEnumerationReverse to safe remove object in array
-    [channels enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(SSHKitChannel *channel, NSUInteger index, BOOL *stop)
-    {
-        [channel _doProcess];
-    }];
     
     // try again forward-tcpip requests
     [SSHKitChannel _doRequestRemoteForwardOnSession:self];
