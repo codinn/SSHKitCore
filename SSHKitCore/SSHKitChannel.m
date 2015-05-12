@@ -193,6 +193,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
         default:
             // open failed
             [self _doCloseWithError:self.session.lastError];
+            [self.session disconnectIfNeeded];
             break;
     }
 }
@@ -216,6 +217,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
         default:
             // open failed
             [self _doCloseWithError:self.session.lastError];
+            [self.session disconnectIfNeeded];
             break;
     }
 }
@@ -241,6 +243,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
         default:
             // open failed
             [self _doCloseWithError:self.session.lastError];
+            [self.session disconnectIfNeeded];
             break;
     }
 }
@@ -294,6 +297,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
         default:
             // open failed
             [self _doCloseWithError:self.session.lastError];
+            [self.session disconnectIfNeeded];
             break;
     }
 }
@@ -346,6 +350,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
             // failed
             [session removeAllForwardRequest];
             if (request.completionHandler) request.completionHandler(NO, request.listenPort, session.lastError);
+            [session disconnectIfNeeded];
         }
             break;
     }
@@ -475,6 +480,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     
     if ( (wrote < 0) || (wrote>datalen) ) {
         [self _doCloseWithError:self.session.lastError];
+        [self.session disconnectIfNeeded];
         return;
     }
     

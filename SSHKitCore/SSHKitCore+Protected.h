@@ -47,6 +47,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 - (void)removeAllForwardRequest;
 
 - (BOOL)isOnSessionQueue;
+- (void)disconnectIfNeeded;
 
 @end
 

@@ -550,6 +550,18 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     return error;
 }
 
+- (void)disconnectIfNeeded {
+    [self dispatchSyncOnSessionQueue :^{ @autoreleasepool {
+        if (!self->_rawSession) {
+            return_from_block;
+        }
+        
+        if (!ssh_is_connected(self->_rawSession)) {
+            [self _doDisconnectWithError:self.lastError];
+        }
+    }}];
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark Authentication
 // -----------------------------------------------------------------------------
