@@ -87,6 +87,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  (read-only).
  */
 @property (nonatomic, readonly, getter = isConnected) BOOL connected;
+@property (nonatomic, readonly, getter = isDisconnected) BOOL disconnected;
 
 /**
  A Boolean value indicating whether the session is successfully authorized

@@ -40,9 +40,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     void *_isOnSessionQueueKey;
     
-    // make sure disconnect only once
-    BOOL _alreadyDidDisconnect;
-    
     SSHKitConnector     *_connector;
     
     NSMutableArray      *_forwardRequests;
@@ -137,15 +134,19 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		
 		void *nonNullUnusedPointer = (__bridge void *)self;
 		dispatch_queue_set_specific(_sessionQueue, _isOnSessionQueueKey, nonNullUnusedPointer, NULL);
-        
-        _alreadyDidDisconnect = NO;
     }
     
     return self;
 }
 
--(NSString *)description
-{
+- (void)dealloc {
+    // Synchronous disconnection
+    [self dispatchSyncOnSessionQueue: ^{ @autoreleasepool {
+        [self _doDisconnectWithError:nil];
+    }}];
+}
+
+-(NSString *)description {
     return [NSString stringWithFormat:@"%@@%@:%d", self.username, self.host, self.port];
 }
 
@@ -412,29 +413,18 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     return _stage == SSHKitSessionStageAuthenticated;
 }
 
-- (void)disconnect
-{
-    // Asynchronous disconnection
+- (void)disconnect {
+    __weak SSHKitSession *weakSelf = self;
     
-    @synchronized(self) {    // lock
-        [self _invalidateKeepAliveTimer];
-        
-        if (!_alreadyDidDisconnect) { // not run yet?
-            // do stuff once
-            _alreadyDidDisconnect = YES;
-            
-            __weak SSHKitSession *weakSelf = self;
-            // Synchronous disconnection, as documented in the header file
-            [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-                __strong SSHKitSession *strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return_from_block;
-                }
-                
-                [strongSelf _doDisconnectWithError:nil];
-            }}];
+    // Asynchronous disconnection, as documented in the header file
+    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+        __strong SSHKitSession *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return_from_block;
         }
-    }
+        
+        [strongSelf _doDisconnectWithError:nil];
+    }}];
 }
 
 - (void)impoliteDisconnect
@@ -447,7 +437,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)_doDisconnectWithError:(NSError *)error {
-    if (_stage == SSHKitSessionStageDisconnected) { // already closed
+    if (self.isDisconnected) { // already disconnected
         return;
     }
     
@@ -601,20 +591,18 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)_didAuthenticate
-{
+- (void)_didAuthenticate {
     self.stage = SSHKitSessionStageAuthenticated;
     
     // start diagnoses timer
-    [self _fireKeepAliveTimer];
+    [self _setupKeepAliveTimer];
     
     if (_delegateFlags.didAuthenticateUser) {
         [self.delegate session:self didAuthenticateUser:nil];
     }
 }
 
-- (void)_checkAuthenticateResult:(NSInteger)result
-{
+- (void)_checkAuthenticateResult:(NSInteger)result {
     switch (result) {
         case SSH_AUTH_DENIED:
             [self _doDisconnectWithError:self.lastError];
@@ -831,8 +819,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 /**
  * Reads the first available bytes that become available on the channel.
  **/
-- (void)_setupSocketReadSource
-{
+- (void)_setupSocketReadSource {
     if (_socketReadSource) {
         dispatch_source_cancel(_socketReadSource);
         _socketReadSource = nil;
@@ -912,7 +899,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark - Internal Utils
 
-- (void)_fireKeepAliveTimer {
+- (void)_setupKeepAliveTimer {
     if (self.serverAliveCountMax<=0) {
         return;
     }
@@ -926,8 +913,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         interval = _timeout;
     }
     
-    if (_keepAliveTimer)
-    {
+    if (_keepAliveTimer) {
         dispatch_source_set_timer(_keepAliveTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
         
         __weak SSHKitSession *weakSelf = self;
@@ -952,6 +938,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             }
             
             strongSelf->_keepAliveCounter--;
+            
+            [strongSelf disconnectIfNeeded];
         });
         
         dispatch_resume(_keepAliveTimer);
