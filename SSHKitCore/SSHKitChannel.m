@@ -162,7 +162,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
-            [channel _doCloseWithError:nil];
+            if (channel->_delegateFlags.didCloseWithError) {
+                [channel.delegate channelDidClose:channel withError:nil];
+            }
+            
             return_from_block;
         }
         
@@ -260,7 +263,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
-            [channel _doCloseWithError:nil];
+            if (channel->_delegateFlags.didCloseWithError) {
+                [channel.delegate channelDidClose:channel withError:nil];
+            }
+            
             return_from_block;
         }
         
