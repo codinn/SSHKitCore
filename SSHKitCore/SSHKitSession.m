@@ -173,23 +173,22 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (void)_doConnect
 {
     int result = ssh_connect(_rawSession);
-    if (self.logHandler) self.logHandler(@"SESSION DEBUG: session connecting with result: %d", result);
     
     switch (result) {
         case SSH_OK:
             // connection established
         {
-            if (self.logHandler) self.logHandler(@"SESSION DEBUG: session connected");
+            if (_logHandler) _logHandler(@"Session connected");
             
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
-            if (self.logHandler) self.logHandler(@"SESSION DEBUG: client banner %@", self.clientBanner);
+            if (_logHandler) _logHandler(@"Client banner: %@", self.clientBanner);
             
             const char *serverbanner = ssh_get_serverbanner(self.rawSession);
             if (serverbanner) self.serverBanner = @(serverbanner);
             
-            if (self.logHandler) self.logHandler(@"SESSION DEBUG: server banner %@", self.serverBanner);
+            if (_logHandler) _logHandler(@"Server banner: %@", self.serverBanner);
             
             int ver = ssh_get_version(self.rawSession);
             
@@ -229,13 +228,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
         default:
         {
-            const char* errorStr = ssh_get_error(self.rawSession);
-            if (errorStr) {
-                if (self.logHandler) self.logHandler(@"SESSION DEBUG: unknown error occurred %@", @(errorStr));
-            } else {
-                if (self.logHandler) self.logHandler(@"SESSION DEBUG: unknown error occurred");
-            }
-            
             [self _doDisconnectWithError:self.lastError];
         }
             break;
@@ -283,7 +275,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if (strongSelf.proxyType > SSHKitProxyTypeDirect) {
                 // connect over a proxy server
                 
-                if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: Connecting through proxy with type %d", strongSelf.proxyType);
+                if (strongSelf->_logHandler) strongSelf->_logHandler(@"Connect through proxy with type %d", strongSelf.proxyType);
                 
                 id ConnectProxyClass = SSHKitConnectorProxy.class;
                 
@@ -313,7 +305,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                     strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort];
                 }
             } else {
-                if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: Connecting directly");
+                if (strongSelf->_logHandler) strongSelf->_logHandler(@"Connect directly");
                 // connect directly
                 strongSelf->_connector = [[SSHKitConnector alloc] init];
             }
@@ -323,19 +315,13 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             strongSelf->_connector.IPv6Enabled = strongSelf.enableIPv6;
             
             if (strongSelf.logHandler) {
-                strongSelf->_connector.logHandler = strongSelf.logHandler;
+                strongSelf->_connector.logDebug = strongSelf.logHandler;
             }
             
             strongSelf.stage = SSHKitSessionStageOpeningSocket;
             
             NSError *error = nil;
-            BOOL ret = [strongSelf->_connector connectToHost:host onPort:port viaInterface:interface withTimeout:strongSelf.timeout error:&error];
-            
-            if (ret) {
-                if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: socket established successfully");
-            } else {
-                if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: failed to establish socket");
-            }
+            [strongSelf->_connector connectToHost:host onPort:port viaInterface:interface withTimeout:strongSelf.timeout error:&error];
             
             if (error) {
                 [strongSelf _doDisconnectWithError:error];
@@ -373,7 +359,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         // tcp keepalive
         if ( strongSelf.serverAliveCountMax<=0 ) {
             int on = 1;
-            if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: enable keepalive");
+            if (strongSelf->_logHandler) strongSelf->_logHandler(@"Enable TCP keepalive");
             setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
         }
         
@@ -391,7 +377,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         // set to non-blocking mode
         ssh_set_blocking(strongSelf->_rawSession, 0);
-        if (strongSelf.logHandler) strongSelf.logHandler(@"SESSION DEBUG: set to non-blocking mode");
         
         strongSelf.stage = SSHKitSessionStageConnecting;
         [strongSelf _setupSocketReadSource];
