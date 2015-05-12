@@ -23,7 +23,7 @@
     
     int rc = ssh_get_publickey(session.rawSession, &parser->_hostKey);
     if (rc < 0 ) {
-        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                   code:SSHKitErrorCodeHostKeyError
                                               userInfo:@{ NSLocalizedDescriptionKey : @"Cannot decode server host key" }];
         return nil;
@@ -49,7 +49,7 @@
     if (b64_key) ssh_string_free_char(b64_key);
     
     if ( !parser->_base64.length ) {
-        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                   code:SSHKitErrorCodeHostKeyError
                                               userInfo:@{ NSLocalizedDescriptionKey :@"Cannot generate base64 string from server host key" }];
         return nil;
@@ -89,7 +89,7 @@
     int rc = ssh_pki_import_pubkey_base64([parser->_base64 cStringUsingEncoding:NSASCIIStringEncoding], (enum ssh_keytypes_e)parser->_keyType, &parser->_hostKey);
     
     if (rc < 0) {
-        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                              code:SSHKitErrorCodeHostKeyError
                                          userInfo:@{ NSLocalizedDescriptionKey : @"Cannot decode server host key from base64 string" }];
         return nil;
@@ -142,7 +142,7 @@
     }
     
     if (!fingerprint.length) {
-        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                   code:SSHKitErrorCodeHostKeyError
                                               userInfo:@{ NSLocalizedDescriptionKey :@"Cannot generate fingerprint from host key" }];
         return nil;

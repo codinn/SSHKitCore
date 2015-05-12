@@ -208,7 +208,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if ( !error && ! (_delegateFlags.shouldConnectWithHostKey && [self.delegate session:self shouldConnectWithHostKey:hostKey]) )
             {
                 // failed
-                error = [NSError errorWithDomain:SSHKitSessionErrorDomain
+                error = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                             code:SSHKitErrorCodeHostKeyError
                                         userInfo:@{ NSLocalizedDescriptionKey : @"Server host key verification failed" }];
             }
@@ -275,7 +275,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         strongSelf->_rawSession = ssh_new();
         
         if (!strongSelf->_rawSession) {
-            [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitLibsshErrorDomain code:SSHKitErrorCodeFatal userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
+            [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorCodeStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
             return_from_block;
         }
         
@@ -506,45 +506,25 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     return _connector.connectedHost;
 }
 
-- (NSError *)lastError
-{
+- (NSError *)lastError {
     if(!_rawSession) {
         return nil;
     }
     
     __block NSError *error;
     
-    __weak SSHKitSession *weakSelf = self;
     [self dispatchSyncOnSessionQueue :^{ @autoreleasepool {
-        __strong SSHKitSession *strongSelf = weakSelf;
+        int code = ssh_get_error_code(self->_rawSession);
         
-        SSHKitErrorCode code = SSHKitErrorCodeNoError;
-        int errorCode = ssh_get_error_code(strongSelf->_rawSession);
-        
-        // convert to SSHKit error code
-        switch (errorCode) {
-            case SSH_NO_ERROR:
-                return;
-                
-            case SSH_AUTH_DENIED:
-                code = SSHKitErrorCodeAuthError;
-                break;
-                
-            default:
-                code = SSHKitErrorCodeRetry;
-                break;
+        if (code == SSHKitErrorCodeNoError) {
+            return_from_block;
         }
         
-        const char* errorStr = ssh_get_error(strongSelf->_rawSession);
-        if (!errorStr) {
-            error = [NSError errorWithDomain:SSHKitLibsshErrorDomain
-                                       code:SSHKitErrorCodeFatal
-                                   userInfo:nil];
-        }
+        const char* errorStr = ssh_get_error(self->_rawSession);
         
         error = [NSError errorWithDomain:SSHKitLibsshErrorDomain
                                    code:code
-                               userInfo:@{ NSLocalizedDescriptionKey : @(errorStr) }];
+                                userInfo: errorStr ? @{ NSLocalizedDescriptionKey : @(errorStr) } : nil];
     }}];
     
     return error;
@@ -682,7 +662,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
         case SSH_AUTH_AGAIN: // should never come here
         default:
-            [self _doDisconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
+            [self _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
                                                           code:SSHKitErrorCodeAuthError
                                                       userInfo:@{ NSLocalizedDescriptionKey : @"Unknown error while authenticate user"} ]];
             return;
@@ -885,7 +865,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         // reset keepalive counter
         strongSelf->_keepAliveCounter = strongSelf.serverAliveCountMax;
         
-        switch (_stage) {
+        switch (strongSelf->_stage) {
             case SSHKitSessionStageNotConnected:
             case SSHKitSessionStageOpeningSocket:
                 break;
@@ -974,7 +954,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
             if (strongSelf->_keepAliveCounter<=0) {
                 NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
-                [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitSessionErrorDomain
+                [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
                                                                     code:SSHKitErrorCodeTimeout
                                                                 userInfo:@{ NSLocalizedDescriptionKey : errorDesc } ]];
                 return_from_block;

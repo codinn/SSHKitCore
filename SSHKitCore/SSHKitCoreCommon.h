@@ -16,18 +16,21 @@
 #define return_from_block  return
 #endif
 
-#define SSHKitLibsshErrorDomain  @"SSHKit.libssh"
-#define SSHKitSessionErrorDomain @"SSHKit.Session"
-#define SSHKitChannelErrorDomain @"SSHKit.Channel"
+#define SSHKitLibsshErrorDomain @"SSHKit.libssh"
+#define SSHKitCoreErrorDomain   @"SSHKit.Core"
 
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
-    SSHKitErrorCodeNoError   = 0,
-    SSHKitErrorCodeTimeout,
-    SSHKitErrorCodeError,
+    // error code from libssh
+    SSHKitErrorCodeNoError        = 0,
+    SSHKitErrorCodeRequestDenied,
+    SSHKitErrorCodeFatal,
+    SSHKitErrorCodeEINTR,
+    
+    // our error code
+    SSHKitErrorCodeTimeout       = 1005,
     SSHKitErrorCodeHostKeyError,
     SSHKitErrorCodeAuthError,
-    SSHKitErrorCodeRetry,
-    SSHKitErrorCodeFatal,
+    SSHKitErrorCodeStop,
 };
 
 typedef NS_ENUM(NSInteger, SSHKitProxyType) {
