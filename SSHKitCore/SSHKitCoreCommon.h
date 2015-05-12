@@ -16,18 +16,21 @@
 #define return_from_block  return
 #endif
 
-#define SSHKitLibsshErrorDomain  @"SSHKit.libssh"
-#define SSHKitSessionErrorDomain @"SSHKit.Session"
-#define SSHKitChannelErrorDomain @"SSHKit.Channel"
+#define SSHKitLibsshErrorDomain @"SSHKit.libssh"
+#define SSHKitCoreErrorDomain   @"SSHKit.Core"
 
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
-    SSHKitErrorCodeNoError   = 0,
-    SSHKitErrorCodeTimeout,
-    SSHKitErrorCodeError,
+    // error code from libssh
+    SSHKitErrorCodeNoError        = 0,
+    SSHKitErrorCodeRequestDenied,
+    SSHKitErrorCodeFatal,
+    SSHKitErrorCodeEINTR,
+    
+    // our error code
+    SSHKitErrorCodeTimeout       = 1005,
     SSHKitErrorCodeHostKeyError,
     SSHKitErrorCodeAuthError,
-    SSHKitErrorCodeRetry,
-    SSHKitErrorCodeFatal,
+    SSHKitErrorCodeStop,
 };
 
 typedef NS_ENUM(NSInteger, SSHKitProxyType) {
@@ -46,17 +49,17 @@ typedef NS_ENUM(NSInteger, SSHKitChannelType)  {
     SSHKitChannelTypeExec,
     SSHKitChannelTypeShell,
     SSHKitChannelTypeSCP,
-    SSHKitChannelTypeSubsystem // Not supported by SSHKit framework
+    SSHKitChannelTypeSubsystem,     // Not supported by SSHKit framework
 };
 
 typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
-    SSHKitChannelStageInvalid,        // channel has not been inited correctly
-    SSHKitChannelStageCreated,        // channel has been created
-    SSHKitChannelStageOpening1,       // the channel is opening
-    SSHKitChannelStageOpening2,       // the channel is opening
-    SSHKitChannelStageOpening3,       // the channel is opening
-    SSHKitChannelStageReadWrite,      // the channel has been opened, we can read / write from the channel
-    SSHKitChannelStageClosed,         // the channel has been closed
+    SSHKitChannelStageInvalid = 0,  // channel has not been initiated correctly
+    SSHKitChannelStageWating,       // channel is in the dispatch queue, and wating for opening
+    SSHKitChannelStageOpening,      // channel is opening
+    SSHKitChannelStageRequestPTY,   // channel is requesting a pty
+    SSHKitChannelStageRequestShell, // channel is requesting a shell
+    SSHKitChannelStageReadWrite,    // channel has been opened, we can read / write from the channel
+    SSHKitChannelStageClosed,       // channel has been closed
 };
 
 /* All implementations MUST be able to process packets with an
@@ -69,3 +72,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
 
 typedef void (^ SSHKitRequestRemoteForwardCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
+
+void SSHKitCoreInit();
+void SSHKitCoreFinalize();

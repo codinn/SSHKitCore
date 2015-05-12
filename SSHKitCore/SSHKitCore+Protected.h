@@ -46,6 +46,9 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 - (void)removeForwardRequest:(SSHKitForwardRequest *)request;
 - (void)removeAllForwardRequest;
 
+- (BOOL)isOnSessionQueue;
+- (void)disconnectIfNeeded;
+
 @end
 
 @interface SSHKitChannel ()
@@ -53,19 +56,11 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_channel rawChannel;
 
-+ (instancetype)_tryCreateForwardChannelFromSession:(SSHKitSession *)session;
++ (instancetype)_doCreateForwardChannelFromSession:(SSHKitSession *)session;
 + (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session;
 
-- (void)_doRead;
-- (void)_doWrite;
-
-- (BOOL)_hasDataToWrite;
-
-- (void)_doOpenSession;
-- (void)_doRequestPty;
-- (void)_doRequestShell;
-
-- (void)_doOpenDirect;
+- (void)_doProcess;
+- (void)_doCloseWithError:(NSError *)error;
 @end
 
 @interface SSHKitPrivateKeyParser ()

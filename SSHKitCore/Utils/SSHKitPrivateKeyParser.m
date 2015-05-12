@@ -24,7 +24,7 @@
 + (instancetype)parserFromContent:(NSString *)content isBase64:(BOOL)isBase64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
 {
     if (!content.length) {
-        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+        if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                   code:SSHKitErrorCodeAuthError
                                               userInfo:@{ NSLocalizedDescriptionKey : @"Content of private key is empty" }];
         return nil;
@@ -46,7 +46,7 @@
             break;
             
         case SSH_EOF:
-            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                       code:SSHKitErrorCodeAuthError
                                                   userInfo:@{
                                                              NSLocalizedDescriptionKey : @"Private key file doesn't exist or permission denied",
@@ -55,7 +55,7 @@
             return nil;
             
         default:
-            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                       code:SSHKitErrorCodeAuthError
                                                   userInfo:@{
                                                              NSLocalizedDescriptionKey : @"Could not parse private key",
@@ -74,7 +74,7 @@
             break;
             
         default:
-            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitSessionErrorDomain
+            if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                       code:SSHKitErrorCodeAuthError
                                                   userInfo:@{ NSLocalizedDescriptionKey : @"Could not extract public key from private key" }];
             return nil;;
