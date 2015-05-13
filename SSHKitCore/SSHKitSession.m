@@ -182,12 +182,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
-            if (_logHandler) _logHandler(@"Client banner: %@", self.clientBanner);
+            if (_logDebug) _logDebug(@"Client banner: %@", self.clientBanner);
             
             const char *serverbanner = ssh_get_serverbanner(self.rawSession);
             if (serverbanner) self.serverBanner = @(serverbanner);
             
-            if (_logHandler) _logHandler(@"Server banner: %@", self.serverBanner);
+            if (_logDebug) _logDebug(@"Server banner: %@", self.serverBanner);
             
             int ver = ssh_get_version(self.rawSession);
             
@@ -274,7 +274,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             if (strongSelf.proxyType > SSHKitProxyTypeDirect) {
                 // connect over a proxy server
                 
-                if (strongSelf->_logHandler) strongSelf->_logHandler(@"Connect through proxy with type %d", strongSelf.proxyType);
+                if (strongSelf->_logDebug) strongSelf->_logDebug(@"Connect through proxy with type %d", strongSelf.proxyType);
                 
                 id ConnectProxyClass = SSHKitConnectorProxy.class;
                 
@@ -304,7 +304,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                     strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort];
                 }
             } else {
-                if (strongSelf->_logHandler) strongSelf->_logHandler(@"Connect directly");
+                if (strongSelf->_logDebug) strongSelf->_logDebug(@"Connect directly");
                 // connect directly
                 strongSelf->_connector = [[SSHKitConnector alloc] init];
             }
@@ -313,8 +313,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             strongSelf->_connector.IPv4Enabled = strongSelf.enableIPv4;
             strongSelf->_connector.IPv6Enabled = strongSelf.enableIPv6;
             
-            if (strongSelf.logHandler) {
-                strongSelf->_connector.logDebug = strongSelf.logHandler;
+            if (strongSelf.logDebug) {
+                strongSelf->_connector.logDebug = strongSelf.logDebug;
             }
             
             strongSelf.stage = SSHKitSessionStageOpeningSocket;
@@ -358,7 +358,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         // tcp keepalive
         if ( strongSelf.serverAliveCountMax<=0 ) {
             int on = 1;
-            if (strongSelf->_logHandler) strongSelf->_logHandler(@"Enable TCP keepalive");
+            if (strongSelf->_logDebug) strongSelf->_logDebug(@"Enable TCP keepalive");
             setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
         }
         
@@ -910,7 +910,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
     if (!_keepAliveTimer) {
-        if (_logHandler) _logHandler(@"Failed to create keep-alive timer");
+        if (_logDebug) _logDebug(@"Failed to create keep-alive timer");
         return;
     }
     
