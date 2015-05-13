@@ -179,8 +179,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         case SSH_OK:
             // connection established
         {
-            if (_logHandler) _logHandler(@"Session connected");
-            
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
@@ -414,6 +412,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)disconnect {
+    [self disconnectWithError:nil];
+}
+
+- (void)disconnectWithError:(NSError *)error {
     __weak SSHKitSession *weakSelf = self;
     
     // Asynchronous disconnection, as documented in the header file
@@ -423,7 +425,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        [strongSelf _doDisconnectWithError:nil];
+        [strongSelf _doDisconnectWithError:error];
     }}];
 }
 
@@ -443,12 +445,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _stage = SSHKitSessionStageDisconnected;
     
-    [self _invalidateKeepAliveTimer];
-    
-    if (_socketReadSource) {
-        dispatch_source_cancel(_socketReadSource);
-        _socketReadSource = nil;
-    }
+    [self _cancelKeepAliveTimer];
     
     NSArray *channels = [_channels copy];
     for (SSHKitChannel* channel in channels) {
@@ -463,6 +460,13 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     ssh_free(_rawSession);
     _rawSession = NULL;
+    
+    [self _cancelSocketReadSource];
+    
+    if (_connector) {
+        [_connector disconnect];
+        _connector = nil;
+    }
     
     if (_delegateFlags.didDisconnectWithError) {
         [self.delegate session:self didDisconnectWithError:error];
@@ -792,40 +796,21 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark - SSH Main Loop
 
-- (void)_mainLoop
-{
-    // try again forward-tcpip requests
-    [SSHKitChannel _doRequestRemoteForwardOnSession:self];
-    
-    // probe forward channel from accepted forward
-    // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
-    //       another method is create a temporary channel, and let it consumes the wild data.
-    //       The real cause is unkown, may be it's caused by data arrived while channels already closed
-    SSHKitChannel *forwardChannel = [SSHKitChannel _doCreateForwardChannelFromSession:self];
-    
-    if (forwardChannel) {
-        if (_delegateFlags.didAcceptForwardChannel) {
-            [_delegate session:self didAcceptForwardChannel:forwardChannel];
-        }
-    }
-    
-    // copy channels here, NSEnumerationReverse still not safe while removing object in array
-    NSArray *channels = [_channels copy];
-    for (SSHKitChannel *channel in channels) {
-        [channel _doProcess];
-    }
-}
-
 /**
  * Reads the first available bytes that become available on the channel.
  **/
 - (void)_setupSocketReadSource {
-    if (_socketReadSource) {
-        dispatch_source_cancel(_socketReadSource);
-        _socketReadSource = nil;
-    }
+    [self _cancelSocketReadSource];
     
     _socketReadSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self->_connector.socketFD, 0, _sessionQueue);
+    
+    if (!_socketReadSource) {
+        NSError *error = [[NSError alloc] initWithDomain:SSHKitCoreErrorDomain
+                                                    code:SSHKitErrorCodeFatal
+                                                userInfo:@{NSLocalizedDescriptionKey : @"Could not create dispatch source to monitor socket" }];
+        [self disconnectWithError:error];
+        return;
+    }
     
     __weak SSHKitSession *weakSelf = self;
     dispatch_source_set_event_handler(_socketReadSource, ^{ @autoreleasepool {
@@ -854,28 +839,45 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 
                 break;
             case SSHKitSessionStageAuthenticated:
-                [strongSelf _mainLoop];
+            {
+                // try again forward-tcpip requests
+                [SSHKitChannel _doRequestRemoteForwardOnSession:strongSelf];
+                
+                // probe forward channel from accepted forward
+                // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
+                //       another method is create a temporary channel, and let it consumes the wild data.
+                //       The real cause is unkown, may be it's caused by data arrived while channels already closed
+                SSHKitChannel *forwardChannel = [SSHKitChannel _doCreateForwardChannelFromSession:strongSelf];
+                
+                if (forwardChannel) {
+                    if (strongSelf->_delegateFlags.didAcceptForwardChannel) {
+                        [strongSelf->_delegate session:strongSelf didAcceptForwardChannel:forwardChannel];
+                    }
+                }
+                
+                // copy channels here, NSEnumerationReverse still not safe while removing object in array
+                NSArray *channels = [strongSelf->_channels copy];
+                for (SSHKitChannel *channel in channels) {
+                    [channel _doProcess];
+                }
+            }
                 break;
                 
             case SSHKitSessionStageUnknown:
             default:
-                // should never comes to here
+                // should never comes here
                 break;
         }
     }});
     
-    dispatch_source_set_cancel_handler(_socketReadSource, ^ { @autoreleasepool {
-        __strong SSHKitSession *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return_from_block;
-        }
-        
-        if (strongSelf->_connector) {
-            [strongSelf->_connector disconnect];
-        }
-    }});
-    
     dispatch_resume(_socketReadSource);
+}
+
+- (void)_cancelSocketReadSource {
+    if (_socketReadSource) {
+        dispatch_source_cancel(_socketReadSource);
+        _socketReadSource = nil;
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -897,56 +899,61 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     self.proxyPassword = password;
 }
 
-#pragma mark - Internal Utils
+#pragma mark - Keep-alive Heartbeat
 
 - (void)_setupKeepAliveTimer {
     if (self.serverAliveCountMax<=0) {
         return;
     }
     
+    [self _cancelKeepAliveTimer];
+    
     _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
+    if (!_keepAliveTimer) {
+        if (_logHandler) _logHandler(@"Failed to create keep-alive timer");
+        return;
+    }
+    
     _keepAliveCounter = self.serverAliveCountMax;
     
-    uint64_t interval = SSHKit_SESSION_DEFAULT_TIMEOUT;
+    uint64_t interval = SSHKIT_SESSION_DEFAULT_TIMEOUT;
     
     if (_timeout > 0) {
         interval = _timeout;
     }
     
-    if (_keepAliveTimer) {
-        dispatch_source_set_timer(_keepAliveTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
+    dispatch_source_set_timer(_keepAliveTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
+    
+    __weak SSHKitSession *weakSelf = self;
+    dispatch_source_set_event_handler(_keepAliveTimer, ^{
+        __strong SSHKitSession *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return_from_block;
+        }
         
-        __weak SSHKitSession *weakSelf = self;
-        dispatch_source_set_event_handler(_keepAliveTimer, ^{
-            __strong SSHKitSession *strongSelf = weakSelf;
-            if (!strongSelf) {
-                return_from_block;
-            }
-            
-            if (strongSelf->_keepAliveCounter<=0) {
-                NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
-                [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                                    code:SSHKitErrorCodeTimeout
-                                                                userInfo:@{ NSLocalizedDescriptionKey : errorDesc } ]];
-                return_from_block;
-            }
-            
-            int result = ssh_send_keepalive(strongSelf->_rawSession);
-            if (result!=SSH_OK) {
-                [strongSelf _doDisconnectWithError:strongSelf.lastError];
-                return;
-            }
-            
-            strongSelf->_keepAliveCounter--;
-            
-            [strongSelf disconnectIfNeeded];
-        });
+        if (strongSelf->_keepAliveCounter<=0) {
+            NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
+            [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
+                                                                code:SSHKitErrorCodeTimeout
+                                                            userInfo:@{ NSLocalizedDescriptionKey : errorDesc } ]];
+            return_from_block;
+        }
         
-        dispatch_resume(_keepAliveTimer);
-    }
+        int result = ssh_send_keepalive(strongSelf->_rawSession);
+        if (result!=SSH_OK) {
+            [strongSelf _doDisconnectWithError:strongSelf.lastError];
+            return;
+        }
+        
+        strongSelf->_keepAliveCounter--;
+        
+        [strongSelf disconnectIfNeeded];
+    });
+    
+    dispatch_resume(_keepAliveTimer);
 }
 
-- (void)_invalidateKeepAliveTimer {
+- (void)_cancelKeepAliveTimer {
     if (_keepAliveTimer) {
         dispatch_source_cancel(_keepAliveTimer);
         _keepAliveTimer = nil;

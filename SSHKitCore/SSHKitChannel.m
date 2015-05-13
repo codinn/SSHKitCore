@@ -320,9 +320,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     SSHKitForwardRequest *request = [session firstForwardRequest];
     
-    if (!request) {
-        return;
-    }
+    if (!request) return;
     
     int boundport = 0;
     
