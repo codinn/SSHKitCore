@@ -71,7 +71,11 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /** Last session error. */
 @property (nonatomic, readonly) NSError *lastError;
 
-@property (strong, readwrite) SSHKitCoreLogHandler logHandler;
+@property (strong, readwrite) SSHKitCoreLogHandler logDebug;
+@property (strong, readwrite) SSHKitCoreLogHandler logInfo;
+@property (strong, readwrite) SSHKitCoreLogHandler logWarn;
+@property (strong, readwrite) SSHKitCoreLogHandler logError;
+@property (strong, readwrite) SSHKitCoreLogHandler logFatal;
 
 /** The client version string */
 @property (nonatomic, readonly)  NSString *clientBanner;

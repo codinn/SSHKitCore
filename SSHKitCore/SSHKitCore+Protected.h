@@ -10,9 +10,9 @@
 
 NSString * SSHKitGetBase64FromHostKey(ssh_key key);
 
-#define SSHKit_MAX_BUF_SIZE             4096    // Same size as libssh MAX_BUF_SIZE
-#define SSHKit_CHANNEL_MAX_PACKET       32768
-#define SSHKit_SESSION_DEFAULT_TIMEOUT  120     // two minutes
+#define SSHKIT_MAX_BUF_SIZE             4096    // Same size as libssh MAX_BUF_SIZE
+#define SSHKIT_CHANNEL_MAX_PACKET       32768
+#define SSHKIT_SESSION_DEFAULT_TIMEOUT  120     // two minutes
 
 /*
  * 1. Session Queue could not dispatch write queue sync
