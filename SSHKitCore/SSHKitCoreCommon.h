@@ -73,5 +73,5 @@ typedef NSString *(^ SSHKitAskPassphrasePrivateKeyBlock)();
 
 typedef void (^ SSHKitRequestRemoteForwardCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
 
-void SSHKitCoreInit();
+void SSHKitCoreInitiate();
 void SSHKitCoreFinalize();
