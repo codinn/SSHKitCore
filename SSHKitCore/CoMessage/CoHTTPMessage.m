@@ -40,6 +40,17 @@
 	}
 	return self;
 }
+
+- (instancetype)initRequestWithData:(NSData *)data
+{
+    if ((self = [super init]))
+    {
+        message = CFHTTPMessageCreateEmpty(NULL, YES);
+        CFHTTPMessageAppendBytes(message, [data bytes], [data length]);
+    }
+    return self;
+}
+
 - (instancetype)initResponseWithData:(NSData *)data
 {
     if ((self = [super init]))
