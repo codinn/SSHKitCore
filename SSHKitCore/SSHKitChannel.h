@@ -48,6 +48,9 @@
 /** tcpip-forward channel properties */
 @property (readonly) NSInteger forwardDestinationPort;
 
+@property (readonly, nonatomic) NSInteger  winColumns;
+@property (readonly, nonatomic) NSInteger  winRows;
+
 /**
  A Boolean value indicating whether the channel is opened successfully
  (read-only).
@@ -58,6 +61,7 @@
 - (void)closeWithError:(NSError *)error;
 
 - (void)writeData:(NSData *)data;
+- (void)changePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows;
 
 @end
 
@@ -95,5 +99,7 @@
 - (void)channelDidClose:(SSHKitChannel *)channel withError:(NSError *)error;
 
 - (void)channelDidOpen:(SSHKitChannel *)channel;
+
+- (void)channel:(SSHKitChannel *)channel didChangePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows withError:(NSError *)error;
 
 @end

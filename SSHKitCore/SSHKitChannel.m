@@ -14,6 +14,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
         unsigned int didWriteData : 1;
         unsigned int didOpen : 1;
         unsigned int didCloseWithError : 1;
+        unsigned int didChangePtySizeToColumnsRows : 1;
     } _delegateFlags;
     
     NSData              *_pendingWriteData;
@@ -174,6 +175,8 @@ static channel_callbacks s_null_channel_callbacks = {0};
         }
         
         if ([channel _initiate]) {
+            channel->_winColumns = columns;
+            channel->_winRows = rows;
             [channel _openSession];
         }
     }}];
@@ -206,7 +209,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
 }
 
 - (void)_requestPty {
-    int result = ssh_channel_request_pty_size(_rawChannel, "xterm", 80, 24);
+    int result = ssh_channel_request_pty_size(_rawChannel, "xterm", (int)_winColumns, (int)_winRows);
     
     switch (result) {
         case SSH_AGAIN:
@@ -510,6 +513,38 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     }
 }
 
+- (void)changePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows {
+    __weak SSHKitChannel *weakSelf = self;
+    
+    [self.session dispatchAsyncOnSessionQueue:^{ @autoreleasepool {
+        __strong SSHKitChannel *strongSelf = weakSelf;
+        
+        if (strongSelf.stage != SSHKitChannelStageReadWrite || !strongSelf.session.isConnected || strongSelf.type!=SSHKitChannelTypeShell) {
+            return_from_block;
+        }
+        
+        int rc = ssh_channel_change_pty_size(strongSelf->_rawChannel, (int)columns, (int)rows);
+        
+        if (!strongSelf->_delegateFlags.didChangePtySizeToColumnsRows) {
+            return;
+        }
+        
+        NSError *error = nil;
+        
+        if (rc != SSH_OK) {
+            error = strongSelf.session.lastError;
+            if (!error) {
+                error = [NSError errorWithDomain:SSHKitLibsshErrorDomain
+                                            code:rc
+                                        userInfo: @{ NSLocalizedDescriptionKey : @"Failed to change remote pty size" }];
+            }
+            
+        }
+        
+        [strongSelf.delegate channel:strongSelf didChangePtySizeToColumns:columns rows:rows withError:error];
+    }}];
+}
+
 #pragma mark - Internal Utils
 
 - (void)_registerCallbacks {
@@ -568,6 +603,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
         _delegateFlags.didWriteData = [delegate respondsToSelector:@selector(channelDidWriteData:)];
         _delegateFlags.didOpen = [delegate respondsToSelector:@selector(channelDidOpen:)];
         _delegateFlags.didCloseWithError = [delegate respondsToSelector:@selector(channelDidClose:withError:)];
+        _delegateFlags.didChangePtySizeToColumnsRows = [delegate respondsToSelector:@selector(channel:didChangePtySizeToColumns:rows:withError:)];
     }
 }
 
