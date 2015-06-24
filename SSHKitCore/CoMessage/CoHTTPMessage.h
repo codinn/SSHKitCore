@@ -24,7 +24,7 @@
 
 - (instancetype)initResponseWithStatusCode:(NSInteger)code description:(NSString *)description version:(NSString *)version;
 
-- (instancetype)initResponseWithData:(NSData *)data;
+- (instancetype)initRequestWithData:(NSData *)data; - (instancetype)initResponseWithData:(NSData *)data;
 
 - (BOOL)appendData:(NSData *)data;
 

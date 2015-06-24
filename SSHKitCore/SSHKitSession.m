@@ -71,9 +71,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @implementation SSHKitSession
 
-+ (void)initialize
-{
-    SSHKitCoreInit();
++ (void)initialize {
+    SSHKitCoreInitiate();
 }
 
 - (instancetype)init

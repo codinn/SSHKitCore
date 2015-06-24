@@ -10,7 +10,7 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 
-void SSHKitCoreInit() {
+void SSHKitCoreInitiate() {
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
