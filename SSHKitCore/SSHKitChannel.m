@@ -175,8 +175,8 @@ static channel_callbacks s_null_channel_callbacks = {0};
         }
         
         if ([channel _initiate]) {
-            channel->_winColumns = columns;
-            channel->_winRows = rows;
+            channel->_shellColumns = columns;
+            channel->_shellRows = rows;
             [channel _openSession];
         }
     }}];
@@ -209,7 +209,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
 }
 
 - (void)_requestPty {
-    int result = ssh_channel_request_pty_size(_rawChannel, "xterm", (int)_winColumns, (int)_winRows);
+    int result = ssh_channel_request_pty_size(_rawChannel, "xterm", (int)_shellColumns, (int)_shellRows);
     
     switch (result) {
         case SSH_AGAIN:

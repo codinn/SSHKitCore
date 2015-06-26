@@ -48,8 +48,8 @@
 /** tcpip-forward channel properties */
 @property (readonly) NSInteger forwardDestinationPort;
 
-@property (readonly, nonatomic) NSInteger  winColumns;
-@property (readonly, nonatomic) NSInteger  winRows;
+@property (readonly, nonatomic) NSInteger  shellColumns;
+@property (readonly, nonatomic) NSInteger  shellRows;
 
 /**
  A Boolean value indicating whether the channel is opened successfully
