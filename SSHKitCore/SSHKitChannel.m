@@ -331,7 +331,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     int boundport = 0;
     
-    int rc = ssh_forward_listen(session.rawSession, request.listenHost.UTF8String, request.listenPort, &boundport);
+    int rc = ssh_channel_listen_forward(session.rawSession, request.listenHost.UTF8String, request.listenPort, &boundport);
     
     switch (rc) {
         case SSH_OK:
