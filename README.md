@@ -2,13 +2,15 @@
 
 SSHKitCore is an Objective-C wrapper for libssh.
 
-## 1. Generate / Regenerate libssh Xcode project file
+## Howto Build
+
+### 1. Generate / Regenerate libssh Xcode project file
 
     $ ./gen_libssh_project.sh
 
 This script also downloads and builds openssl automatically.
 
-## 2. Generate libssh header files
+### 2. Generate libssh header files
 
 The libssh Xcode proejct file won't generate header files automatically, you should do it by:
 
@@ -18,6 +20,10 @@ The libssh Xcode proejct file won't generate header files automatically, you sho
 
 You will get libssh headers after building.
 
-## 3. Add SSHKitCore to your project
+### 3. Add SSHKitCore to your project
 	
 1. Add SSHKitCore project to your workspace or project
+
+## Notes
+
+Repeat step #1 and stpe #2 (with Clean & Build) after you have upgraded libssh or OpenSSL.
