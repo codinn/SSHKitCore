@@ -29,7 +29,6 @@
 		4A623BFC1A26F90B0071C135 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E4D99AA315DE15B300EB5615 /* libz.dylib */; };
 		4A652E9319AD891400FAEB28 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A652E9219AD891400FAEB28 /* Security.framework */; };
 		4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */; };
-		4AC052C81B4ACB8F00B555F6 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 4AC052C71B4ACB8F00B555F6 /* README.md */; };
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
 		4AD19C351A6E008800EC7E65 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AD19C331A6E008800EC7E65 /* libcrypto.a */; };
 		4AD19C361A6E008800EC7E65 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AD19C341A6E008800EC7E65 /* libssl.a */; };
@@ -42,6 +41,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3BB705091B4B5CB50059C520 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 73E37D8E03D44A4AA152E2CF;
+			remoteInfo = ssh_server_fork;
+		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
@@ -112,26 +118,12 @@
 			remoteGlobalIDString = 2D01E8245A1C41C3AF4C00A3;
 			remoteInfo = samplessh;
 		};
-		4AEF726B19FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 528501CDF3144E0AB2953D10;
-			remoteInfo = samplesshd;
-		};
 		4AEF726D19FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = AF828DA1C63D4458A1D43957;
 			remoteInfo = "samplesshd-kbdint";
-		};
-		4AEF726F19FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = EBFF3475450F425688B34F3A;
-			remoteInfo = "samplesshd-tty";
 		};
 		4AEF727119FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -158,14 +150,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 95DEAC6EF760461587BD1FD3;
+			remoteGlobalIDString = D250DF0791214429A1187268;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = BEDA757062AC42DB8C09E69D;
+			remoteGlobalIDString = 23F825D2D8AB4140A4D16064;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -306,11 +298,10 @@
 				4AEF726619FFE2AE009B0CC7 /* libsshpp_noexcept */,
 				4AEF726819FFE2AE009B0CC7 /* samplesftp */,
 				4AEF726A19FFE2AE009B0CC7 /* samplessh */,
-				4AEF726C19FFE2AE009B0CC7 /* samplesshd */,
 				4AEF726E19FFE2AE009B0CC7 /* samplesshd-kbdint */,
-				4AEF727019FFE2AE009B0CC7 /* samplesshd-tty */,
 				4AEF727219FFE2AE009B0CC7 /* scp_download */,
 				4AEF727419FFE2AE009B0CC7 /* senddata */,
+				3BB7050A1B4B5CB50059C520 /* ssh_server_fork */,
 				4AEF727619FFE2AE009B0CC7 /* sshnetcat */,
 			);
 			name = Products;
@@ -464,10 +455,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		3BB7050A1B4B5CB50059C520 /* ssh_server_fork */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = ssh_server_fork;
+			remoteRef = 3BB705091B4B5CB50059C520 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		4AEF725819FFE2AE009B0CC7 /* libssh.4.5.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh.4.5.1.dylib;
+			name = libssh.dylib;
+			path = libssh.4.4.0.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -481,7 +480,8 @@
 		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.5.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh_threads.4.5.1.dylib;
+			name = libssh_threads.dylib;
+			path = libssh_threads.4.4.0.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -534,25 +534,11 @@
 			remoteRef = 4AEF726919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF726C19FFE2AE009B0CC7 /* samplesshd */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = samplesshd;
-			remoteRef = 4AEF726B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		4AEF726E19FFE2AE009B0CC7 /* samplesshd-kbdint */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = "samplesshd-kbdint";
 			remoteRef = 4AEF726D19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF727019FFE2AE009B0CC7 /* samplesshd-tty */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = "samplesshd-tty";
-			remoteRef = 4AEF726F19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		4AEF727219FFE2AE009B0CC7 /* scp_download */ = {
@@ -597,7 +583,6 @@
 				4A2B5B081A4A6F3C007D20DF /* SSHKitHostKeyParser.m in Sources */,
 				4A49F6631A491CD100D9BA80 /* CoSOCKSMessage.m in Sources */,
 				4A49F6671A49282600D9BA80 /* SSHKitConnector.m in Sources */,
-				4AC052C81B4ACB8F00B555F6 /* README.md in Sources */,
 				4A49F65F1A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m in Sources */,
 				4A49F65A1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m in Sources */,
 				4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */,
