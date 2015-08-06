@@ -299,19 +299,24 @@ static channel_callbacks s_null_channel_callbacks = {0};
         case SSH_OK:
             self.stage = SSHKitChannelStageReadWrite;
             [self _registerCallbacks];
-            
             // opened
-            
             if (_delegateFlags.didOpen) {
                 [self.delegate channelDidOpen:self];
             }
             break;
-            
-        default:
+        default: {
             // open failed
-            [self _doCloseWithError:self.session.lastError];
+            // [self _doCloseWithError:self.session.lastError];
+            NSError *error = [NSError errorWithDomain:SSHKitCoreErrorDomain
+                                      code:-7
+                                  userInfo:@{ NSLocalizedDescriptionKey : @"Open Direct Failed" }];
+            if (self.session.lastError) {
+                error = self.session.lastError;
+            }
+            [self _doCloseWithError:error];  // self.session.lastError
             [self.session disconnectIfNeeded];
             break;
+        }
     }
 }
 
