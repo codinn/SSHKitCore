@@ -31,6 +31,7 @@ typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     SSHKitErrorCodeHostKeyError,
     SSHKitErrorCodeAuthError,
     SSHKitErrorCodeStop,
+    SSHKitErrorCodeConnectError,
 };
 
 typedef NS_ENUM(NSInteger, SSHKitProxyType) {

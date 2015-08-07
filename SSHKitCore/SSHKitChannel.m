@@ -308,7 +308,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
             // open failed
             // [self _doCloseWithError:self.session.lastError];
             NSError *error = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                      code:-7
+                                      code:SSHKitErrorCodeConnectError
                                   userInfo:@{ NSLocalizedDescriptionKey : @"Open Direct Failed" }];
             if (self.session.lastError) {
                 error = self.session.lastError;
