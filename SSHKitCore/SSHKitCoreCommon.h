@@ -63,6 +63,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageClosed,       // channel has been closed
 };
 
+typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
+
 /* All implementations MUST be able to process packets with an
  * uncompressed payload length of 32768 bytes or less and a total packet
  * size of 35000 bytes or less (including 'packet_length',

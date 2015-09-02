@@ -3,10 +3,13 @@
 #import <sys/socket.h>
 #import <arpa/inet.h>
 #import <libssh/libssh.h>
+#import <libssh/sftp.h>
 #import "SSHKitSession.h"
 #import "SSHKitChannel.h"
 #import "SSHKitPrivateKeyParser.h"
 #import "SSHKitHostKeyParser.h"
+#import "SSHKitSFTP.h"
+#import "SSHKitSFTPDirectory.h"
 
 NSString * SSHKitGetBase64FromHostKey(ssh_key key);
 
@@ -79,3 +82,17 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
+/** SFTP **/
+@interface SSHKitSFTP ()
+
+/** Raw libssh session instance. */
+@property (nonatomic, readonly) sftp_session rawSFTPSession;
+
+@end
+
+@interface SSHKitSFTPDirectory ()
+
+/** Raw libssh session instance. */
+@property (nonatomic, readonly) sftp_dir rawDirectory;
+
+@end
