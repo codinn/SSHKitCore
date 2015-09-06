@@ -18,7 +18,7 @@
 @property (nonatomic, weak, readonly) id<SSHKitSFTPDelegate> delegate;
 @property (nonatomic, weak, readonly) SSHKitSession* sshSession;
 
-+ (void)FreeSFTPAttributes:(sshkit_sftp_attributes)attributes;
++ (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
 - (instancetype)initWithDelegate:(id<SSHKitSFTPDelegate>)delegate;
 - (BOOL)initSFTP:(SSHKitSession *)session;
 - (void)close;
@@ -28,4 +28,5 @@
 
 @protocol SSHKitSFTPDelegate <NSObject>
 @optional
+- (NSString *)sftp:(SSHKitSFTP *)sftp didInitWithSession:(SSHKitSession *)session;
 @end

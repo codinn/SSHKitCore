@@ -11,7 +11,7 @@
 
 @implementation SSHKitSFTP
 
-+ (void)FreeSFTPAttributes:(sshkit_sftp_attributes)attributes {
++ (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes {
     sftp_attributes_free(attributes);
 }
 
