@@ -35,7 +35,7 @@
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		CC23133E1B8DB0520040183C /* SSHKitSFTP.h in Headers */ = {isa = PBXBuildFile; fileRef = CC23133C1B8DB0520040183C /* SSHKitSFTP.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC23133F1B8DB0520040183C /* SSHKitSFTP.m in Sources */ = {isa = PBXBuildFile; fileRef = CC23133D1B8DB0520040183C /* SSHKitSFTP.m */; };
-		CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPDirectory.h in Headers */ = {isa = PBXBuildFile; fileRef = CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPDirectory.h */; };
+		CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPDirectory.h in Headers */ = {isa = PBXBuildFile; fileRef = CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPDirectory.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPDirectory.m */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
@@ -154,14 +154,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 4EAADF71CDEF4E508F929957;
+			remoteGlobalIDString = 98D49B2206F94EB4991C4E2D;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 4DDAD2A0B4D84F4F88BAC340;
+			remoteGlobalIDString = 93D09227251A420991FC256A;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */

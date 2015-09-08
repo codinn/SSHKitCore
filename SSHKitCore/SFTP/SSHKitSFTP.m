@@ -25,6 +25,7 @@
 - (BOOL)initSFTP:(SSHKitSession *)session {
     self->_rawSFTPSession = sftp_new(session.rawSession);
     if (self.rawSFTPSession == NULL) {
+        NSLog(@(ssh_get_error(session.rawSession)));
         return NO;
     }
     int rc = sftp_init(self.rawSFTPSession);
