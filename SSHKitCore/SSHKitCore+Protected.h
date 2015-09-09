@@ -9,7 +9,7 @@
 #import "SSHKitPrivateKeyParser.h"
 #import "SSHKitHostKeyParser.h"
 #import "SSHKitSFTP.h"
-#import "SSHKitSFTPDirectory.h"
+#import "SSHKitSFTPFile.h"
 
 NSString * SSHKitGetBase64FromHostKey(ssh_key key);
 
@@ -90,7 +90,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
-@interface SSHKitSFTPDirectory ()
+@interface SSHKitSFTPFile ()
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) sftp_dir rawDirectory;

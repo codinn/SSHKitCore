@@ -35,8 +35,8 @@
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		CC23133E1B8DB0520040183C /* SSHKitSFTP.h in Headers */ = {isa = PBXBuildFile; fileRef = CC23133C1B8DB0520040183C /* SSHKitSFTP.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC23133F1B8DB0520040183C /* SSHKitSFTP.m in Sources */ = {isa = PBXBuildFile; fileRef = CC23133D1B8DB0520040183C /* SSHKitSFTP.m */; };
-		CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPDirectory.h in Headers */ = {isa = PBXBuildFile; fileRef = CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPDirectory.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPDirectory.m */; };
+		CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
 		E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */ = {isa = PBXBuildFile; fileRef = E4E96D94158E10FD002E6E0A /* SSHKitCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -206,8 +206,8 @@
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
 		CC23133C1B8DB0520040183C /* SSHKitSFTP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTP.h; path = SFTP/SSHKitSFTP.h; sourceTree = "<group>"; };
 		CC23133D1B8DB0520040183C /* SSHKitSFTP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTP.m; path = SFTP/SSHKitSFTP.m; sourceTree = "<group>"; };
-		CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPDirectory.h; path = SFTP/SSHKitSFTPDirectory.h; sourceTree = "<group>"; };
-		CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPDirectory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPDirectory.m; path = SFTP/SSHKitSFTPDirectory.m; sourceTree = "<group>"; };
+		CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPFile.h; path = SFTP/SSHKitSFTPFile.h; sourceTree = "<group>"; };
+		CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPFile.m; path = SFTP/SSHKitSFTPFile.m; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
 		E42815C11593D95200CF680C /* SSHKitSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSession.m; sourceTree = "<group>"; };
 		E4D99AA315DE15B300EB5615 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -320,8 +320,8 @@
 			children = (
 				CC23133C1B8DB0520040183C /* SSHKitSFTP.h */,
 				CC23133D1B8DB0520040183C /* SSHKitSFTP.m */,
-				CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPDirectory.h */,
-				CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPDirectory.m */,
+				CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */,
+				CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */,
 			);
 			name = SFTP;
 			sourceTree = "<group>";
@@ -412,7 +412,7 @@
 				E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */,
 				4A2B5B071A4A6F3C007D20DF /* SSHKitHostKeyParser.h in Headers */,
 				4A281DC11A4A570D00EA1583 /* SSHKitPrivateKeyParser.h in Headers */,
-				CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPDirectory.h in Headers */,
+				CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPFile.h in Headers */,
 				4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */,
 				4A49F6661A49282600D9BA80 /* SSHKitConnector.h in Headers */,
 				4A49F63B1A491C8400D9BA80 /* CoSocket.h in Headers */,
@@ -611,7 +611,7 @@
 				4A281DC21A4A570D00EA1583 /* SSHKitPrivateKeyParser.m in Sources */,
 				4A49F6611A491CD100D9BA80 /* CoHTTPMessage.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,
-				CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPDirectory.m in Sources */,
+				CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPFile.m in Sources */,
 				4A49F65E1A491CD100D9BA80 /* SSHKitConnectorSOCKS4.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

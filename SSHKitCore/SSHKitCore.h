@@ -6,4 +6,4 @@
 #import "CoSOCKSMessage.h"
 #import "CoHTTPMessage.h"
 #import "SSHKitSFTP.h"
-#import "SSHKitSFTPDirectory.h"
+#import "SSHKitSFTPFile.h"

@@ -11,7 +11,7 @@
 
 @protocol SSHKitSFTPDelegate;
 @class SSHKitSession;
-@class SSHKitSFTPDirectory;
+@class SSHKitSFTPFile;
 
 @interface SSHKitSFTP : NSObject
 
@@ -22,7 +22,7 @@
 - (instancetype)initWithDelegate:(id<SSHKitSFTPDelegate>)delegate;
 - (BOOL)initSFTP:(SSHKitSession *)session;
 - (void)close;
-- (SSHKitSFTPDirectory *)openDirectory:(NSString *)path;
+- (SSHKitSFTPFile *)openDirectory:(NSString *)path;
 
 @end
 

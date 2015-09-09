@@ -23,9 +23,12 @@
 }
 
 - (BOOL)initSFTP:(SSHKitSession *)session {
+    ssh_set_blocking(session.rawSession, 1);
+    // if no blocking sftp_new will fail
     self->_rawSFTPSession = sftp_new(session.rawSession);
+    ssh_set_blocking(session.rawSession, 0);
     if (self.rawSFTPSession == NULL) {
-        NSLog(@(ssh_get_error(session.rawSession)));
+        // NSLog(@(ssh_get_error(session.rawSession)));
         return NO;
     }
     int rc = sftp_init(self.rawSFTPSession);
@@ -44,8 +47,8 @@
     self->_rawSFTPSession = NULL;
 }
 
-- (SSHKitSFTPDirectory *)openDirectory:(NSString *)path {
-    SSHKitSFTPDirectory* directory = [[SSHKitSFTPDirectory alloc]init:self path:path];
+- (SSHKitSFTPFile *)openDirectory:(NSString *)path {
+    SSHKitSFTPFile* directory = [[SSHKitSFTPFile alloc]init:self path:path];
     return directory;
 }
 
