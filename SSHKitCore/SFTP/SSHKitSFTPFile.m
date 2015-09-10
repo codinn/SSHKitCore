@@ -57,6 +57,7 @@
     self.ownerUserID = fileAttributes->uid;
     self.ownerGroupID = fileAttributes->gid;
     self.permissions = [self convertPermissionToSymbolicNotation:fileAttributes->permissions];
+    self->_fileTypeLetter = [self fileTypeLetter:fileAttributes->permissions];
     self.isDirectory = S_ISDIR(fileAttributes->permissions);
     self.flags = fileAttributes->flags;
 }
@@ -87,7 +88,7 @@
     static char *rwx[] = {"---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"};
     char bits[11];
     
-    bits[0] = [self filetypeletter:mode];
+    bits[0] = [self fileTypeLetter:mode];
     strcpy(&bits[1], rwx[(mode >> 6)& 7]);
     strcpy(&bits[4], rwx[(mode >> 3)& 7]);
     strcpy(&bits[7], rwx[(mode & 7)]);
@@ -115,7 +116,7 @@
  @param mode The numeric mode that is returned by the 'stat' function
  @return A character that represents the given file type.
  */
-- (char)filetypeletter:(unsigned long)mode {
+- (char)fileTypeLetter:(unsigned long)mode {
     char c;
     
     if (S_ISREG(mode)) {
