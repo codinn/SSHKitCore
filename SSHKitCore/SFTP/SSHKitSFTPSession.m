@@ -6,10 +6,10 @@
 //
 //
 
-#import "SSHKitSFTP.h"
+#import "SSHKitSFTPSession.h"
 #import "SSHKitCore+Protected.h"
 
-@implementation SSHKitSFTP
+@implementation SSHKitSFTPSession
 
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes {
     sftp_attributes_free(attributes);

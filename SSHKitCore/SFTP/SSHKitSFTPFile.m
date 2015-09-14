@@ -25,7 +25,8 @@
 
 @implementation SSHKitSFTPFile
 
-- (instancetype)init:(SSHKitSFTP *)sftp path:(NSString *)path {
+- (instancetype)init:(SSHKitSFTPSession *)sftp path:(NSString *)path {
+    // https://github.com/dleehr/DLSFTPClient/blob/master/
     if ((self = [super init])) {
         self.fullFilename = path;
         self.filename = [path lastPathComponent];
@@ -72,7 +73,20 @@
 
 - (SSHKitSFTPFile *)readDirectory {
     sftp_attributes attributes = sftp_readdir(self.sftp.rawSFTPSession, self.rawDirectory);
+    if (!attributes) {
+        return nil;
+    }
     return [[SSHKitSFTPFile alloc] initWithSFTPAttributes: attributes parentPath:self.filename];
+}
+
+- (NSArray *)listDirectory {
+    NSMutableArray *files = [@[] mutableCopy];
+    SSHKitSFTPFile *file = [self readDirectory];
+    while (file != nil) {
+        [files addObject:file];
+        file = [self readDirectory];
+    }
+    return files;
 }
 
 #pragma mark - Permissions conversion methods

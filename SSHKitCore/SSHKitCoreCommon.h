@@ -18,6 +18,11 @@
 
 #define SSHKitLibsshErrorDomain @"SSHKit.libssh"
 #define SSHKitCoreErrorDomain   @"SSHKit.Core"
+#define SSHKitSFTPErrorDomain   @"SSHKit.SFTP"
+#define SSHKitSFTPRequestNotImplemented   @"SSHKit.SSHKitSFTPRequestNotImplemented"
+#define SSHKitSFTPUnderlyingErrorKey      @"SSHKit.SSHKitSFTPUnderlyingErrorKey"
+
+@class SSHKitSFTPFile;
 
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     // error code from libssh
@@ -63,6 +68,42 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageClosed,       // channel has been closed
 };
 
+typedef NS_ENUM(NSInteger, SSHKitSFTPClientErrorCode) {
+    SSHKitSFTPClientErrorUnknown = 1,
+    SSHKitSFTPClientErrorNotImplemented,
+    SSHKitSFTPClientErrorOperationInProgress,
+    SSHKitSFTPClientErrorInvalidHostname,
+    SSHKitSFTPClientErrorInvalidUsername,
+    SSHKitSFTPClientErrorInvalidPasswordOrKey,
+    SSHKitSFTPClientErrorInvalidPath,
+    SSHKitSFTPClientErrorAlreadyConnected,
+    SSHKitSFTPClientErrorConnectionTimedOut,
+    SSHKitSFTPClientErrorUnableToResolveHostname,
+    SSHKitSFTPClientErrorSocketError,
+    SSHKitSFTPClientErrorUnableToConnect,
+    SSHKitSFTPClientErrorUnableToInitializeSession,
+    SSHKitSFTPClientErrorDisconnected,
+    SSHKitSFTPClientErrorHandshakeFailed,
+    SSHKitSFTPClientErrorAuthenticationFailed,
+    SSHKitSFTPClientErrorNotConnected,
+    SSHKitSFTPClientErrorUnableToInitializSSHKitSFTP,
+    SSHKitSFTPClientErrorUnableToOpenDirectory,
+    SSHKitSFTPClientErrorUnableToCloseDirectory,
+    SSHKitSFTPClientErrorUnableToOpenFile,
+    SSHKitSFTPClientErrorUnableToCloseFile,
+    SSHKitSFTPClientErrorUnableToOpenLocalFileForWriting,
+    SSHKitSFTPClientErrorUnableToReadDirectory,
+    SSHKitSFTPClientErrorUnableToReadFile,
+    SSHKitSFTPClientErrorUnableToStatFile,
+    SSHKitSFTPClientErrorUnableToCreateChannel,
+    SSHKitSFTPClientErrorCancelledByUser,
+    SSHKitSFTPClientErrorUnableToOpenLocalFileForReading,
+    SSHKitSFTPClientErrorUnableToWriteFile,
+    SSHKitSFTPClientErrorUnableToMakeDirectory,
+    SSHKitSFTPClientErrorUnableToRename,
+    SSHKitSFTPClientErrorUnableToRemove
+};
+
 typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
 
 /* All implementations MUST be able to process packets with an
@@ -78,3 +119,12 @@ typedef void (^ SSHKitRequestRemoteForwardCompletionBlock)(BOOL success, uint16_
 
 void SSHKitCoreInitiate();
 void SSHKitCoreFinalize();
+
+// Block typedefs
+typedef void(^SSHKitSFTPRequestCancelHandler)(void);
+typedef void(^SSHKitSFTPClientSuccessBlock)(void);
+typedef void(^SSHKitSFTPClientFailureBlock)(NSError *error);
+typedef void(^SSHKitSFTPClientArraySuccessBlock)(NSArray *array); // Array of SSHKitSFTPFile objects
+typedef void(^SSHKitSFTPClientProgressBlock) (unsigned long long bytesReceived, unsigned long long bytesTotal);
+typedef void(^SSHKitSFTPClientFileTransferSuccessBlock)(SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime);
+typedef void(^SSHKitSFTPClientFileMetadataSuccessBlock)(SSHKitSFTPFile *fileOrDirectory);

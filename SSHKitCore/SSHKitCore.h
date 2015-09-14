@@ -5,5 +5,5 @@
 #import "SSHKitHostKeyParser.h"
 #import "CoSOCKSMessage.h"
 #import "CoHTTPMessage.h"
-#import "SSHKitSFTP.h"
+#import "SSHKitSFTPSession.h"
 #import "SSHKitSFTPFile.h"
