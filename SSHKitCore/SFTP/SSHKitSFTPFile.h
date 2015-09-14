@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "SSHKitCoreCommon.h"
 
-@class SSHKitSFTPSession;
+@class SSHKitSFTPChannel;
 
 @interface SSHKitSFTPFile : NSObject
 
@@ -47,9 +47,9 @@
 /** Returns the user defined flags for the file */
 @property (nonatomic, readonly) u_long flags;
 
-@property (nonatomic, readonly) SSHKitSFTPSession *sftp;
+@property (nonatomic, readonly) SSHKitSFTPChannel *sftp;
 @property (nonatomic, readonly) BOOL directoryEof;
-- (instancetype)init:(SSHKitSFTPSession *)sftp path:(NSString *)path;
+- (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path;
 - (NSInteger)closeDirectory;
 - (SSHKitSFTPFile *)readDirectory;
 // TODO read

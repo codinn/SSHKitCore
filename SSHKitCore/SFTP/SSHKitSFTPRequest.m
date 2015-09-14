@@ -25,7 +25,7 @@
     self.cancelled = YES;
 }
 
-- (void)start:(SSHKitSFTPSession *)sftpSession {
+- (void)start:(SSHKitSFTPChannel *)sftpSession {
     self.sftpSession = sftpSession;
     [NSException raise:SSHKitSFTPRequestNotImplemented
                 format:@"Request does not implement start"];

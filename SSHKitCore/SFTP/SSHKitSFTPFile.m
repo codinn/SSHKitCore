@@ -25,7 +25,7 @@
 
 @implementation SSHKitSFTPFile
 
-- (instancetype)init:(SSHKitSFTPSession *)sftp path:(NSString *)path {
+- (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path {
     // https://github.com/dleehr/DLSFTPClient/blob/master/
     if ((self = [super init])) {
         self.fullFilename = path;

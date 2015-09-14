@@ -13,7 +13,7 @@
 @class SSHKitSession;
 @class SSHKitSFTPFile;
 
-@interface SSHKitSFTPSession : NSObject
+@interface SSHKitSFTPChannel : NSObject
 
 @property (nonatomic, weak, readonly) id<SSHKitSFTPDelegate> delegate;
 @property (nonatomic, weak, readonly) SSHKitSession* sshSession;
@@ -28,5 +28,5 @@
 
 @protocol SSHKitSFTPDelegate <NSObject>
 @optional
-- (NSString *)sftp:(SSHKitSFTPSession *)sftp didInitWithSession:(SSHKitSession *)session;
+- (NSString *)sftp:(SSHKitSFTPChannel *)sftp didInitWithSession:(SSHKitSession *)session;
 @end
