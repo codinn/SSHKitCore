@@ -20,7 +20,7 @@
 
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
 - (instancetype)initWithDelegate:(id<SSHKitSFTPDelegate>)delegate;
-- (BOOL)initSFTP:(SSHKitSession *)session;
+- (BOOL)initChannel:(SSHKitSession *)session;
 - (void)close;
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path;
 

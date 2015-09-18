@@ -104,6 +104,17 @@ typedef NS_ENUM(NSInteger, SSHKitSFTPClientErrorCode) {
     SSHKitSFTPClientErrorUnableToRemove
 };
 
+typedef NS_ENUM(NSInteger, SSHKitSFTPRequestStatusCode) {
+    // error code from libssh
+    SSHKitSFTPRequestStatusWaiting  = 0,
+    SSHKitSFTPRequestStatusStarted,
+    SSHKitSFTPRequestStatusPaused,
+    SSHKitSFTPRequestStatusCanceled,
+    
+    // our error code
+    SSHKitSFTPRequestStatusFailed   = 1001,
+};
+
 typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
 
 /* All implementations MUST be able to process packets with an

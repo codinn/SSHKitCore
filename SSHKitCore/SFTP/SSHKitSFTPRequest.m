@@ -11,6 +11,8 @@
 @interface SSHKitSFTPRequest ()
 
 @property (nonatomic, readwrite, getter = isCancelled) BOOL cancelled;
+@property (nonatomic, readwrite, getter = isPaused) BOOL paused;  // TODO canPause
+@property (nonatomic, readwrite) SSHKitSFTPRequestStatusCode status;
 
 @end
 
@@ -25,8 +27,13 @@
     self.cancelled = YES;
 }
 
-- (void)start:(SSHKitSFTPChannel *)sftpSession {
-    self.sftpSession = sftpSession;
+- (void)pause {
+    self.paused = YES;
+    // TODO put back to channel
+}
+
+- (void)start:(SSHKitSFTPChannel *)sftpChannel {
+    self.sftpChannel = sftpChannel;
     [NSException raise:SSHKitSFTPRequestNotImplemented
                 format:@"Request does not implement start"];
 }
@@ -45,7 +52,7 @@
         return NO;
     }
     /*
-    if ([self.sftpSession isConnected] == NO) {
+    if ([self.sftpChannel isConnected] == NO) {
         self.error = [self errorWithCode:SSHKitSFTPClientErrorNotConnected
                         errorDescription:@"Socket not connected"
                          underlyingError:nil];

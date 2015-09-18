@@ -11,8 +11,10 @@
 #import "SSHKitCoreCommon.h"
 
 @interface SSHKitSFTPRequest : NSObject
+@property (nonatomic, readonly) SSHKitSFTPRequestStatusCode status;
 @property (nonatomic, readonly, getter = isCancelled) BOOL cancelled;
-@property (nonatomic, weak) SSHKitSFTPChannel *sftpSession;
+@property (nonatomic, readonly, getter = isPaused) BOOL paused;
+@property (nonatomic, weak) SSHKitSFTPChannel *sftpChannel;
 @property (nonatomic, readwrite, copy) SSHKitSFTPRequestCancelHandler cancelHandler;
 @property (nonatomic, strong) NSError *error;
 @property (nonatomic, copy) id successBlock;
@@ -22,7 +24,7 @@
 - (void)cancel;
 
 // Only the connection should call these methods
-- (void)start:(SSHKitSFTPChannel *)sftpSession; // subclasses must override
+- (void)start:(SSHKitSFTPChannel *)sftpChannel; // subclasses must override
 - (void)succeed; // subclasses must override and invoke their success blocks
 - (void)fail; // subclasses need not override this
 

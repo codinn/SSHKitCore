@@ -35,7 +35,7 @@
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		CC23133E1B8DB0520040183C /* SSHKitSFTPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = CC23133C1B8DB0520040183C /* SSHKitSFTPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC23133F1B8DB0520040183C /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC23133D1B8DB0520040183C /* SSHKitSFTPChannel.m */; };
-		CCCFD95F1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CCCFD95D1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h */; };
+		CCCFD95F1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CCCFD95D1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCCFD9601BA2B9EB00AD4D23 /* SSHKitSFTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CCCFD95E1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.m */; };
 		CCCFD9741BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CCCFD9721BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.h */; };
 		CCCFD9751BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CCCFD9731BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.m */; };

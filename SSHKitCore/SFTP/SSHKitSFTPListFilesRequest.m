@@ -37,7 +37,7 @@
         // [self.connection requestDidFail:self withError:self.error];
         return;
     }
-    SSHKitSFTPFile *currentDirectory = [self.sftpSession openDirectory:self.directoryPath];
+    SSHKitSFTPFile *currentDirectory = [self.sftpChannel openDirectory:self.directoryPath];
 
     if ([self ready] == NO) {
         // [self.connection requestDidFail:self withError:self.error];
@@ -60,6 +60,7 @@
     }
 
     NSMutableArray *files = [[NSMutableArray alloc] init];
+    // TODO cancel & fail
     SSHKitSFTPFile *subFile = [currentDirectory readDirectory];
     while (subFile != nil) {
         [files addObject:subFile];
