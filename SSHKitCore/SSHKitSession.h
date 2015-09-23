@@ -146,6 +146,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  */
 - (void)disconnect;
 - (void)impoliteDisconnect;
+- (void)disconnectWithError:(NSError *)error;
 
 // -----------------------------------------------------------------------------
 #pragma mark GCD
