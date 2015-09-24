@@ -25,7 +25,7 @@
 {
     if (!content.length) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                  code:SSHKitErrorAuthFailure
+                                                  code:SSHKitErrorIdentityParseFailure
                                               userInfo:@{ NSLocalizedDescriptionKey : @"Content of private key is empty" }];
         return nil;
     }
@@ -47,7 +47,7 @@
             
         case SSH_EOF:
             if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                      code:SSHKitErrorAuthFailure
+                                                      code:SSHKitErrorIdentityParseFailure
                                                   userInfo:@{
                                                              NSLocalizedDescriptionKey : @"Private key file doesn't exist or permission denied",
                                                              NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
@@ -56,7 +56,7 @@
             
         default:
             if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                      code:SSHKitErrorAuthFailure
+                                                      code:SSHKitErrorIdentityParseFailure
                                                   userInfo:@{
                                                              NSLocalizedDescriptionKey : @"Could not parse private key",
                                                              NSLocalizedRecoverySuggestionErrorKey : @"Please try again or import another private key."
@@ -75,7 +75,7 @@
             
         default:
             if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                      code:SSHKitErrorAuthFailure
+                                                      code:SSHKitErrorIdentityParseFailure
                                                   userInfo:@{ NSLocalizedDescriptionKey : @"Could not extract public key from private key" }];
             return nil;;
     }

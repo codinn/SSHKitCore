@@ -30,6 +30,7 @@ typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     SSHKitErrorTimeout       = 1005,
     SSHKitErrorHostKeyMismatch,
     SSHKitErrorAuthFailure,
+    SSHKitErrorIdentityParseFailure,
     SSHKitErrorStop,
     SSHKitErrorConnectFailure,
     SSHKitErrorChannelFailure,
