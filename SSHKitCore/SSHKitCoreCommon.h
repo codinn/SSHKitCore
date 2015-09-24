@@ -21,17 +21,18 @@
 
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     // error code from libssh
-    SSHKitErrorCodeNoError        = 0,
-    SSHKitErrorCodeRequestDenied,
-    SSHKitErrorCodeFatal,
-    SSHKitErrorCodeEINTR,
+    SSHKitErrorNoError        = 0,
+    SSHKitErrorRequestDenied,
+    SSHKitErrorFatal,
+    SSHKitErrorEINTR,
     
     // our error code
-    SSHKitErrorCodeTimeout       = 1005,
-    SSHKitErrorCodeHostKeyError,
-    SSHKitErrorCodeAuthError,
-    SSHKitErrorCodeStop,
-    SSHKitErrorCodeConnectError,
+    SSHKitErrorTimeout       = 1005,
+    SSHKitErrorHostKeyMismatch,
+    SSHKitErrorAuthFailure,
+    SSHKitErrorStop,
+    SSHKitErrorConnectFailure,
+    SSHKitErrorChannelFailure,
 };
 
 typedef NS_ENUM(NSInteger, SSHKitProxyType) {

@@ -24,7 +24,7 @@
     int rc = ssh_get_publickey(session.rawSession, &parser->_hostKey);
     if (rc < 0 ) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                  code:SSHKitErrorCodeHostKeyError
+                                                  code:SSHKitErrorHostKeyMismatch
                                               userInfo:@{ NSLocalizedDescriptionKey : @"Cannot decode server host key" }];
         return nil;
     }
@@ -50,7 +50,7 @@
     
     if ( !parser->_base64.length ) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                  code:SSHKitErrorCodeHostKeyError
+                                                  code:SSHKitErrorHostKeyMismatch
                                               userInfo:@{ NSLocalizedDescriptionKey :@"Cannot generate base64 string from server host key" }];
         return nil;
     }
@@ -90,7 +90,7 @@
     
     if (rc < 0) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                             code:SSHKitErrorCodeHostKeyError
+                                             code:SSHKitErrorHostKeyMismatch
                                          userInfo:@{ NSLocalizedDescriptionKey : @"Cannot decode server host key from base64 string" }];
         return nil;
     }
@@ -143,7 +143,7 @@
     
     if (!fingerprint.length) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                                  code:SSHKitErrorCodeHostKeyError
+                                                  code:SSHKitErrorHostKeyMismatch
                                               userInfo:@{ NSLocalizedDescriptionKey :@"Cannot generate fingerprint from host key" }];
         return nil;
     }
