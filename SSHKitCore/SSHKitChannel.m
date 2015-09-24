@@ -361,11 +361,16 @@ static channel_callbacks s_null_channel_callbacks = {0};
             break;
             
         case SSH_ERROR:
-        default:
-        {
+        default: {
             // failed
             [session removeAllForwardRequest];
-            if (request.completionHandler) request.completionHandler(NO, request.listenPort, session.coreError);
+            
+            if (request.completionHandler) {
+                NSError *error = session.coreError;
+                error = [NSError errorWithDomain:error.domain code:SSHKitErrorChannelFailure userInfo:error.userInfo];
+                request.completionHandler(NO, request.listenPort, error);
+            }
+            
             [session disconnectIfNeeded];
         }
             break;
