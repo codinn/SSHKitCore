@@ -68,9 +68,6 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /** Username that will authenticate against the server. */
 @property (nonatomic, readonly) NSString *username;
 
-/** Last session error. */
-@property (nonatomic, readonly) NSError *lastError;
-
 @property (strong, readwrite) SSHKitCoreLogHandler logDebug;
 @property (strong, readwrite) SSHKitCoreLogHandler logInfo;
 @property (strong, readwrite) SSHKitCoreLogHandler logWarn;
@@ -98,6 +95,9 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  (read-only).
  */
 @property (nonatomic, readonly, getter = isAuthorized) BOOL authorized;
+
+/** Last session error. */
+- (NSError *)coreError;
 
 // -----------------------------------------------------------------------------
 #pragma mark Advanced Options, setting before connection
@@ -146,6 +146,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  */
 - (void)disconnect;
 - (void)impoliteDisconnect;
+- (void)disconnectWithError:(NSError *)error;
 
 // -----------------------------------------------------------------------------
 #pragma mark GCD

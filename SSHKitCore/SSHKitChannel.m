@@ -202,7 +202,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
             
         default:
             // open failed
-            [self _doCloseWithError:self.session.lastError];
+            [self _doCloseWithError:self.session.coreError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -226,7 +226,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
             
         default:
             // open failed
-            [self _doCloseWithError:self.session.lastError];
+            [self _doCloseWithError:self.session.coreError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -252,7 +252,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
             
         default:
             // open failed
-            [self _doCloseWithError:self.session.lastError];
+            [self _doCloseWithError:self.session.coreError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -308,10 +308,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
             // open failed
             // [self _doCloseWithError:self.session.lastError];
             NSError *error = [NSError errorWithDomain:SSHKitCoreErrorDomain
-                                      code:SSHKitErrorCodeConnectError
+                                      code:SSHKitErrorConnectFailure
                                   userInfo:@{ NSLocalizedDescriptionKey : @"Open Direct Failed" }];
-            if (self.session.lastError) {
-                error = self.session.lastError;
+            if (self.session.coreError) {
+                error = self.session.coreError;
             }
             [self _doCloseWithError:error];  // self.session.lastError
             [self.session disconnectIfNeeded];
@@ -361,11 +361,16 @@ static channel_callbacks s_null_channel_callbacks = {0};
             break;
             
         case SSH_ERROR:
-        default:
-        {
+        default: {
             // failed
             [session removeAllForwardRequest];
-            if (request.completionHandler) request.completionHandler(NO, request.listenPort, session.lastError);
+            
+            if (request.completionHandler) {
+                NSError *error = session.coreError;
+                error = [NSError errorWithDomain:error.domain code:SSHKitErrorChannelFailure userInfo:error.userInfo];
+                request.completionHandler(NO, request.listenPort, error);
+            }
+            
             [session disconnectIfNeeded];
         }
             break;
@@ -495,7 +500,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     int wrote = ssh_channel_write(_rawChannel, _pendingWriteData.bytes, datalen);
     
     if ( (wrote < 0) || (wrote>datalen) ) {
-        [self _doCloseWithError:self.session.lastError];
+        [self _doCloseWithError:self.session.coreError];
         [self.session disconnectIfNeeded];
         return;
     }
@@ -537,7 +542,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
         NSError *error = nil;
         
         if (rc != SSH_OK) {
-            error = strongSelf.session.lastError;
+            error = strongSelf.session.coreError;
             if (!error) {
                 error = [NSError errorWithDomain:SSHKitLibsshErrorDomain
                                             code:rc
