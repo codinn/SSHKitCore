@@ -22,6 +22,7 @@
 
 // may be called by the connection or the end user
 - (void)cancel;
+- (void)pause;
 
 // Only the connection should call these methods
 - (void)start:(SSHKitSFTPChannel *)sftpChannel; // subclasses must override
