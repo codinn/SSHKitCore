@@ -35,10 +35,6 @@
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		CC23133E1B8DB0520040183C /* SSHKitSFTPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = CC23133C1B8DB0520040183C /* SSHKitSFTPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CC23133F1B8DB0520040183C /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC23133D1B8DB0520040183C /* SSHKitSFTPChannel.m */; };
-		CCCFD95F1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CCCFD95D1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CCCFD9601BA2B9EB00AD4D23 /* SSHKitSFTPRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CCCFD95E1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.m */; };
-		CCCFD9741BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = CCCFD9721BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.h */; };
-		CCCFD9751BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = CCCFD9731BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.m */; };
 		CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -158,14 +154,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 98D49B2206F94EB4991C4E2D;
+			remoteGlobalIDString = D5648FFF7AC442AB96BDF08E;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 93D09227251A420991FC256A;
+			remoteGlobalIDString = F62C4FDD014B49E484EC355D;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -210,10 +206,6 @@
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
 		CC23133C1B8DB0520040183C /* SSHKitSFTPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPChannel.h; path = SFTP/SSHKitSFTPChannel.h; sourceTree = "<group>"; };
 		CC23133D1B8DB0520040183C /* SSHKitSFTPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPChannel.m; path = SFTP/SSHKitSFTPChannel.m; sourceTree = "<group>"; };
-		CCCFD95D1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPRequest.h; path = SFTP/SSHKitSFTPRequest.h; sourceTree = "<group>"; };
-		CCCFD95E1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPRequest.m; path = SFTP/SSHKitSFTPRequest.m; sourceTree = "<group>"; };
-		CCCFD9721BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPListFilesRequest.h; path = SFTP/SSHKitSFTPListFilesRequest.h; sourceTree = "<group>"; };
-		CCCFD9731BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPListFilesRequest.m; path = SFTP/SSHKitSFTPListFilesRequest.m; sourceTree = "<group>"; };
 		CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPFile.h; path = SFTP/SSHKitSFTPFile.h; sourceTree = "<group>"; };
 		CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPFile.m; path = SFTP/SSHKitSFTPFile.m; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
@@ -330,10 +322,6 @@
 				CC23133D1B8DB0520040183C /* SSHKitSFTPChannel.m */,
 				CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */,
 				CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */,
-				CCCFD95D1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h */,
-				CCCFD95E1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.m */,
-				CCCFD9721BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.h */,
-				CCCFD9731BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.m */,
 			);
 			name = SFTP;
 			sourceTree = "<group>";
@@ -420,7 +408,6 @@
 				4A49F6621A491CD100D9BA80 /* CoSOCKSMessage.h in Headers */,
 				4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */,
 				4A49F65B1A491CD100D9BA80 /* SSHKitConnector+Protected.h in Headers */,
-				CCCFD95F1BA2B9EB00AD4D23 /* SSHKitSFTPRequest.h in Headers */,
 				E42815C21593D95200CF680C /* SSHKitSession.h in Headers */,
 				E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */,
 				4A2B5B071A4A6F3C007D20DF /* SSHKitHostKeyParser.h in Headers */,
@@ -428,7 +415,6 @@
 				CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPFile.h in Headers */,
 				4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */,
 				4A49F6661A49282600D9BA80 /* SSHKitConnector.h in Headers */,
-				CCCFD9741BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.h in Headers */,
 				4A49F63B1A491C8400D9BA80 /* CoSocket.h in Headers */,
 				CC23133E1B8DB0520040183C /* SSHKitSFTPChannel.h in Headers */,
 			);
@@ -464,6 +450,7 @@
 		E4E96D7A158E10FD002E6E0A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0600;
 			};
@@ -615,11 +602,9 @@
 			files = (
 				4A49F63C1A491C8400D9BA80 /* CoSocket.m in Sources */,
 				4A2B5B081A4A6F3C007D20DF /* SSHKitHostKeyParser.m in Sources */,
-				CCCFD9751BA2CD3200AD4D23 /* SSHKitSFTPListFilesRequest.m in Sources */,
 				CC23133F1B8DB0520040183C /* SSHKitSFTPChannel.m in Sources */,
 				4A49F6631A491CD100D9BA80 /* CoSOCKSMessage.m in Sources */,
 				4A49F6671A49282600D9BA80 /* SSHKitConnector.m in Sources */,
-				CCCFD9601BA2B9EB00AD4D23 /* SSHKitSFTPRequest.m in Sources */,
 				4A49F65F1A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m in Sources */,
 				4A49F65A1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m in Sources */,
 				4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */,

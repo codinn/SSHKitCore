@@ -7,4 +7,3 @@
 #import "CoHTTPMessage.h"
 #import "SSHKitSFTPChannel.h"
 #import "SSHKitSFTPFile.h"
-#import "SSHKitSFTPRequest.h"
