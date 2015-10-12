@@ -264,6 +264,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         strongSelf->_rawSession = ssh_new();
         
+        [strongSelf _registerLogCallback];
+        
         if (!strongSelf->_rawSession) {
             [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
             return_from_block;
@@ -384,14 +386,24 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)dispatchSyncOnSessionQueue:(dispatch_block_t)block
 {
-    if (dispatch_get_specific(_isOnSessionQueueKey))
+    dispatch_block_t _logSafeBlock = ^ {
+        [self _registerLogCallback];
         block();
+    };
+    
+    if (dispatch_get_specific(_isOnSessionQueueKey))
+        _logSafeBlock();
     else
-        dispatch_sync(_sessionQueue, block);
+        dispatch_sync(_sessionQueue, _logSafeBlock);
 }
 - (void)dispatchAsyncOnSessionQueue:(dispatch_block_t)block
 {
-    dispatch_async(_sessionQueue, block);
+    dispatch_block_t _logSafeBlock = ^ {
+        [self _registerLogCallback];
+        block();
+    };
+    
+    dispatch_async(_sessionQueue, _logSafeBlock);
 }
 
 - (BOOL)isOnSessionQueue {
@@ -826,6 +838,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
+        [strongSelf _registerLogCallback];
+        
         // reset keepalive counter
         strongSelf->_keepAliveCounter = strongSelf.serverAliveCountMax;
         
@@ -938,6 +952,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
+        [strongSelf _registerLogCallback];
+        
         if (strongSelf->_keepAliveCounter<=0) {
             NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
             [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
@@ -1003,6 +1019,52 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_forwardRequests removeAllObjects];
+}
+
+#pragma mark - Libssh logging
+
+static void raw_session_log_callback(int priority, const char *function, const char *message, void *userdata) {
+#ifdef DEBUG
+    SSHKitSession *aSelf = (__bridge SSHKitSession *)userdata;
+    
+    if (aSelf) {
+        switch (priority) {
+            case SSH_LOG_TRACE:
+            case SSH_LOG_DEBUG:
+                 if (aSelf->_logDebug) aSelf->_logDebug(@"%s", message);
+                break;
+                
+            case SSH_LOG_INFO:
+                if (aSelf->_logInfo) aSelf->_logInfo(@"%s", message);
+                break;
+                
+            case SSH_LOG_WARN:
+                if (aSelf->_logWarn) aSelf->_logWarn(@"%s", message);
+                break;
+                
+            default:
+                if (aSelf->_logError) aSelf->_logError(@"%s", message);
+                break;
+        }
+    }
+#endif
+}
+
+/* WARN: GCD is thread-blind execution of threaded code, where you submit blocks of code to be run on any available system-owned thread.
+ *
+ * The drawback of this behavior is __thread keyword used by libssh DOES NOT work!
+ * 
+ * Problem: instead of use a ssh_session struct member variable, libssh presupposes ssh_ssesion and execution thread are one-to-one map, so it uses __thread keyword to store log function and userdata for a session.
+ *
+ * Howto fix: at the very beginning of _sessionQueue execution block of code, call [strongSelf _registerLogCallback] to make sure libssh __thread storage reinitialized properly.
+ *
+ * Performance affected: although call _registerLogCallback again and again might lead to performance issue, but since libssh log callback only effective on DEBUG scheme, the performance effect should be trivial while on RELEASE scheme.
+ */
+- (void)_registerLogCallback {
+#ifdef DEBUG
+    ssh_set_log_callback(raw_session_log_callback);
+    ssh_set_log_userdata((__bridge void *)(self));
+#endif
 }
 
 @end
