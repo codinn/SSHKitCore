@@ -178,4 +178,8 @@
     return [NSString stringWithFormat:@"<%@: %p> Filename: %@", NSStringFromClass([self class]), self, self.filename];
 }
 
+- (NSComparisonResult)compare:(SSHKitSFTPFile *)otherFile {
+    return [self.fullFilename compare:otherFile.fullFilename];
+}
+
 @end

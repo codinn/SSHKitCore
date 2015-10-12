@@ -12,6 +12,7 @@
 @protocol SSHKitSFTPDelegate;
 @class SSHKitSession;
 @class SSHKitSFTPFile;
+@class SSHKitSFTPRequest;  // define in SSHKitExtras
 
 @interface SSHKitSFTPChannel : NSObject
 
