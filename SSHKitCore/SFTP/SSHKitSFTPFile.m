@@ -51,7 +51,7 @@
 - (void)populateValuesFromSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
     NSString *filename = [NSString stringWithUTF8String:fileAttributes->name];
     self.filename = filename;
-    self.fullFilename = [parentPath stringByAppendingString:filename];
+    self.fullFilename = [parentPath stringByAppendingPathComponent:filename];
     self.modificationDate = [NSDate dateWithTimeIntervalSince1970:fileAttributes->mtime];
     self.lastAccess = [NSDate dateWithTimeIntervalSinceNow:fileAttributes->atime];
     self.fileSize = @(fileAttributes->size);
@@ -76,7 +76,7 @@
     if (!attributes) {
         return nil;
     }
-    return [[SSHKitSFTPFile alloc] initWithSFTPAttributes: attributes parentPath:self.filename];
+    return [[SSHKitSFTPFile alloc] initWithSFTPAttributes: attributes parentPath:self.fullFilename];
 }
 
 - (NSArray *)listDirectory {
@@ -179,7 +179,7 @@
 }
 
 - (NSComparisonResult)compare:(SSHKitSFTPFile *)otherFile {
-    return [self.fullFilename compare:otherFile.fullFilename];
+    return [self.filename compare:otherFile.filename];
 }
 
 @end
