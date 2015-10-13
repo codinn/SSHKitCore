@@ -45,13 +45,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		3BB705091B4B5CB50059C520 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 73E37D8E03D44A4AA152E2CF;
-			remoteInfo = ssh_server_fork;
-		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
@@ -80,88 +73,18 @@
 			remoteGlobalIDString = 9E33DB2DAFD54972AFEA3D42;
 			remoteInfo = ssh_threads_static;
 		};
-		4AEF725F19FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 346CF725BBB8476CA68F885F;
-			remoteInfo = exec;
-		};
-		4AEF726119FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 4CED91A314084C1CB1807EE6;
-			remoteInfo = libssh_scp;
-		};
-		4AEF726319FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = C81715223B3946D3B0DD730F;
-			remoteInfo = libsshpp;
-		};
-		4AEF726519FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 81DCD10080474E89A503E337;
-			remoteInfo = libsshpp_noexcept;
-		};
-		4AEF726719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A82E042DB27A49779A292924;
-			remoteInfo = samplesftp;
-		};
-		4AEF726919FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 2D01E8245A1C41C3AF4C00A3;
-			remoteInfo = samplessh;
-		};
-		4AEF726D19FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = AF828DA1C63D4458A1D43957;
-			remoteInfo = "samplesshd-kbdint";
-		};
-		4AEF727119FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8DF0A42AD2C24882A43B81E0;
-			remoteInfo = scp_download;
-		};
-		4AEF727319FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E67CABB087F048049810B05C;
-			remoteInfo = senddata;
-		};
-		4AEF727519FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 16CBABA848714984A54718B7;
-			remoteInfo = sshnetcat;
-		};
 		4AEF727719FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = D5648FFF7AC442AB96BDF08E;
+			remoteGlobalIDString = A0241E3DCD9E43829C98CC97;
 			remoteInfo = ssh_static;
 		};
 		4AEF727919FFE2E4009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = F62C4FDD014B49E484EC355D;
+			remoteGlobalIDString = A9549CDA319F44D18C7A834C;
 			remoteInfo = ssh_threads_static;
 		};
 /* End PBXContainerItemProxy section */
@@ -296,21 +219,10 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
-				4AEF726019FFE2AE009B0CC7 /* exec */,
-				4AEF726219FFE2AE009B0CC7 /* libssh_scp */,
-				4AEF726419FFE2AE009B0CC7 /* libsshpp */,
-				4AEF726619FFE2AE009B0CC7 /* libsshpp_noexcept */,
-				4AEF726819FFE2AE009B0CC7 /* samplesftp */,
-				4AEF726A19FFE2AE009B0CC7 /* samplessh */,
-				4AEF726E19FFE2AE009B0CC7 /* samplesshd-kbdint */,
-				4AEF727219FFE2AE009B0CC7 /* scp_download */,
-				4AEF727419FFE2AE009B0CC7 /* senddata */,
-				3BB7050A1B4B5CB50059C520 /* ssh_server_fork */,
-				4AEF727619FFE2AE009B0CC7 /* sshnetcat */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -478,14 +390,7 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		3BB7050A1B4B5CB50059C520 /* ssh_server_fork */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = ssh_server_fork;
-			remoteRef = 3BB705091B4B5CB50059C520 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
 			path = libssh.4.4.0.dylib;
@@ -499,7 +404,7 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
 			path = libssh_threads.4.4.0.dylib;
@@ -511,76 +416,6 @@
 			fileType = archive.ar;
 			path = libssh_threads.a;
 			remoteRef = 4AEF725D19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF726019FFE2AE009B0CC7 /* exec */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = exec;
-			remoteRef = 4AEF725F19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF726219FFE2AE009B0CC7 /* libssh_scp */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = libssh_scp;
-			remoteRef = 4AEF726119FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF726419FFE2AE009B0CC7 /* libsshpp */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = libsshpp;
-			remoteRef = 4AEF726319FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF726619FFE2AE009B0CC7 /* libsshpp_noexcept */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = libsshpp_noexcept;
-			remoteRef = 4AEF726519FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF726819FFE2AE009B0CC7 /* samplesftp */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = samplesftp;
-			remoteRef = 4AEF726719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF726A19FFE2AE009B0CC7 /* samplessh */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = samplessh;
-			remoteRef = 4AEF726919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF726E19FFE2AE009B0CC7 /* samplesshd-kbdint */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = "samplesshd-kbdint";
-			remoteRef = 4AEF726D19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF727219FFE2AE009B0CC7 /* scp_download */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = scp_download;
-			remoteRef = 4AEF727119FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF727419FFE2AE009B0CC7 /* senddata */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = senddata;
-			remoteRef = 4AEF727319FFE2AE009B0CC7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		4AEF727619FFE2AE009B0CC7 /* sshnetcat */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = sshnetcat;
-			remoteRef = 4AEF727519FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
