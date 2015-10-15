@@ -1,0 +1,44 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "85DA6DF8C7B0107236A65712DE9DD0ABA17E1454",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "6A43D1901DB9E19087022F5E0A449880B55759BA" : 0,
+    "85DA6DF8C7B0107236A65712DE9DD0ABA17E1454" : 0,
+    "33E42DA331C747A2C2D27B442F571A4EC26AD3F5" : 0,
+    "D136BD52160295FF0F447C551378EA3A1E4D26DB" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "5D7603D4-6A6D-4189-912E-F7C0F405DA75",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "6A43D1901DB9E19087022F5E0A449880B55759BA" : "SSHKitCore\/libssh\/",
+    "85DA6DF8C7B0107236A65712DE9DD0ABA17E1454" : "SSHKitCore\/",
+    "33E42DA331C747A2C2D27B442F571A4EC26AD3F5" : "",
+    "D136BD52160295FF0F447C551378EA3A1E4D26DB" : "SSHKitCore\/CoSocket\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "SSHKitCore",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "SSHKitCore.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/gitlab.com\/codinn\/sshtunnel.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "33E42DA331C747A2C2D27B442F571A4EC26AD3F5"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "git:\/\/git.libssh.org\/projects\/libssh.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "6A43D1901DB9E19087022F5E0A449880B55759BA"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/codinn\/SSHKitCore",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "85DA6DF8C7B0107236A65712DE9DD0ABA17E1454"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/codinn\/CoSocket",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D136BD52160295FF0F447C551378EA3A1E4D26DB"
+    }
+  ]
+}

@@ -25,8 +25,4 @@ DerivedData
 #
 # Pods/
 *.log
-openssl-*S.tar.gz
-openssl-*X.tar.gz
-openssl/dist
-openssl-*.tar.gz
-openssl/openssl-*
+openssl
