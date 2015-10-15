@@ -31,14 +31,14 @@ $(OPENSSL_OSX_DIR):
 	@echo "Unpacking OpenSSL"
 	@cd $(OPENSSL_BASE_DIR) && tar xfz "$(OPENSSL_TAR_FILE)"
 
-$(LIBSSH_XCODE_PROJECT):
+$(LIBSSH_XCODE_PROJECT): Makefile
 	$(eval OSX_SDK := $(shell xcrun --sdk macosx --show-sdk-path))
 	$(eval OSX_SDK_VERSION := $(shell xcodebuild -version -sdk macosx | grep SDKVersion | cut -f2 -d ':' | tr -d '[[:space:]]'))
 
 	@echo "Select OS X SDK version $(OSX_SDK_VERSION)"
 	@echo "Generating libssh Xcode project"
 	-mkdir -p $(LIBSSH_BUILD_DIR)
-	@cd $(LIBSSH_BUILD_DIR) && cmake -DCMAKE_SKIP_RPATH=ON -DCMAKE_PREFIX_PATH=$(OPENSSL_OSX_DIR) -DOPENSSL_ROOT_DIR= -DCMAKE_INSTALL_PREFIX=$(LIBSSH_DIST_DIR) -DCMAKE_BUILD_TYPE=MinSizeRel -DWITH_SSH1=OFF -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DCMAKE_MACOSX_RPATH=ON -DWITH_SERVER=ON -DCMAKE_OSX_SYSROOT=$(OSX_SDK) -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_OSX_ARCHITECTURES=x86_64 -GXcode ../
+	@cd $(LIBSSH_BUILD_DIR) && cmake -DOPENSSL_ROOT_DIR=$(OPENSSL_OSX_DIR) -DCMAKE_INSTALL_PREFIX=$(LIBSSH_DIST_DIR) -DWITH_PCAP=OFF -DWITH_SSH1=OFF -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DCMAKE_MACOSX_RPATH=ON -DWITH_SERVER=ON -DCMAKE_OSX_SYSROOT=$(OSX_SDK) -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_OSX_ARCHITECTURES=x86_64 -GXcode ../
 
 ## Build libssh.xcodeproj. Usage: ``make CONFIG="Debug|Release" build``
 build: | $(OPENSSL_TAR_PATH) $(OPENSSL_OSX_DIR) $(LIBSSH_XCODE_PROJECT)
@@ -56,16 +56,16 @@ clean:
 help: 
 		$(info Available targets)
 		@awk '/^[a-zA-Z\-\_0-9]+:/ {					\
-		  nb = sub( /^## /, "", helpMsg );			  \
-		  if(nb == 0) {								 \
-			helpMsg = $$0;							  \
+		  nb = sub( /^## /, "", helpMsg );				\
+		  if(nb == 0) {									\
+			helpMsg = $$0;								\
 			nb = sub( /^[^:]*:.* ## /, "", helpMsg );   \
-		  }											 \
-		  if (nb)									   \
+		  }												\
+		  if (nb)										\
 			print  $$1 "\t" helpMsg;					\
-		}											   \
-		{ helpMsg = $$0 }'							  \
-		$(MAKEFILE_LIST) | column -ts $$'\t' |		  \
+		}												\
+		{ helpMsg = $$0 }'								\
+		$(MAKEFILE_LIST) | column -ts $$'\t' |			\
 		grep --color '^[^ ]*'
 
 # Above auto help text generate code was stolen from: https://gist.github.com/rcmachado/af3db315e31383502660 , 3rd version in the olibre's comment.
