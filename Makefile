@@ -20,18 +20,18 @@ OPENSSL_OSX_DIR		=	$(OPENSSL_BASE_DIR)/$(OPENSSL_VERSION)-osx
 OPENSSL_OSX_LIBS	=	$(OPENSSL_OSX_DIR)/lib/libssl.a $(OPENSSL_OSX_DIR)/lib/libcrypto.a
 
 ## Download OpenSSL and generate libssh.xcodeproj automatically
-all: | $(OPENSSL_TAR_PATH) $(OPENSSL_OSX_DIR) $(LIBSSH_XCODE_PROJECT)
+all: $(LIBSSH_XCODE_PROJECT)
 
 $(OPENSSL_TAR_PATH):
 	-mkdir -p $(OPENSSL_BASE_DIR)
 	@echo "Downloading OpenSSL"
 	@cd $(OPENSSL_BASE_DIR) && curl "$(OPENSSL_DOWNLOAD_URL)" -o "$(OPENSSL_TAR_FILE)"
 
-$(OPENSSL_OSX_DIR):
+$(OPENSSL_OSX_DIR): $(OPENSSL_TAR_PATH)
 	@echo "Unpacking OpenSSL"
 	@cd $(OPENSSL_BASE_DIR) && tar xfz "$(OPENSSL_TAR_FILE)"
 
-$(LIBSSH_XCODE_PROJECT): Makefile
+$(LIBSSH_XCODE_PROJECT): Makefile $(OPENSSL_TAR_PATH) $(OPENSSL_OSX_DIR)
 	$(eval OSX_SDK := $(shell xcrun --sdk macosx --show-sdk-path))
 	$(eval OSX_SDK_VERSION := $(shell xcodebuild -version -sdk macosx | grep SDKVersion | cut -f2 -d ':' | tr -d '[[:space:]]'))
 
@@ -41,7 +41,7 @@ $(LIBSSH_XCODE_PROJECT): Makefile
 	@cd $(LIBSSH_BUILD_DIR) && cmake -DOPENSSL_ROOT_DIR=$(OPENSSL_OSX_DIR) -DCMAKE_INSTALL_PREFIX=$(LIBSSH_DIST_DIR) -DWITH_PCAP=OFF -DWITH_SSH1=OFF -DWITH_STATIC_LIB=ON -DWITH_EXAMPLES=OFF -DCMAKE_MACOSX_RPATH=ON -DWITH_SERVER=ON -DCMAKE_OSX_SYSROOT=$(OSX_SDK) -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_OSX_ARCHITECTURES=x86_64 -GXcode ../
 
 ## Build libssh.xcodeproj. Usage: ``make CONFIG="Debug|Release" build``
-build: | $(OPENSSL_TAR_PATH) $(OPENSSL_OSX_DIR) $(LIBSSH_XCODE_PROJECT)
+build: $(LIBSSH_XCODE_PROJECT)
 	$(eval CONFIG ?= Debug)
 	@echo "Building libssh with configuration $(CONFIG)"
 	cd $(LIBSSH_BUILD_DIR) && xcodebuild -configuration $(CONFIG) -target install build -project libssh.xcodeproj
