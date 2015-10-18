@@ -22,6 +22,11 @@
 #define SSHKitSFTPRequestNotImplemented   @"SSHKit.SSHKitSFTPRequestNotImplemented"
 #define SSHKitSFTPUnderlyingErrorKey      @"SSHKit.SSHKitSFTPUnderlyingErrorKey"
 
+#define SSHKit_SSH_OK 0     /* No error */
+#define SSHKit_SSH_ERROR -1 /* Error of some kind */
+#define SSHKit_SSH_AGAIN -2 /* The nonblocking call must be repeated */
+#define SSHKit_SSH_EOF -127 /* We have already a eof */
+
 @class SSHKitSFTPFile;
 
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {

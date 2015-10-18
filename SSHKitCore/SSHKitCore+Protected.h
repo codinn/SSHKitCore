@@ -94,5 +94,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) sftp_dir rawDirectory;
+@property (nonatomic, readonly) sftp_file rawFile;
 
 @end

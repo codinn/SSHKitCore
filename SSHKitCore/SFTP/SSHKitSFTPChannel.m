@@ -48,8 +48,17 @@
 }
 
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path {
-    SSHKitSFTPFile* directory = [[SSHKitSFTPFile alloc]init:self path:path];
+    SSHKitSFTPFile* directory = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:YES];
+    // TODO handle error
+    [directory open];
     return directory;
+}
+
+- (SSHKitSFTPFile *)openFile:(NSString *)path {
+    SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+    // TODO handle error
+    [file open];
+    return file;
 }
 
 @end

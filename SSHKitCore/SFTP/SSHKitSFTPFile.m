@@ -25,21 +25,55 @@
 
 @implementation SSHKitSFTPFile
 
-- (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path {
+- (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory {
     // https://github.com/dleehr/DLSFTPClient/blob/master/
     if ((self = [super init])) {
+        self.isDirectory = isDirectory;
         self.fullFilename = path;
         self.filename = [path lastPathComponent];
         self->_sftp = sftp;
-        self->_rawDirectory = sftp_opendir(sftp.rawSFTPSession, [path UTF8String]);
-        if (self.rawDirectory == NULL) {
-            // fprintf(stderr, "Error allocating SFTP session: %s\n", ssh_get_error(session));
-            // return SSH_ERROR;
-            return nil;
-        }
     }
+    // TODO use sftp_stat to get file info.
     return self;
 }
+
+- (void)openDirectory {
+    self->_rawDirectory = sftp_opendir(self.sftp.rawSFTPSession, [self.fullFilename UTF8String]);
+    if (self.rawDirectory == NULL) {
+        // fprintf(stderr, "Error allocating SFTP session: %s\n", ssh_get_error(session));
+        // return SSH_ERROR;
+    }
+}
+
+- (void)open {
+    if (self.isDirectory) {
+        [self openDirectory];
+    } else {
+        [self openFile];
+    }
+}
+
+- (void)openFile {
+    // TODO add param for open
+    _rawFile = sftp_open(self.sftp.rawSFTPSession, [self.fullFilename UTF8String], O_RDONLY, 0);
+    if (_rawFile == NULL) {
+        // TODO error handle
+        return;
+    }
+    sftp_file_set_nonblocking(self.rawFile);
+}
+
+- (int)asyncReadBegin {
+    char buffer[MAX_XFER_BUF_SIZE];
+    int asyncRequest = sftp_async_read_begin(self.rawFile, sizeof(buffer));
+    return asyncRequest;
+}
+
+- (int)asyncRead:(int)asyncRequest buffer:(char *)buffer {
+    return sftp_async_read(self.rawFile, buffer, sizeof(buffer), asyncRequest);
+}
+
+# pragma MARK property
 
 - (instancetype)initWithSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
     if ((self = [super init])) {
@@ -63,8 +97,13 @@
     self.flags = fileAttributes->flags;
 }
 
-- (NSInteger)closeDirectory {
-    return sftp_closedir(self.rawDirectory);
+- (void)close {
+    if (self.rawDirectory != nil) {
+        sftp_closedir(self.rawDirectory);
+    }
+    if (self.rawFile != nil) {
+        sftp_close(self.rawFile);
+    }
 }
 
 - (BOOL)directoryEof {

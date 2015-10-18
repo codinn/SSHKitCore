@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "SSHKitCoreCommon.h"
 
+#define MAX_XFER_BUF_SIZE 16384
+
 @class SSHKitSFTPChannel;
 
 @interface SSHKitSFTPFile : NSObject
@@ -49,9 +51,11 @@
 
 @property (nonatomic, readonly) SSHKitSFTPChannel *sftp;
 @property (nonatomic, readonly) BOOL directoryEof;
-- (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path;
-- (NSInteger)closeDirectory;
+- (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory;
+- (void)open;
+- (void)close;
 - (SSHKitSFTPFile *)readDirectory;
-// TODO read
+- (int)asyncReadBegin;
+- (int)asyncRead:(int)asyncRequest buffer:(char *)buffer;
 
 @end

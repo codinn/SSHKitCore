@@ -24,6 +24,7 @@
 - (BOOL)initChannel:(SSHKitSession *)session;
 - (void)close;
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path;
+- (SSHKitSFTPFile *)openFile:(NSString *)path;
 
 @end
 
