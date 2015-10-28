@@ -1,6 +1,6 @@
 [submodule "libssh"]
 	path = libssh
-	url = git://git.libssh.org/projects/libssh.git
+url=https://gitlab.com/codinn/libssh.git
 [submodule "CoSocket"]
 	path = CoSocket
 	url = https://github.com/codinn/CoSocket
