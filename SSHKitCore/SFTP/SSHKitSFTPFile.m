@@ -64,13 +64,17 @@
 }
 
 - (int)asyncReadBegin {
-    char buffer[MAX_XFER_BUF_SIZE];
-    int asyncRequest = sftp_async_read_begin(self.rawFile, sizeof(buffer));
+    int asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
     return asyncRequest;
 }
 
 - (int)asyncRead:(int)asyncRequest buffer:(char *)buffer {
-    return sftp_async_read(self.rawFile, buffer, sizeof(buffer), asyncRequest);
+    int result = sftp_async_read(self.rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
+    if (result < 0) {
+        // Received a too big DATA packet from sftp server: 751 and asked for 8
+        printf("%s", ssh_get_error(self.sftp.sshSession.rawSession));
+    }
+    return result;
 }
 
 # pragma MARK property

@@ -23,6 +23,7 @@
 }
 
 - (BOOL)initChannel:(SSHKitSession *)session {
+    _sshSession = session;
     ssh_set_blocking(session.rawSession, 1);
     // if no blocking sftp_new will fail
     self->_rawSFTPSession = sftp_new(session.rawSession);
