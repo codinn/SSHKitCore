@@ -2,29 +2,37 @@
 
 SSHKitCore is an Objective-C wrapper for libssh.
 
-## Howto Build
+## Prerequisites
 
-### 1. Generate / Regenerate libssh Xcode project file
+Libssh requires [CMake](https://cmake.org/) for building, you can install CMake through [Homebrew](http://brew.sh/):
 
-    $ ./gen_libssh_project.sh
+```
+# Install homebrew if if you hadn't already installed it
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-This script also downloads pre-built openssl automatically.
+# Install CMake through Homebrew
+brew update && brew install CMake
+```
 
-### 2. Generate libssh header files
+## Build
 
-The libssh Xcode proejct file won't generate header files automatically, you should do it by:
-
-1. Open generated libssh.xcodeproj
-2. Set build scheme to "install -> My Mac"
-3. Build
-
-You will get libssh headers and libraries after building.
-
-### 3. Add SSHKitCore to your project
-	
 1. Add SSHKitCore project to your workspace or project
+1. Add SSHKitCore to your workspace or project dependencies and linking libraries
+1. You will get a linkage error message when you build for the first time:
+```
+ld: library not found for -lssh_threads
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+```
+1. The reason for the error is because ``libssh.xcodeproj`` wasn't created untill first build finished. So just close and reopen your workspace or project, the error message should disappear if you build again
 
-## Notes
+### Troubleshooting
 
-1. Repeat step #1 and stpe #2 (with Clean & Build) after you have upgraded libssh or OpenSSL.
-2. Execute ``./gen_libssh_project.sh clean`` if you encounter generated libssh project file was corrupted.
+The generated ``libssh.xcodeproj`` does not support build location automatic realocate, so then building of ``libssh.xcodeproj`` is primary drove by ``SSHKitCore/Makefile``
+	
+If your ``libssh.xcodeproj`` was corrupted, or encounter other libssh compilation error, you can execute ``make clean && make`` command to force a fresh ``libssh.xcodeproj`` generating.
+
+### Note
+
+``SSHKitCore/Makefile`` also downloads a pre-built openssl to ``SSHKitCore/openssl`` directory automatically.
+
+Execute ``make help`` will reveal all targets and their help texts.

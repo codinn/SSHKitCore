@@ -72,7 +72,7 @@
     int result = sftp_async_read(self.rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
     if (result < 0) {
         // Received a too big DATA packet from sftp server: 751 and asked for 8
-        printf("%s", ssh_get_error(self.sftp.sshSession.rawSession));
+        printf("%s", ssh_get_error(self.sftp.session.rawSession));
     }
     return result;
 }

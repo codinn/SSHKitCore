@@ -75,18 +75,15 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitCoreInitiate();
 }
 
-- (instancetype)init
-{
+- (instancetype)init {
 	return [self initWithDelegate:nil sessionQueue:NULL];
 }
 
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate
-{
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate {
 	return [self initWithDelegate:aDelegate sessionQueue:NULL];
 }
 
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq
-{
+- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
     if ((self = [super init])) {
         self.enableCompression = NO;
         self.enableIPv4 = YES;
@@ -151,8 +148,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark Configuration
 
-- (void)setDelegate:(id<SSHKitSessionDelegate>)delegate
-{
+- (void)setDelegate:(id<SSHKitSessionDelegate>)delegate {
 	if (_delegate != delegate) {
 		_delegate = delegate;
         _delegateFlags.authenticateWithAllowedMethodsPartialSuccess = [delegate respondsToSelector:@selector(session:authenticateWithAllowedMethods:partialSuccess:)];
@@ -170,14 +166,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark Connecting
 // -----------------------------------------------------------------------------
 
-- (void)_doConnect
-{
+- (void)_doConnect {
     int result = ssh_connect(_rawSession);
     
     switch (result) {
-        case SSH_OK:
+        case SSH_OK: {
             // connection established
-        {
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
@@ -224,8 +218,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             // try again
             break;
             
-        default:
-        {
+        default: {
             [self _doDisconnectWithError:self.coreError];
         }
             break;
@@ -233,18 +226,15 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user
-{
+- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user {
     [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:0.0];
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout
-{
+- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout {
     [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:timeout];
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout
-{
+- (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout {
     self.host = [host copy];
     self.port = port;
     self.username = [user copy];
@@ -384,8 +374,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }}];
 }
 
-- (void)dispatchSyncOnSessionQueue:(dispatch_block_t)block
-{
+- (void)dispatchSyncOnSessionQueue:(dispatch_block_t)block {
     dispatch_block_t _logSafeBlock = ^ {
         [self _registerLogCallback];
         block();
@@ -486,8 +475,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark Diagnostics
 
-- (NSString *)hostIP
-{
+- (NSString *)hostIP {
     if (self.proxyHost.length) { // connect over a proxy
         return nil;
     }
@@ -536,8 +524,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark Authentication
 // -----------------------------------------------------------------------------
 
-- (NSArray *)_getUserAuthList
-{
+- (NSArray *)_getUserAuthList {
     NSMutableArray *authMethods = [@[] mutableCopy];
     int authList = ssh_userauth_list(_rawSession, NULL);
     
@@ -564,8 +551,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     return [authMethods copy];
 }
 
-- (void)_preAuthenticate
-{
+- (void)_preAuthenticate {
     // must call this method before next auth method, or libssh will be failed
     int rc = ssh_userauth_none(_rawSession, NULL);
     
@@ -574,10 +560,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             // try again
             break;
             
-        case SSH_AUTH_DENIED:
-        {
+        case SSH_AUTH_DENIED: {
             // pre auth success
-            
             if (_delegateFlags.didAcceptForwardChannel) {
                 /*
                  *** Does not work without calling ssh_userauth_none() first ***
@@ -631,8 +615,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             [self _didAuthenticate];
             return;
             
-        case SSH_AUTH_PARTIAL:
-        {
+        case SSH_AUTH_PARTIAL: {
             // pre auth success
             NSArray *authMethods = [self _getUserAuthList];
             
@@ -658,8 +641,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 
-- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler
-{
+- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler {
     self.stage = SSHKitSessionStageAuthenticating;
 
     __block NSInteger index = 0;
@@ -682,8 +664,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 // try again
                 return_from_block;
                 
-            case SSH_AUTH_INFO:
-            {
+            case SSH_AUTH_INFO: {
                 const char* name = ssh_userauth_kbdint_getname(strongSelf->_rawSession);
                 NSString *nameString = name ? @(name) : nil;
                 
@@ -729,8 +710,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
-- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler;
-{
+- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler {
     NSString *password = passwordHandler();
     
     self.stage = SSHKitSessionStageAuthenticating;
@@ -764,8 +744,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
 }
 
-- (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser
-{
+- (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser {
     self.stage = SSHKitSessionStageAuthenticating;
     
     __block BOOL publicKeySuccess = NO;
@@ -859,8 +838,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 }
                 
                 break;
-            case SSHKitSessionStageAuthenticated:
-            {
+            case SSHKitSessionStageAuthenticated: {
                 // try again forward-tcpip requests
                 [SSHKitChannel _doRequestRemoteForwardOnSession:strongSelf];
                 
@@ -905,14 +883,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark - Extra Options
 // -----------------------------------------------------------------------------
 
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port
-{
+- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port {
     self.proxyType = type;
     self.proxyHost = host;
     self.proxyPort = port;
 }
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password
-{
+- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password {
     self.proxyType = type;
     self.proxyHost = host;
     self.proxyPort = port;
@@ -985,29 +961,24 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark - Enqueue / Dequeue Request and Channel
 
-- (void)addChannel:(SSHKitChannel *)channel
-{
+- (void)addChannel:(SSHKitChannel *)channel {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_channels addObject:channel];
 }
-- (void)removeChannel:(SSHKitChannel *)channel
-{
+- (void)removeChannel:(SSHKitChannel *)channel {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_channels removeObject:channel];
 }
 
-- (SSHKitForwardRequest *)firstForwardRequest
-{
+- (SSHKitForwardRequest *)firstForwardRequest {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     return _forwardRequests.firstObject;
 }
-- (void)addForwardRequest:(SSHKitForwardRequest *)request
-{
+- (void)addForwardRequest:(SSHKitForwardRequest *)request {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_forwardRequests addObject:request];
 }
-- (void)removeForwardRequest:(SSHKitForwardRequest *)request
-{
+- (void)removeForwardRequest:(SSHKitForwardRequest *)request {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     NSUInteger index = [_forwardRequests indexOfObject:request];
     
@@ -1015,8 +986,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         [_forwardRequests removeObjectAtIndex:index];
     }
 }
-- (void)removeAllForwardRequest
-{
+- (void)removeAllForwardRequest {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     [_forwardRequests removeAllObjects];
 }
@@ -1064,6 +1034,7 @@ static void raw_session_log_callback(int priority, const char *function, const c
 #ifdef DEBUG
     ssh_set_log_callback(raw_session_log_callback);
     ssh_set_log_userdata((__bridge void *)(self));
+    ssh_set_log_level(SSH_LOG_TRACE);
 #endif
 }
 
@@ -1079,8 +1050,7 @@ static void raw_session_log_callback(int priority, const char *function, const c
             
 @implementation SSHKitForwardRequest
 
-- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler
-{
+- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler {
     self = [super init];
     
     if (self) {
@@ -1097,8 +1067,7 @@ static void raw_session_log_callback(int priority, const char *function, const c
     return self;
 }
 
-- (BOOL)isEqual:(id)object
-{
+- (BOOL)isEqual:(id)object {
     return [self.listenHost isEqualToString:[object listenHost]] && self.listenPort==[object listenPort];
 }
 
