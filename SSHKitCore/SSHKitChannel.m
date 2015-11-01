@@ -117,6 +117,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
     [self _unregesterCallbacks];
     
     ssh_channel_free(self->_rawChannel);
+    if (self.rawSFTPSession) {
+        sftp_free(self.rawSFTPSession);
+        _rawSFTPSession = NULL;
+    }
     self->_rawChannel = NULL;
     
     if (_delegateFlags.didCloseWithError) {
@@ -187,11 +191,16 @@ static channel_callbacks s_null_channel_callbacks = {0};
             break;
             
         case SSH_OK:
-            self.stage = SSHKitChannelStageReadWrite;
-            [self _registerCallbacks];
-            // opened
+            if ([self _sftpInit]) {
+                self.stage = SSHKitChannelStageReadWrite;
+                [self _registerCallbacks];
+                // opened
             if (_delegateFlags.didOpen) {
                 [self.delegate channelDidOpen:self];
+            }
+            } else {
+                [self _doCloseWithError:self.session.coreError];
+                [self.session disconnectIfNeeded];
             }
             break;
         default:
@@ -200,6 +209,23 @@ static channel_callbacks s_null_channel_callbacks = {0};
             [self.session disconnectIfNeeded];
             break;
     }
+}
+
+- (BOOL)_sftpInit {
+    _rawSFTPSession = sftp_new_channel(self.session.rawSession, self.rawChannel);
+    if (self.rawSFTPSession == NULL) {
+        // NSLog(@(ssh_get_error(session.rawSession)));
+        return NO;
+    }
+    int rc = sftp_init(_rawSFTPSession);
+    if (rc != SSH_OK) {
+        // fprintf(stderr, "Error initializing SFTP session: %s.\n", sftp_get_error(sftp));
+        sftp_free(_rawSFTPSession);
+        _rawSFTPSession = NULL;
+        // return rc;
+        return NO;
+    }
+    return YES;
 }
 
 #pragma mark - shell Channel

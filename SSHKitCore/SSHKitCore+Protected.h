@@ -58,6 +58,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_channel rawChannel;
+@property (nonatomic, readonly) sftp_session rawSFTPSession;
 
 + (instancetype)_doCreateForwardChannelFromSession:(SSHKitSession *)session;
 + (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session;
@@ -82,17 +83,9 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
-/** SFTP **/
-@interface SSHKitSFTPChannel ()
-
-/** Raw libssh session instance. */
-@property (nonatomic, readonly) sftp_session rawSFTPSession;
-
-@end
-
 @interface SSHKitSFTPFile ()
 
-/** Raw libssh session instance. */
+/** Raw libssh struct. */
 @property (nonatomic, readonly) sftp_dir rawDirectory;
 @property (nonatomic, readonly) sftp_file rawFile;
 

@@ -14,15 +14,9 @@
 @class SSHKitSFTPFile;
 @class SSHKitSFTPRequest;  // define in SSHKitExtras
 
-@interface SSHKitSFTPChannel : NSObject <SSHKitChannelDelegate>
-
-@property (nonatomic, weak) id<SSHKitChannelDelegate> delegate;
-@property (nonatomic, weak, readonly) SSHKitSession* sshSession;
-@property (nonatomic, weak, readonly) SSHKitChannel* sshChannel;
+@interface SSHKitSFTPChannel : SSHKitChannel
 
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
-- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)delegate;
-- (void)close;
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path;
 - (SSHKitSFTPFile *)openFile:(NSString *)path;
 
