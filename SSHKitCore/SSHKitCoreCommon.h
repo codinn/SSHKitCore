@@ -62,6 +62,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelType)  {
     SSHKitChannelTypeExec,
     SSHKitChannelTypeShell,
     SSHKitChannelTypeSCP,
+    SSHKitChannelTypeSFTP,
     SSHKitChannelTypeSubsystem,     // Not supported by SSHKit framework
 };
 
@@ -71,6 +72,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
     SSHKitChannelStageOpening,      // channel is opening
     SSHKitChannelStageRequestPTY,   // channel is requesting a pty
     SSHKitChannelStageRequestShell, // channel is requesting a shell
+    SSHKitChannelStageRequestSFTP,   // channel is requesting a sftp
     SSHKitChannelStageReadWrite,    // channel has been opened, we can read / write from the channel
     SSHKitChannelStageClosed,       // channel has been closed
 };

@@ -6,8 +6,8 @@
 //
 //
 
-#import "SSHKitSFTPChannel.h"
 #import "SSHKitCore+Protected.h"
+#import "SSHKitChannel.h"
 
 @implementation SSHKitSFTPChannel
 
@@ -15,36 +15,56 @@
     sftp_attributes_free(attributes);
 }
 
-- (instancetype)initWithDelegate:(id<SSHKitSFTPDelegate>)delegate {
+- (instancetype)initWithChannel:(SSHKitChannel *)channel delegate:(id<SSHKitChannelDelegate>)delegate {
     if (self = [super init]) {
-        self->_delegate = delegate;
+        _delegate = delegate;
+        _sshSession = channel.session;
+        _sshChannel = channel;
+        channel.delegate = self;
+        if (channel.stage == SSHKitChannelStageReadWrite) {
+            [self channelDidOpen:channel];
+        }
     }
     return self;
 }
 
-- (BOOL)initChannel:(SSHKitSession *)session {
-    _sshSession = session;
-    ssh_set_blocking(session.rawSession, 1);
-    // if no blocking sftp_new will fail
-    self->_rawSFTPSession = sftp_new(session.rawSession);
-    ssh_set_blocking(session.rawSession, 0);
-    if (self.rawSFTPSession == NULL) {
-        // NSLog(@(ssh_get_error(session.rawSession)));
-        return NO;
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)delegate {
+    SSHKitChannel *channel = [SSHKitChannel sftpChannelFromSession:session delegate:self];
+    if (!channel) {
+        return nil;
     }
-    int rc = sftp_init(self.rawSFTPSession);
-    if (rc != SSH_OK) {
-        // fprintf(stderr, "Error initializing SFTP session: %s.\n", sftp_get_error(sftp));
-        sftp_free(self.rawSFTPSession);
-        self->_rawSFTPSession = NULL;
-        // return rc;
-        return NO;
+    if ([self initWithChannel:channel delegate:delegate]) {
+        return self;
+    } else {
+        [channel close];
+    }
+    return nil;
+}
+
+- (BOOL)sftpInit {
+    SSHKitChannel *channel = self.sshChannel;
+    if (channel.stage == SSHKitChannelStageReadWrite) {
+        _rawSFTPSession = sftp_new_channel(channel.session.rawSession, channel.rawChannel);
+        if (self.rawSFTPSession == NULL) {
+            // NSLog(@(ssh_get_error(session.rawSession)));
+            return NO;
+        }
+        int rc = sftp_init(_rawSFTPSession);
+        if (rc != SSH_OK) {
+            // fprintf(stderr, "Error initializing SFTP session: %s.\n", sftp_get_error(sftp));
+            sftp_free(_rawSFTPSession);
+            _rawSFTPSession = NULL;
+            // return rc;
+            return NO;
+        }
     }
     return YES;
 }
 
 - (void)close {
-    sftp_free(self.rawSFTPSession);
+    if (self.rawSFTPSession) {
+        sftp_free(self.rawSFTPSession);
+    }
     self->_rawSFTPSession = NULL;
 }
 
@@ -60,6 +80,13 @@
     // TODO handle error
     [file open];
     return file;
+}
+
+#pragma mark SSHKitChannelDelegate
+
+- (void)channelDidOpen:(SSHKitChannel *)channel {
+    [self sftpInit];
+    // TODO call delegate
 }
 
 @end

@@ -9,26 +9,21 @@
 #import <Foundation/Foundation.h>
 #import "SSHKitCoreCommon.h"
 
-@protocol SSHKitSFTPDelegate;
 @class SSHKitSession;
+@class SSHKitChannel;
 @class SSHKitSFTPFile;
 @class SSHKitSFTPRequest;  // define in SSHKitExtras
 
-@interface SSHKitSFTPChannel : NSObject
+@interface SSHKitSFTPChannel : NSObject <SSHKitChannelDelegate>
 
-@property (nonatomic, weak, readonly) id<SSHKitSFTPDelegate> delegate;
+@property (nonatomic, weak) id<SSHKitChannelDelegate> delegate;
 @property (nonatomic, weak, readonly) SSHKitSession* sshSession;
+@property (nonatomic, weak, readonly) SSHKitChannel* sshChannel;
 
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
-- (instancetype)initWithDelegate:(id<SSHKitSFTPDelegate>)delegate;
-- (BOOL)initChannel:(SSHKitSession *)session;
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)delegate;
 - (void)close;
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path;
 - (SSHKitSFTPFile *)openFile:(NSString *)path;
 
-@end
-
-@protocol SSHKitSFTPDelegate <NSObject>
-@optional
-- (NSString *)sftp:(SSHKitSFTPChannel *)sftp didInitWithSession:(SSHKitSession *)session;
 @end

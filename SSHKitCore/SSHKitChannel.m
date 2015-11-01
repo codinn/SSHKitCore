@@ -158,6 +158,50 @@ static channel_callbacks s_null_channel_callbacks = {0};
     }
 }
 
+#pragma mark - sftp Channel
+
++ (instancetype)sftpChannelFromSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate {
+    SSHKitChannel *channel = [[self alloc] initWithSession:session channelType:SSHKitChannelTypeSFTP delegate:aDelegate];
+    channel.stage = SSHKitChannelStageWating;
+    [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+        if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
+            if (channel->_delegateFlags.didCloseWithError) {
+                [channel.delegate channelDidClose:channel withError:nil];
+            }
+            return_from_block;
+        }
+        if ([channel _initiate]) {
+            [channel _openSession];
+        }
+    }}];
+    
+    return channel;
+}
+
+- (void)_requestSFTP {
+    int result = ssh_channel_request_sftp(_rawChannel);
+    
+    switch (result) {
+        case SSH_AGAIN:
+            // try again
+            break;
+            
+        case SSH_OK:
+            self.stage = SSHKitChannelStageReadWrite;
+            [self _registerCallbacks];
+            // opened
+            if (_delegateFlags.didOpen) {
+                [self.delegate channelDidOpen:self];
+            }
+            break;
+        default:
+            // open failed
+            [self _doCloseWithError:self.session.coreError];
+            [self.session disconnectIfNeeded];
+            break;
+    }
+}
+
 #pragma mark - shell Channel
 
 + (instancetype)shellChannelFromSession:(SSHKitSession *)session withTerminalType:(NSString *)terminalType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate
@@ -191,15 +235,16 @@ static channel_callbacks s_null_channel_callbacks = {0};
         case SSH_AGAIN:
             // try again
             break;
-            
         case SSH_OK:
-            self.stage = SSHKitChannelStageRequestPTY;
-            
-            // opened
-            [self _requestPty];
-            
+            if (_type == SSHKitChannelTypeSFTP) {
+                self.stage = SSHKitChannelStageRequestPTY;
+                [self _requestSFTP];
+            } else {
+                self.stage = SSHKitChannelStageRequestSFTP;
+                // opened
+                [self _requestPty];
+            }
             break;
-            
         default:
             // open failed
             [self _doCloseWithError:self.session.coreError];
