@@ -164,8 +164,8 @@ static channel_callbacks s_null_channel_callbacks = {0};
 
 #pragma mark - sftp Channel
 
-+ (instancetype)sftpChannelFromSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate {
-    SSHKitChannel *channel = [[self alloc] initWithSession:session channelType:SSHKitChannelTypeSFTP delegate:aDelegate];
+- (instancetype)initSFTPChannelWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate {
+    SSHKitChannel *channel = [self initWithSession:session channelType:SSHKitChannelTypeSFTP delegate:aDelegate];
     channel.stage = SSHKitChannelStageWating;
     [channel.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
         if (!channel.session.isConnected || channel.stage != SSHKitChannelStageWating) {
