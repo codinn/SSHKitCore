@@ -137,25 +137,22 @@ static channel_callbacks s_null_channel_callbacks = {0};
         case SSHKitChannelStageOpening:
             if (_type == SSHKitChannelTypeDirect) {
                 [self _openDirect];
-            } else if (_type == SSHKitChannelTypeShell) {
+            } else if (_type == SSHKitChannelTypeShell || _type == SSHKitChannelTypeSFTP) {
                 [self _openSession];
             }
-            
             break;
-            
         case SSHKitChannelStageRequestPTY:
             [self _requestPty];
             break;
-            
-            
+        case SSHKitChannelStageRequestSFTP:
+            [self _requestSFTP];
+            break;
         case SSHKitChannelStageRequestShell:
             [self _requestShell];
             break;
-            
         case SSHKitChannelStageReadWrite:
             [self _doWrite];
             break;
-            
         case SSHKitChannelStageClosed:
         default:
             break;
@@ -195,9 +192,9 @@ static channel_callbacks s_null_channel_callbacks = {0};
                 self.stage = SSHKitChannelStageReadWrite;
                 [self _registerCallbacks];
                 // opened
-            if (_delegateFlags.didOpen) {
-                [self.delegate channelDidOpen:self];
-            }
+                if (_delegateFlags.didOpen) {
+                    [self.delegate channelDidOpen:self];
+                }
             } else {
                 [self _doCloseWithError:self.session.coreError];
                 [self.session disconnectIfNeeded];
@@ -263,10 +260,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
             break;
         case SSH_OK:
             if (_type == SSHKitChannelTypeSFTP) {
-                self.stage = SSHKitChannelStageRequestPTY;
+                self.stage = SSHKitChannelStageRequestSFTP;
                 [self _requestSFTP];
             } else {
-                self.stage = SSHKitChannelStageRequestSFTP;
+                self.stage = SSHKitChannelStageRequestPTY;
                 // opened
                 [self _requestPty];
             }
