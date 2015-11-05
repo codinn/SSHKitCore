@@ -195,6 +195,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
                 if (_delegateFlags.didOpen) {
                     [self.delegate channelDidOpen:self];
                 }
+                // NSLog(@"sftp session opened");
             } else {
                 [self _doCloseWithError:self.session.coreError];
                 [self.session disconnectIfNeeded];
@@ -510,7 +511,9 @@ static int channel_data_available(ssh_session session,
             [selfChannel.delegate channel:selfChannel didReadStdoutData:readData];
         }
     }
-    
+    if (selfChannel.type == SSHKitChannelTypeSFTP) {
+        return 0;
+    }
     return len;
 }
 
