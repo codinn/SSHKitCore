@@ -10,7 +10,16 @@
 #import "SSHKitCore+Protected.h"
 #import <sys/stat.h>
 
-@interface SSHKitSFTPFile ()
+typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
+    SSHKitFileStageNone = 0,
+    SSHKitFileStageReadingFile,
+};
+
+@interface SSHKitSFTPFile () {
+    dispatch_group_t _readChunkGroup;
+    unsigned long long _totalBytes;
+}
+
 @property (nonatomic, strong) NSString *fullFilename;
 @property (nonatomic, strong) NSString *filename;
 @property (nonatomic, readwrite) BOOL isDirectory;
@@ -21,6 +30,13 @@
 @property (nonatomic, readwrite) unsigned long ownerGroupID;
 @property (nonatomic, strong) NSString *permissions;
 @property (nonatomic, readwrite) u_long flags;
+
+@property (nonatomic) SSHKitFileStage stage;
+@property (nonatomic) int asyncRequest;
+@property (nonatomic, copy) SSHKitSFTPClientReadFileBlock readFileBlock;
+@property (nonatomic, copy) SSHKitSFTPClientProgressBlock progressBlock;
+@property (nonatomic, strong, readwrite) dispatch_queue_t readChunkQueue;
+// @property (nonatomic) SSHKitFileStage readBytesLength;
 @end
 
 @implementation SSHKitSFTPFile
@@ -28,10 +44,12 @@
 - (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory {
     // https://github.com/dleehr/DLSFTPClient/blob/master/
     if ((self = [super init])) {
+        _readChunkGroup = dispatch_group_create();
+        _readChunkQueue = dispatch_queue_create("com.codinn.readchunk", DISPATCH_QUEUE_SERIAL);
         self.isDirectory = isDirectory;
         self.fullFilename = path;
         self.filename = [path lastPathComponent];
-        self->_sftp = sftp;
+        _sftp = sftp;
     }
     // TODO use sftp_stat to get file info.
     return self;
@@ -51,6 +69,9 @@
     } else {
         [self openFile];
     }
+    sftp_attributes file_attributes = sftp_stat(self.sftp.rawSFTPSession, [self.fullFilename UTF8String]);
+    [self populateValuesFromSFTPAttributes:file_attributes parentPath:nil];
+    // - (void)populateValuesFromSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
 }
 
 - (void)openFile {
@@ -60,21 +81,95 @@
         // TODO error handle
         return;
     }
+    [self.sftp.remoteFiles addObject:self];
     sftp_file_set_nonblocking(self.rawFile);
 }
 
-- (int)asyncReadBegin {
-    int asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
-    return asyncRequest;
+- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock {
+    _totalBytes = 0;
+    _readFileBlock = readFileBlock;
+    _progressBlock = progressBlock;
+    // TODO finish block
+    // TODO fail block
+    _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
+    if (_asyncRequest) {
+        _stage = SSHKitFileStageReadingFile;
+    }
+    // [self _asyncReadFile];
+    // TODO fail
 }
 
-- (int)asyncRead:(int)asyncRequest buffer:(char *)buffer {
+- (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
+    // [self dispatchAsyncOnSessionQueue:
+    // `sftp_async_read
     int result = sftp_async_read(self.rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
-    if (result < 0) {
+    if (result < 0 && result != -2) {
         // Received a too big DATA packet from sftp server: 751 and asked for 8
-        printf("%s", ssh_get_error(self.sftp.session.rawSession));
+        printf("%s: %d\n", ssh_get_error(self.sftp.session.rawSession), result);
     }
     return result;
+}
+
+- (void)_asyncReadFile {
+    // self.stage = SSHKitFileStageReadingFile;
+    int nbytes;
+    char buffer[MAX_XFER_BUF_SIZE];  // how to free this array?
+    // long counter = 0L;
+    nbytes = [self _asyncRead:_asyncRequest buffer:buffer];
+    if (nbytes == SSHKit_SSH_AGAIN) {
+        return;
+    }
+    if (nbytes < 0) {
+        // finish or fail
+        NSLog(@"read file fail. _asyncRequest: %d\n", _asyncRequest);
+        _stage = SSHKitFileStageNone;
+        return;
+    }
+    if (nbytes == 0) {
+        // finish or fail
+        _stage = SSHKitFileStageNone;
+        NSLog(@"read file finished\n");
+        return;
+    }
+    NSLog(@"read file bytes: %d\n", nbytes);
+    // SSHKitSFTPClientProgressBlock
+    _readFileBlock(buffer, nbytes);
+    _totalBytes += nbytes;
+    _progressBlock(_totalBytes, self.fileSize.longLongValue);
+    _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
+    if (_asyncRequest == 0) {
+        // finish or fail
+        _stage = SSHKitFileStageNone;
+        NSLog(@"read file finished");
+        return;
+    }
+    if (_asyncRequest < 0) {
+        // finish or fail
+        NSLog(@"read file fail.");
+        _stage = SSHKitFileStageNone;
+        return;
+    }
+    // TODO fail call back
+    // TODO do call back for buffer
+}
+
+# pragma MARK SSHKitChannelDelegate
+
+- (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
+    // TODO call asyncRead on data arraived
+    if (_stage == SSHKitFileStageReadingFile) {
+        // [self _asyncReadFile];
+    }
+}
+
+- (void)_doProcess {
+    // __weak SSHKitSFTPFile *weakSelf = self;
+    if (_stage == SSHKitFileStageReadingFile) {
+        NSLog(@"_doProcess._asyncReadFile");
+        [self _asyncReadFile];
+        // dispatch_group_async(_readChunkGroup, self.readChunkQueue, ^{
+        // });
+    }
 }
 
 # pragma MARK property
@@ -87,9 +182,11 @@
 }
 
 - (void)populateValuesFromSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
-    NSString *filename = [NSString stringWithUTF8String:fileAttributes->name];
-    self.filename = filename;
-    self.fullFilename = [parentPath stringByAppendingPathComponent:filename];
+    if (parentPath != nil) {
+        NSString *filename = [NSString stringWithUTF8String:fileAttributes->name];
+        self.filename = filename;
+        self.fullFilename = [parentPath stringByAppendingPathComponent:filename];
+    }
     self.modificationDate = [NSDate dateWithTimeIntervalSince1970:fileAttributes->mtime];
     self.lastAccess = [NSDate dateWithTimeIntervalSinceNow:fileAttributes->atime];
     self.fileSize = @(fileAttributes->size);
@@ -107,6 +204,9 @@
     }
     if (self.rawFile != nil) {
         sftp_close(self.rawFile);
+    }
+    if (self.sftp) {
+        [self.sftp.remoteFiles removeObject:self];
     }
 }
 

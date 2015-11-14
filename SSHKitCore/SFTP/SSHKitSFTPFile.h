@@ -8,12 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import "SSHKitCoreCommon.h"
+#import "SSHKitChannel.h"
 
 #define MAX_XFER_BUF_SIZE 16384
 
 @class SSHKitSFTPChannel;
 
-@interface SSHKitSFTPFile : NSObject
+@interface SSHKitSFTPFile : NSObject <SSHKitChannelDelegate>
 
 /**
  Property that stores the name of the underlaying file.
@@ -55,7 +56,7 @@
 - (void)open;
 - (void)close;
 - (SSHKitSFTPFile *)readDirectory;
-- (int)asyncReadBegin;
-- (int)asyncRead:(int)asyncRequest buffer:(char *)buffer;
+- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock;
+- (void)_doProcess;
 
 @end

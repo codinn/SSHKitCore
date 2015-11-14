@@ -64,6 +64,7 @@
 
 - (void)writeData:(NSData *)data;
 - (void)changePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows;
+- (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data;
 
 @end
 

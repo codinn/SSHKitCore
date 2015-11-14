@@ -146,5 +146,6 @@ typedef void(^SSHKitSFTPClientSuccessBlock)(void);
 typedef void(^SSHKitSFTPClientFailureBlock)(NSError *error);
 typedef void(^SSHKitSFTPClientArraySuccessBlock)(NSArray *array); // Array of SSHKitSFTPFile objects
 typedef void(^SSHKitSFTPClientProgressBlock) (unsigned long long bytesReceived, unsigned long long bytesTotal);
+typedef void(^SSHKitSFTPClientReadFileBlock) (char *buffer, int buffer_length);
 typedef void(^SSHKitSFTPClientFileTransferSuccessBlock)(SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime);
 typedef void(^SSHKitSFTPClientFileMetadataSuccessBlock)(SSHKitSFTPFile *fileOrDirectory);

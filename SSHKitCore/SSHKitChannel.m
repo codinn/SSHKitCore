@@ -486,6 +486,9 @@ static channel_callbacks s_null_channel_callbacks = {0};
     return channel;
 }
 
+- (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
+}
+
 
 #pragma mark - Read / Write
 
@@ -507,6 +510,7 @@ static int channel_data_available(ssh_session session,
             [selfChannel.delegate channel:selfChannel didReadStderrData:readData];
         }
     } else {
+        [selfChannel channel:selfChannel didReadStdoutData:readData];
         if (selfChannel->_delegateFlags.didReadStdoutData) {
             [selfChannel.delegate channel:selfChannel didReadStdoutData:readData];
         }

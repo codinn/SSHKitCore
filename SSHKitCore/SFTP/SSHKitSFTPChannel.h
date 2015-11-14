@@ -15,7 +15,7 @@
 @class SSHKitSFTPRequest;  // define in SSHKitExtras
 
 @interface SSHKitSFTPChannel : SSHKitChannel
-
+@property (nonatomic) NSMutableArray *remoteFiles;
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path;
 - (SSHKitSFTPFile *)openFile:(NSString *)path;
