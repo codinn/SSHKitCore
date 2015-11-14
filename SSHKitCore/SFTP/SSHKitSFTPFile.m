@@ -18,6 +18,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 @interface SSHKitSFTPFile () {
     dispatch_group_t _readChunkGroup;
     unsigned long long _totalBytes;
+    int _asyncRequest;
+    dispatch_queue_t _readChunkQueue;
 }
 
 @property (nonatomic, strong) NSString *fullFilename;
@@ -32,10 +34,10 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 @property (nonatomic, readwrite) u_long flags;
 
 @property (nonatomic) SSHKitFileStage stage;
-@property (nonatomic) int asyncRequest;
 @property (nonatomic, copy) SSHKitSFTPClientReadFileBlock readFileBlock;
 @property (nonatomic, copy) SSHKitSFTPClientProgressBlock progressBlock;
-@property (nonatomic, strong, readwrite) dispatch_queue_t readChunkQueue;
+@property (nonatomic, copy) SSHKitSFTPClientFileTransferSuccessBlock fileTransferSuccessBlock;
+@property (nonatomic, copy) SSHKitSFTPClientFailureBlock fileTransferFailBlock;
 // @property (nonatomic) SSHKitFileStage readBytesLength;
 @end
 
@@ -85,12 +87,15 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     sftp_file_set_nonblocking(self.rawFile);
 }
 
-- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock {
+- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock
+        progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
+        fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
+        fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock {
     _totalBytes = 0;
-    _readFileBlock = readFileBlock;
-    _progressBlock = progressBlock;
-    // TODO finish block
-    // TODO fail block
+    self.readFileBlock = readFileBlock;
+    self.progressBlock = progressBlock;
+    self.fileTransferFailBlock = fileTransferFailBlock;
+    self.fileTransferSuccessBlock = fileTransferSuccessBlock;
     _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
     if (_asyncRequest) {
         _stage = SSHKitFileStageReadingFile;
@@ -122,16 +127,18 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (nbytes < 0) {
         // finish or fail
         NSLog(@"read file fail. _asyncRequest: %d\n", _asyncRequest);
+        NSError *error = nil;  // TODO
+        self.fileTransferFailBlock(error);
         _stage = SSHKitFileStageNone;
         return;
     }
     if (nbytes == 0) {
         // finish or fail
         _stage = SSHKitFileStageNone;
-        NSLog(@"read file finished\n");
+        // SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime)
+        self.fileTransferSuccessBlock(self, nil, nil);
         return;
     }
-    NSLog(@"read file bytes: %d\n", nbytes);
     // SSHKitSFTPClientProgressBlock
     _readFileBlock(buffer, nbytes);
     _totalBytes += nbytes;
@@ -140,17 +147,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (_asyncRequest == 0) {
         // finish or fail
         _stage = SSHKitFileStageNone;
-        NSLog(@"read file finished");
+        self.fileTransferSuccessBlock(self, nil, nil);
         return;
     }
     if (_asyncRequest < 0) {
         // finish or fail
-        NSLog(@"read file fail.");
         _stage = SSHKitFileStageNone;
+        NSError *error = nil;  // TODO
+        self.fileTransferFailBlock(error);
         return;
     }
-    // TODO fail call back
-    // TODO do call back for buffer
 }
 
 # pragma MARK SSHKitChannelDelegate

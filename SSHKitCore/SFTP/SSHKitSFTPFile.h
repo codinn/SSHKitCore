@@ -56,7 +56,10 @@
 - (void)open;
 - (void)close;
 - (SSHKitSFTPFile *)readDirectory;
-- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock;
+- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock
+        progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
+        fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
+        fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock;
 - (void)_doProcess;
 
 @end
