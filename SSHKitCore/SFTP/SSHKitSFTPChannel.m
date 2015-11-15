@@ -19,12 +19,15 @@
 }
 
 - (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
-    for (id<SSHKitChannelDelegate> file in _remoteFiles) {
-        [file channel:channel didReadStdoutData:data];
+    if (self.stage != SSHKitChannelStageReadWrite) {
+        return;
+    }
+    for (SSHKitSFTPFile *file in _remoteFiles) {
+        [file channel:self didReadStdoutData:data];
     }
 }
 
-- (void)_doProcess {
+- (void)_doProcess_del {
     [super _doProcess];
     if (self.stage != SSHKitChannelStageReadWrite) {
         return;

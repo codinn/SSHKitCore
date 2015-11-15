@@ -20,6 +20,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     unsigned long long _totalBytes;
     int _asyncRequest;
     dispatch_queue_t _readChunkQueue;
+    int _readedpackageLen;
+    int _againCount;
 }
 
 @property (nonatomic, strong) NSString *fullFilename;
@@ -91,6 +93,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
         fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
         fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock {
+    _againCount = 0;
+    _readedpackageLen = 0;
     _totalBytes = 0;
     self.readFileBlock = readFileBlock;
     self.progressBlock = progressBlock;
@@ -100,14 +104,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (_asyncRequest) {
         _stage = SSHKitFileStageReadingFile;
     }
-    // [self _asyncReadFile];
-    // TODO fail
 }
 
 - (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
     // [self dispatchAsyncOnSessionQueue:
     // `sftp_async_read
-    int result = sftp_async_read(self.rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
+    int result = sftp_async_read(_rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
     if (result < 0 && result != -2) {
         // Received a too big DATA packet from sftp server: 751 and asked for 8
         printf("%s: %d\n", ssh_get_error(self.sftp.session.rawSession), result);
@@ -118,18 +120,23 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (void)_asyncReadFile {
     // self.stage = SSHKitFileStageReadingFile;
     int nbytes;
-    char buffer[MAX_XFER_BUF_SIZE];  // how to free this array?
+    // char buffer[MAX_XFER_BUF_SIZE];  // how to free this array?
+    char *buffer = malloc(sizeof(char) * MAX_XFER_BUF_SIZE);
     // long counter = 0L;
     nbytes = [self _asyncRead:_asyncRequest buffer:buffer];
     if (nbytes == SSHKit_SSH_AGAIN) {
+        _againCount += 1;
+        NSLog(@"SSHKit_SSH_AGAIN");
         return;
     }
+    _totalBytes += nbytes;
+    NSLog(@"AGAIN: %d;  _asyncRequest: %d; len: %d; total: %llu", _againCount, _asyncRequest, nbytes, _totalBytes);
+    _againCount = 0;
     if (nbytes < 0) {
         // finish or fail
-        NSLog(@"read file fail. _asyncRequest: %d\n", _asyncRequest);
+        _stage = SSHKitFileStageNone;
         NSError *error = nil;  // TODO
         self.fileTransferFailBlock(error);
-        _stage = SSHKitFileStageNone;
         return;
     }
     if (nbytes == 0) {
@@ -139,10 +146,15 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         self.fileTransferSuccessBlock(self, nil, nil);
         return;
     }
-    // SSHKitSFTPClientProgressBlock
     _readFileBlock(buffer, nbytes);
-    _totalBytes += nbytes;
     _progressBlock(_totalBytes, self.fileSize.longLongValue);
+    _readedpackageLen += nbytes;
+    if (_readedpackageLen < MAX_XFER_BUF_SIZE && _totalBytes < self.fileSize.longLongValue) {  // if not all data readed
+        NSLog(@"not all data readed.");
+        return;
+    }
+    _readedpackageLen = 0;
+    free(buffer);
     _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
     if (_asyncRequest == 0) {
         // finish or fail
@@ -163,18 +175,21 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 - (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
     // TODO call asyncRead on data arraived
+    __weak SSHKitSFTPFile *weakSelf = self;
     if (_stage == SSHKitFileStageReadingFile) {
+        // 16397 - 16384
+        [self.sftp.session dispatchAsyncOnSessionQueue:^{
+            __strong SSHKitSFTPFile *strongSelf = weakSelf;
+            NSLog(@"didReadStdoutData len: %lu", (unsigned long)data.length);
+            [strongSelf _asyncReadFile];
+        }];
         // [self _asyncReadFile];
     }
 }
 
 - (void)_doProcess {
-    // __weak SSHKitSFTPFile *weakSelf = self;
     if (_stage == SSHKitFileStageReadingFile) {
-        NSLog(@"_doProcess._asyncReadFile");
         [self _asyncReadFile];
-        // dispatch_group_async(_readChunkGroup, self.readChunkQueue, ^{
-        // });
     }
 }
 
