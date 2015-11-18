@@ -136,6 +136,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         // finish or fail
         _stage = SSHKitFileStageNone;
         NSError *error = nil;  // TODO
+        free(buffer);
         self.fileTransferFailBlock(error);
         return;
     }
@@ -143,6 +144,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         // finish or fail
         _stage = SSHKitFileStageNone;
         // SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime)
+        free(buffer);
         self.fileTransferSuccessBlock(self, nil, nil);
         return;
     }
@@ -154,7 +156,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         return;
     }
     _readedpackageLen = 0;
-    free(buffer);
+    // free(buffer);
     _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
     if (_asyncRequest == 0) {
         // finish or fail
