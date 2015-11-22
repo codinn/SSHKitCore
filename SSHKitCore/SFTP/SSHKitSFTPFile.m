@@ -73,6 +73,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         return NO;
     }
     [self populateValuesFromSFTPAttributes:file_attributes parentPath:nil];
+    [SSHKitSFTPChannel freeSFTPAttributes:file_attributes];
     return YES;
 }
 
@@ -277,7 +278,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (BOOL)isExist {
     BOOL exist = YES;
     if ([self open]) {
-    } else if (sftp_get_error(self.sftp.rawSFTPSession) == SSH_FX_NO_SUCH_FILE) {
+    } else if ([self.sftp getLastSFTPError] == SSH_FX_NO_SUCH_FILE) {
+        exist = NO;
+    } else {
         exist = NO;
     }
     [self close];
@@ -293,7 +296,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (!attributes) {
         return nil;
     }
-    return [[SSHKitSFTPFile alloc] initWithSFTPAttributes: attributes parentPath:self.fullFilename];
+    SSHKitSFTPFile *instance = [[SSHKitSFTPFile alloc] initWithSFTPAttributes: attributes parentPath:self.fullFilename];
+    [SSHKitSFTPChannel freeSFTPAttributes:attributes];
+    return instance;
 }
 
 - (NSArray *)listDirectory {

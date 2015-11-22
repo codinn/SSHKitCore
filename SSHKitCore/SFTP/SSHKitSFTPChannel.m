@@ -18,6 +18,10 @@
     sftp_attributes_free(attributes);
 }
 
+- (int)getLastSFTPError {
+    return sftp_get_error(self.rawSFTPSession);
+}
+
 - (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
     if (self.stage != SSHKitChannelStageReadWrite) {
         return;
