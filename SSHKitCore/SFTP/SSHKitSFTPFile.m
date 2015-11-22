@@ -67,22 +67,47 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
-- (void)open {
+- (BOOL)updateStat {
+    sftp_attributes file_attributes = sftp_stat(self.sftp.rawSFTPSession, [self.fullFilename UTF8String]);
+    if (file_attributes == NULL) {
+        return NO;
+    }
+    [self populateValuesFromSFTPAttributes:file_attributes parentPath:nil];
+    return YES;
+}
+
+- (BOOL)open {
     if (self.isDirectory) {
         [self openDirectory];
     } else {
         [self openFile];
     }
-    sftp_attributes file_attributes = sftp_stat(self.sftp.rawSFTPSession, [self.fullFilename UTF8String]);
-    [self populateValuesFromSFTPAttributes:file_attributes parentPath:nil];
-    // - (void)populateValuesFromSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
+    return [self updateStat];
 }
 
 - (void)openFile {
-    // TODO add param for open
-    _rawFile = sftp_open(self.sftp.rawSFTPSession, [self.fullFilename UTF8String], O_RDONLY, 0);
+    [self openFile:O_RDONLY mode:0];
+}
+
+- (BOOL)openFileForWrite:(BOOL)shouldResume {
+    int oflag;
+    if (shouldResume) {
+        oflag =   O_APPEND
+        | O_WRONLY
+        | O_CREAT;
+    } else {
+        oflag =   O_WRONLY
+        | O_CREAT
+        | O_TRUNC;
+    }
+    [self openFile:oflag mode:0664];
+    return [self updateStat];
+}
+
+- (void)openFile:(int)accessType mode:(unsigned int)mode {
+    // http://api.libssh.org/master/group__libssh__sftp.html#gab95cb5fe091efcc49dfa7729e4d48010
+    _rawFile = sftp_open(self.sftp.rawSFTPSession, [self.fullFilename UTF8String], accessType, mode);
     if (_rawFile == NULL) {
-        // TODO error handle
         return;
     }
     [self.sftp.remoteFiles addObject:self];
@@ -173,6 +198,22 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
+-(long)write:(const void *)buffer size:(long)size {
+    long totoalWriteLength = 0;
+    long writeLength = sftp_write(self.rawFile, buffer, size);
+    totoalWriteLength += writeLength;
+    // TODO check window size?
+    while (writeLength >= 0 && totoalWriteLength < size) {
+        writeLength = sftp_write(self.rawFile, buffer, size);
+        totoalWriteLength += writeLength;
+    }
+    if (writeLength < 0) {  // get a error
+        return writeLength;
+    }
+    return totoalWriteLength;
+}
+
+
 # pragma MARK SSHKitChannelDelegate
 
 - (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
@@ -231,6 +272,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (self.sftp) {
         [self.sftp.remoteFiles removeObject:self];
     }
+}
+
+- (BOOL)isExist {
+    BOOL exist = YES;
+    if ([self open]) {
+    } else if (sftp_get_error(self.sftp.rawSFTPSession) == SSH_FX_NO_SUCH_FILE) {
+        exist = NO;
+    }
+    [self close];
+    return exist;
 }
 
 - (BOOL)directoryEof {

@@ -37,6 +37,12 @@
     }
 }
 
+- (BOOL)isFileExist:(NSString *)path {
+    SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+    // TODO handle error
+    return [file isExist];
+}
+
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path {
     SSHKitSFTPFile* directory = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:YES];
     // TODO handle error
@@ -48,6 +54,13 @@
     SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
     // TODO handle error
     [file open];
+    return file;
+}
+
+- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume {
+    SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+    // TODO handle error
+    [file openFileForWrite:shouldResume];
     return file;
 }
 

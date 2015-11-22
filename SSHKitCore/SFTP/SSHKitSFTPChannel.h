@@ -17,7 +17,9 @@
 @interface SSHKitSFTPChannel : SSHKitChannel
 @property (nonatomic) NSMutableArray *remoteFiles;
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
+- (BOOL)isFileExist:(NSString *)path;
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path;
 - (SSHKitSFTPFile *)openFile:(NSString *)path;
+- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume;
 
 @end
