@@ -75,6 +75,15 @@
     return file;
 }
 
+- (NSString *)canonicalizePath:(NSString *)path {
+    return [NSString stringWithUTF8String:sftp_canonicalize_path(self.rawSFTPSession, [path UTF8String])
+            ];
+}
+
+- (int)chmod:(NSString *)filePath mode:(unsigned long)mode {
+    return sftp_chmod(self.rawSFTPSession, [filePath UTF8String], mode);
+}
+
 - (NSMutableArray *)remoteFiles {
     if (_remoteFiles == nil) {
         _remoteFiles = [@[]mutableCopy];

@@ -23,5 +23,7 @@
 - (SSHKitSFTPFile *)openFile:(NSString *)path;
 - (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode;
 - (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode;
+- (NSString *)canonicalizePath:(NSString *)path;
+- (int)chmod:(NSString *)filePath mode:(unsigned long)mode;
 
 @end
