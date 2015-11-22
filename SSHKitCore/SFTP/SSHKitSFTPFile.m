@@ -33,6 +33,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 @property (nonatomic, readwrite) unsigned long ownerUserID;
 @property (nonatomic, readwrite) unsigned long ownerGroupID;
 @property (nonatomic, strong) NSString *permissions;
+@property (nonatomic) unsigned long posixPermissions;
 @property (nonatomic, readwrite) u_long flags;
 
 @property (nonatomic) SSHKitFileStage stage;
@@ -90,7 +91,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     [self openFile:O_RDONLY mode:0];
 }
 
-- (BOOL)openFileForWrite:(BOOL)shouldResume {
+- (BOOL)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode {
     int oflag;
     if (shouldResume) {
         oflag =   O_APPEND
@@ -101,11 +102,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         | O_CREAT
         | O_TRUNC;
     }
-    [self openFile:oflag mode:0664];
+    [self openFile:oflag mode:mode];
     return [self updateStat];
 }
 
-- (void)openFile:(int)accessType mode:(unsigned int)mode {
+- (void)openFile:(int)accessType mode:(unsigned long)mode {
+    // TODO create file
     // http://api.libssh.org/master/group__libssh__sftp.html#gab95cb5fe091efcc49dfa7729e4d48010
     _rawFile = sftp_open(self.sftp.rawSFTPSession, [self.fullFilename UTF8String], accessType, mode);
     if (_rawFile == NULL) {
@@ -258,6 +260,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self.ownerUserID = fileAttributes->uid;
     self.ownerGroupID = fileAttributes->gid;
     self.permissions = [self convertPermissionToSymbolicNotation:fileAttributes->permissions];
+    self.posixPermissions = fileAttributes->permissions;
     self->_fileTypeLetter = [self fileTypeLetter:fileAttributes->permissions];
     self.isDirectory = S_ISDIR(fileAttributes->permissions);
     self.flags = fileAttributes->flags;

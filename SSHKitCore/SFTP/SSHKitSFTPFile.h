@@ -45,6 +45,8 @@
 /** Returns the file permissions in symbolic notation. E.g. drwxr-xr-x */
 @property (nonatomic, readonly) NSString *permissions;
 
+@property (nonatomic, readonly) unsigned long posixPermissions;
+
 @property (nonatomic, readonly) char fileTypeLetter;
 
 /** Returns the user defined flags for the file */
@@ -54,7 +56,8 @@
 @property (nonatomic, readonly) BOOL directoryEof;
 - (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory;
 - (BOOL)open;
-- (BOOL)openFileForWrite:(BOOL)shouldResume;
+- (BOOL)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
+- (void)openFile:(int)accessType mode:(unsigned long)mode;
 - (void)close;
 - (BOOL)isExist;
 - (SSHKitSFTPFile *)readDirectory;

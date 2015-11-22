@@ -61,10 +61,17 @@
     return file;
 }
 
-- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume {
+- (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode {
     SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
     // TODO handle error
-    [file openFileForWrite:shouldResume];
+    [file openFile:accessType mode:mode];
+    return file;
+}
+
+- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode {
+    SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+    // TODO handle error
+    [file openFileForWrite:shouldResume mode:mode];
     return file;
 }
 
