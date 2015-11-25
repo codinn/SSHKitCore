@@ -47,29 +47,37 @@
     return [file isExist];
 }
 
+- (SSHKitSFTPFile *)getDirectory:(NSString *)path {
+    return [[SSHKitSFTPFile alloc]init:self path:path isDirectory:YES];
+}
+
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path {
-    SSHKitSFTPFile* directory = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:YES];
+    SSHKitSFTPFile* directory = [self getDirectory:path];
     // TODO handle error
     [directory open];
     return directory;
 }
 
+- (SSHKitSFTPFile *)getFile:(NSString *)path {
+    return [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+}
+
 - (SSHKitSFTPFile *)openFile:(NSString *)path {
-    SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+    SSHKitSFTPFile* file = [self getFile:path];
     // TODO handle error
     [file open];
     return file;
 }
 
 - (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode {
-    SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+    SSHKitSFTPFile* file = [self getFile:path];
     // TODO handle error
     [file openFile:accessType mode:mode];
     return file;
 }
 
 - (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode {
-    SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
+    SSHKitSFTPFile* file = [self getFile:path];
     // TODO handle error
     [file openFileForWrite:shouldResume mode:mode];
     return file;
@@ -82,6 +90,10 @@
 
 - (int)chmod:(NSString *)filePath mode:(unsigned long)mode {
     return sftp_chmod(self.rawSFTPSession, [filePath UTF8String], mode);
+}
+
+- (int)mkdir:(NSString *)directoryPath mode:(unsigned long)mode {
+    return sftp_mkdir(self.rawSFTPSession, [directoryPath UTF8String], mode);
 }
 
 - (NSMutableArray *)remoteFiles {

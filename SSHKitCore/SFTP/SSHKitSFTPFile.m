@@ -78,20 +78,23 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     return YES;
 }
 
-- (BOOL)open {
+- (void)open {
     if (self.isDirectory) {
         [self openDirectory];
     } else {
         [self openFile];
     }
-    return [self updateStat];
+    // if updateStat not exec
+    if (self.permissions == nil) {
+        [self updateStat];
+    }
 }
 
 - (void)openFile {
     [self openFile:O_RDONLY mode:0];
 }
 
-- (BOOL)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode {
+- (void)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode {
     int oflag;
     if (shouldResume) {
         oflag =   O_APPEND
@@ -103,7 +106,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         | O_TRUNC;
     }
     [self openFile:oflag mode:mode];
-    return [self updateStat];
+    if (self.permissions == nil) {
+        [self updateStat];
+    }
 }
 
 - (void)openFile:(int)accessType mode:(unsigned long)mode {
@@ -280,7 +285,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 - (BOOL)isExist {
     BOOL exist = YES;
-    if ([self open]) {
+    if ([self updateStat]) {
     } else if ([self.sftp getLastSFTPError] == SSH_FX_NO_SUCH_FILE) {
         exist = NO;
     } else {
@@ -305,6 +310,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (NSArray *)listDirectory {
+    // add call back to cancel it?
     NSMutableArray *files = [@[] mutableCopy];
     SSHKitSFTPFile *file = [self readDirectory];
     while (file != nil) {

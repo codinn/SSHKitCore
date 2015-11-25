@@ -55,12 +55,14 @@
 @property (nonatomic, readonly) SSHKitSFTPChannel *sftp;
 @property (nonatomic, readonly) BOOL directoryEof;
 - (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory;
-- (BOOL)open;
-- (BOOL)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
+- (void)open;
+- (void)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
 - (void)openFile:(int)accessType mode:(unsigned long)mode;
 - (void)close;
+- (BOOL)updateStat;
 - (BOOL)isExist;
 - (SSHKitSFTPFile *)readDirectory;
+- (NSArray *)listDirectory;
 - (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
         fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
