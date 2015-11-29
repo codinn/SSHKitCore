@@ -63,10 +63,11 @@
 - (BOOL)isExist;
 - (SSHKitSFTPFile *)readDirectory;
 - (NSArray *)listDirectory;
-- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock
+- (void)asyncReadFile:(unsigned long long)offset
+        readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
         fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
-        fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock;
+fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock;
 - (long)write:(const void *)buffer size:(long)size;
 - (void)_doProcess;
 

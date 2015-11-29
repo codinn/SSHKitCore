@@ -119,6 +119,7 @@ typedef NS_ENUM(NSInteger, SSHKitSFTPRequestStatusCode) {
     SSHKitSFTPRequestStatusStarted,
     SSHKitSFTPRequestStatusPaused,
     SSHKitSFTPRequestStatusCanceled,
+    SSHKitSFTPRequestStatusFinished,
     
     // our error code
     SSHKitSFTPRequestStatusFailed   = 1001,

@@ -122,7 +122,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     sftp_file_set_nonblocking(self.rawFile);
 }
 
-- (void)asyncReadFile:(SSHKitSFTPClientReadFileBlock)readFileBlock
+- (void)asyncReadFile:(unsigned long long)offset
+        readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
         fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
         fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock {
@@ -133,6 +134,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self.progressBlock = progressBlock;
     self.fileTransferFailBlock = fileTransferFailBlock;
     self.fileTransferSuccessBlock = fileTransferSuccessBlock;
+    if (offset > 0) {
+        sftp_seek64(self.rawFile, offset);
+    }
     _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
     if (_asyncRequest) {
         _stage = SSHKitFileStageReadingFile;
@@ -314,7 +318,10 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     NSMutableArray *files = [@[] mutableCopy];
     SSHKitSFTPFile *file = [self readDirectory];
     while (file != nil) {
-        [files addObject:file];
+        // ignore self and parent
+        if (![file.filename isEqualToString:@"."] && ![file.filename isEqualToString:@".."]) {
+            [files addObject:file];
+        }
         file = [self readDirectory];
     }
     return files;
