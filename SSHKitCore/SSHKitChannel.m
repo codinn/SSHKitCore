@@ -58,7 +58,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
 
 - (BOOL)isOpened
 {
-    __block BOOL flag;
+    __block BOOL flag = NO;
     
     __weak SSHKitChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
