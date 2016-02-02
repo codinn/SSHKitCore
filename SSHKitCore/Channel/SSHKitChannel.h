@@ -80,6 +80,4 @@
 
 - (void)channelDidOpen:(SSHKitChannel *)channel;
 
-- (void)channel:(SSHKitChannel *)channel didChangePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows withError:(NSError *)error;
-
 @end

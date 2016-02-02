@@ -1,6 +1,6 @@
 #import <SSHKitCore/SSHKitCoreCommon.h>
 
-@protocol SSHKitSessionDelegate, SSHKitChannelDelegate;
+@protocol SSHKitSessionDelegate, SSHKitChannelDelegate, SSHKitSessionChannelDelegate;
 @class SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 @class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitSessionChannel;
 
@@ -194,7 +194,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 
 - (void)enqueueForwardRequestWithListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
 
-- (SSHKitSessionChannel *)sessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
+- (SSHKitSessionChannel *)sessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitSessionChannelDelegate>)aDelegate;
 
 @end
 

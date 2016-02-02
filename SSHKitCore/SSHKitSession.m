@@ -957,7 +957,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }}];
 }
 
-- (SSHKitSessionChannel *)sessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate {
+- (SSHKitSessionChannel *)sessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitSessionChannelDelegate>)aDelegate {
     SSHKitSessionChannel *channel = [[SSHKitSessionChannel alloc] initWithSession:self delegate:aDelegate];
     [channel openShellWithTerminalType:type columns:columns rows:rows];
     return channel;

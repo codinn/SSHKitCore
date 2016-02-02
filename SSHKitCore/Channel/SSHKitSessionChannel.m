@@ -10,10 +10,21 @@
 #import "SSHKitSession.h"
 #import "SSHKitCore+Protected.h"
 
+@interface SSHKitSessionChannel ()
+
+@property (nonatomic, weak) id<SSHKitSessionChannelDelegate> delegate;
+
+@end
+
 @implementation SSHKitSessionChannel
+
+@dynamic delegate;
 
 - (void)openShellWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows {
     self.stage = SSHKitChannelStageWating;
+    _terminalType = type;
+    _columns = columns;
+    _rows = rows;
     
     __weak SSHKitSessionChannel *weakSelf = self;
     [self.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
@@ -29,8 +40,6 @@
         }
         
         if ([strongSelf _initiate]) {
-            strongSelf->_shellColumns = columns;
-            strongSelf->_shellRows = rows;
             [strongSelf _openSession];
         }
     }}];
@@ -61,7 +70,7 @@
 }
 
 - (void)_requestPty {
-    int result = ssh_channel_request_pty_size(self.rawChannel, "xterm", (int)_shellColumns, (int)_shellRows);
+    int result = ssh_channel_request_pty_size(self.rawChannel, _terminalType.UTF8String, (int)_columns, (int)_rows);
     
     switch (result) {
         case SSH_AGAIN:
