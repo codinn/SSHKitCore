@@ -20,12 +20,12 @@
     return self;
 }
 
-- (void)_doProcess {
+- (void)doProcess {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
     switch (self.stage) {
         case SSHKitChannelStageReadWrite:
-            [self _doWrite];
+            [self doWrite];
             break;
             
         case SSHKitChannelStageOpening:

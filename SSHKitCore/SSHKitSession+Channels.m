@@ -37,8 +37,8 @@
             return_from_block;
         }
         
-        if ([channel _initiate]) {
-            [channel _doOpen];
+        if ([channel doInitiateWithRawChannel:NULL]) {
+            [channel doOpen];
         }
     }}];
     
@@ -57,10 +57,9 @@
     
     SSHKitForwardChannel *channel = [[SSHKitForwardChannel alloc] initWithSession:self destinationPort:destination_port];
     
-    [channel _initiateWithRawChannel:rawChannel];
+    [channel doInitiateWithRawChannel:rawChannel];
     
     channel.stage = SSHKitChannelStageReadWrite;
-    [channel _registerCallbacks];
     
     return channel;
 }
@@ -95,8 +94,8 @@
             return_from_block;
         }
         
-        if ([channel _initiate]) {
-            [channel _doOpen];
+        if ([channel doInitiateWithRawChannel:NULL]) {
+            [channel doOpen];
         }
     }}];
     

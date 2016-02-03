@@ -48,7 +48,7 @@
             
         default:
             // open failed
-            [self _doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.coreError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -72,7 +72,7 @@
             
         default:
             // open failed
-            [self _doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.coreError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -88,7 +88,6 @@
             
         case SSH_OK:
             self.stage = SSHKitChannelStageReadWrite;
-            [self _registerCallbacks];
             
             // opened
             if (_delegateFlags.didOpen) {
@@ -98,7 +97,7 @@
             
         default:
             // open failed
-            [self _doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.coreError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -123,7 +122,7 @@
             break;
             
         case SSHKitChannelStageReadWrite:
-            [self _doWrite];
+            [self doWrite];
             break;
             
         case SSHKitChannelStageClosed:

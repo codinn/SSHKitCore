@@ -52,10 +52,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     NSData              *_pendingWriteData;
 }
 
-- (BOOL)_initiate;
-- (BOOL)_initiateWithRawChannel:(ssh_channel)rawChannel;
-- (void)_registerCallbacks;
-- (void)_unregesterCallbacks;
+- (BOOL)doInitiateWithRawChannel:(ssh_channel)rawChannel;
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_channel rawChannel;
@@ -64,11 +61,11 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
-- (void)_doOpen;
+- (void)doOpen;
 
-- (void)_doWrite;
-- (void)_doProcess;
-- (void)_doCloseWithError:(NSError *)error;
+- (void)doWrite;
+- (void)doProcess;
+- (void)doCloseWithError:(NSError *)error;
 @end
 
 

@@ -21,7 +21,7 @@
     return self;
 }
 
-- (void)_doOpen {
+- (void)doOpen {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
     int result = ssh_channel_open_forward(self.rawChannel, self.targetHost.UTF8String, (int)self.targetPort, "127.0.0.1", 22);
@@ -33,7 +33,6 @@
             
         case SSH_OK:
             self.stage = SSHKitChannelStageReadWrite;
-            [self _registerCallbacks];
             // opened
             if (_delegateFlags.didOpen) {
                 [self.delegate channelDidOpen:self];
@@ -41,31 +40,30 @@
             break;
         default: {
             // open failed
-            // [self _doCloseWithError:self.session.lastError];
             NSError *error = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                  code:SSHKitErrorConnectFailure
                                              userInfo:@{ NSLocalizedDescriptionKey : @"Open Direct Failed" }];
             if (self.session.coreError) {
                 error = self.session.coreError;
             }
-            [self _doCloseWithError:error];  // self.session.lastError
+            [self doCloseWithError:error];
             [self.session disconnectIfNeeded];
             break;
         }
     }
 }
 
-- (void)_doProcess {
+- (void)doProcess {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
     switch (self.stage) {
         case SSHKitChannelStageOpening:
-            [self _doOpen];
+            [self doOpen];
             
             break;
             
         case SSHKitChannelStageReadWrite:
-            [self _doWrite];
+            [self doWrite];
             break;
             
         case SSHKitChannelStageClosed:

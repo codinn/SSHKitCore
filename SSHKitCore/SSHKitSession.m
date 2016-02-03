@@ -448,7 +448,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     NSArray *channels = [_channels copy];
     for (SSHKitChannel* channel in channels) {
-        [channel _doCloseWithError:nil];
+        [channel doCloseWithError:nil];
     }
     
     [_channels removeAllObjects];
@@ -856,7 +856,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 // copy channels here, NSEnumerationReverse still not safe while removing object in array
                 NSArray *channels = [strongSelf->_channels copy];
                 for (SSHKitChannel *channel in channels) {
-                    [channel _doProcess];
+                    [channel doProcess];
                 }
                 
                 break;

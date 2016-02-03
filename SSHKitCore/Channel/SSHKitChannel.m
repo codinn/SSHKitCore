@@ -50,13 +50,11 @@ static channel_callbacks s_null_channel_callbacks = {0};
 
 #pragma mark - Close Channel
 
-- (void)close
-{
+- (void)close {
     [self closeWithError:nil];
 }
 
-- (void)closeWithError:(NSError *)error
-{
+- (void)closeWithError:(NSError *)error {
     __weak SSHKitChannel *weakSelf = self;
     [self.session dispatchAsyncOnSessionQueue:^ { @autoreleasepool {
         __strong SSHKitChannel *strongSelf = weakSelf;
@@ -64,11 +62,11 @@ static channel_callbacks s_null_channel_callbacks = {0};
             return_from_block;
         }
         
-        [strongSelf _doCloseWithError:error];
+        [strongSelf doCloseWithError:error];
     }}];
 }
 
-- (void)_doCloseWithError:(NSError *)error {
+- (void)doCloseWithError:(NSError *)error {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
 
     if (self.stage == SSHKitChannelStageClosed) { // already closed
@@ -106,7 +104,13 @@ static channel_callbacks s_null_channel_callbacks = {0};
 
 #pragma mark - Read / Write
 
-- (void)_doProcess {
+- (void)doOpen {
+    @throw [NSException exceptionWithName:NSInternalInconsistencyException
+                                   reason:[NSString stringWithFormat:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)]
+                                 userInfo:nil];
+}
+
+- (void)doProcess {
     @throw [NSException exceptionWithName:NSInternalInconsistencyException
                                    reason:[NSString stringWithFormat:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)]
                                  userInfo:nil];
@@ -143,7 +147,7 @@ static void channel_close_received(ssh_session session,
                                    void *userdata)
 {
     SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
-    [selfChannel _doCloseWithError:nil];
+    [selfChannel doCloseWithError:nil];
 }
 
 static void channel_eof_received(ssh_session session,
@@ -151,7 +155,7 @@ static void channel_eof_received(ssh_session session,
                                  void *userdata)
 {
     SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
-    [selfChannel _doCloseWithError:nil];
+    [selfChannel doCloseWithError:nil];
 }
 
 - (void)writeData:(NSData *)data {
@@ -171,7 +175,7 @@ static void channel_eof_received(ssh_session session,
         strongSelf->_pendingWriteData = data;
         
         // resume session write dispatch source
-        [strongSelf _doWrite];
+        [strongSelf doWrite];
     }}];
 }
 
@@ -179,7 +183,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     return raw_channel && (ssh_channel_window_size(raw_channel) > 0);
 }
 
-- (void)_doWrite {
+- (void)doWrite {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
     if ( !_pendingWriteData.length || !is_channel_writable(_rawChannel) ) {
@@ -191,7 +195,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     int wrote = ssh_channel_write(_rawChannel, _pendingWriteData.bytes, datalen);
     
     if ( (wrote < 0) || (wrote>datalen) ) {
-        [self _doCloseWithError:self.session.coreError];
+        [self doCloseWithError:self.session.coreError];
         [self.session disconnectIfNeeded];
         return;
     }
@@ -233,25 +237,19 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     ssh_set_channel_callbacks(self->_rawChannel, &s_null_channel_callbacks);
 }
 
-- (BOOL)_initiate {
+- (BOOL)doInitiateWithRawChannel:(ssh_channel)rawChannel {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
-    _rawChannel = ssh_channel_new(self.session.rawSession);
+    if (rawChannel) {
+        _rawChannel = rawChannel;
+    } else {
+        _rawChannel = ssh_channel_new(self.session.rawSession);
+    }
     
     if (!_rawChannel) return NO;
     
-    // add channel to session list
-    [self.session addChannel:self];
-    
-    self.stage = SSHKitChannelStageOpening;
-    
-    return YES;
-}
-
-- (BOOL)_initiateWithRawChannel:(ssh_channel)rawChannel {
-    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
-    
-    _rawChannel = rawChannel;
+    // Register channle callback right after channel created, since data may comming before we've detected that channel is opened
+    [self _registerCallbacks];
     
     // add channel to session list
     [self.session addChannel:self];
