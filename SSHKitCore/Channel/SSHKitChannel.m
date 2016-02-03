@@ -238,8 +238,11 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
 
 #pragma mark - Properties
 
-- (void)setDelegate:(id<SSHKitChannelDelegate>)delegate
-{
+- (BOOL)isOpen {
+    return self.stage == SSHKitChannelStageReady;
+}
+
+- (void)setDelegate:(id<SSHKitChannelDelegate>)delegate {
     if (_delegate != delegate) {
         _delegate = delegate;
         _delegateFlags.didReadStdoutData = [delegate respondsToSelector:@selector(channel:didReadStdoutData:)];

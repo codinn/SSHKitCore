@@ -91,7 +91,7 @@
     }}];
 }
 
-- (SSHKitShellChannel *)openSessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate {
+- (SSHKitShellChannel *)openShellChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate {
     SSHKitShellChannel *channel = [[SSHKitShellChannel alloc] initWithSession:self terminalType:type columns:columns rows:rows delegate:aDelegate];
     
     [self _scheduleChannelForOpening:channel];

@@ -32,6 +32,12 @@
 
 @property (nonatomic, readonly) SSHKitChannelStage stage;
 
+/**
+ A Boolean value indicating whether the channel is opened successfully
+ (read-only).
+ */
+@property (nonatomic, readonly) BOOL isOpen;
+
 - (void)close;
 - (void)closeWithError:(NSError *)error;
 
