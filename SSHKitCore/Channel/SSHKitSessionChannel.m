@@ -20,29 +20,14 @@
 
 @dynamic delegate;
 
-- (void)openShellWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows {
-    self.stage = SSHKitChannelStageWating;
-    _terminalType = type;
-    _columns = columns;
-    _rows = rows;
+- (instancetype)initWithSession:(SSHKitSession *)session terminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate {
+    if (self=[super initWithSession:session delegate:aDelegate]) {
+        _terminalType = type;
+        _columns = columns;
+        _rows = rows;
+    }
     
-    __weak SSHKitSessionChannel *weakSelf = self;
-    [self.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        __strong SSHKitSessionChannel *strongSelf = weakSelf;
-        if (!strongSelf) return;
-        
-        if (!strongSelf.session.isConnected || strongSelf.stage != SSHKitChannelStageWating) {
-            if (strongSelf->_delegateFlags.didCloseWithError) {
-                [strongSelf.delegate channelDidClose:strongSelf withError:nil];
-            }
-            
-            return_from_block;
-        }
-        
-        if ([strongSelf _initiate]) {
-            [strongSelf _openSession];
-        }
-    }}];
+    return self;
 }
 
 - (void)_openSession {

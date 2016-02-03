@@ -12,32 +12,16 @@
 
 @implementation SSHKitDirectChannel
 
-- (void)openWithTargetHost:(NSString *)host port:(NSUInteger)port {
-    self.stage = SSHKitChannelStageWating;
-    _targetHost = host;
-    _targetPort = port;
+- (instancetype)initWithSession:(SSHKitSession *)session targetHost:(NSString *)host targetPort:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate {
+    if (self = [super initWithSession:session delegate:aDelegate]) {
+        _targetHost = host;
+        _targetPort = port;
+    }
     
-    __weak SSHKitDirectChannel *weakSelf = self;
-    [self.session dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        __strong SSHKitDirectChannel *strongSelf = weakSelf;
-        
-        if (!strongSelf) return;
-        
-        if (!strongSelf.session.isConnected || strongSelf.stage != SSHKitChannelStageWating) {
-            if (strongSelf->_delegateFlags.didCloseWithError) {
-                [strongSelf.delegate channelDidClose:strongSelf withError:nil];
-            }
-            
-            return_from_block;
-        }
-        
-        if ([strongSelf _initiate]) {
-            [strongSelf _openDirect];
-        }
-    }}];
+    return self;
 }
 
-- (void)_openDirect {
+- (void)_doOpen {
     NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
     
     int result = ssh_channel_open_forward(self.rawChannel, self.targetHost.UTF8String, (int)self.targetPort, "127.0.0.1", 22);
@@ -76,7 +60,7 @@
     
     switch (self.stage) {
         case SSHKitChannelStageOpening:
-            [self _openDirect];
+            [self _doOpen];
             
             break;
             

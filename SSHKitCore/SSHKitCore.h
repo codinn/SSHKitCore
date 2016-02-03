@@ -1,5 +1,6 @@
 #import "SSHKitCoreCommon.h"
 #import "SSHKitSession.h"
+#import "SSHKitSession+Channels.h"
 #import "SSHKitChannel.h"
 #import "SSHKitDirectChannel.h"
 #import "SSHKitForwardChannel.h"

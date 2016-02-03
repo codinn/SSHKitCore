@@ -185,17 +185,6 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  */
 - (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
 
-
-// -----------------------------------------------------------------------------
-#pragma mark Creating Channels
-// -----------------------------------------------------------------------------
-
-- (SSHKitDirectChannel *)directChannelWithTargetHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
-
-- (void)enqueueForwardRequestWithListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
-
-- (SSHKitSessionChannel *)sessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitSessionChannelDelegate>)aDelegate;
-
 @end
 
 #pragma mark -
@@ -247,5 +236,5 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /**
  * Called when ssh server has forward a connection.
  **/
-- (void)session:(SSHKitSession *)session didAcceptForwardChannel:(SSHKitForwardChannel *)channel;
+- (void)session:(SSHKitSession *)session didOpenForwardChannel:(SSHKitForwardChannel *)channel;
 @end

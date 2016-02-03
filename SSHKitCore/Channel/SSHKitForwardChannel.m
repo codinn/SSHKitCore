@@ -12,25 +12,12 @@
 
 @implementation SSHKitForwardChannel
 
-+ (instancetype)tryAcceptForwardChannelOnSession:(SSHKitSession *)session {
-    NSAssert([session isOnSessionQueue], @"Must be dispatched on session queue");
-    
-    int destination_port = 0;
-    ssh_channel rawChannel = ssh_channel_accept_forward(session.rawSession, 0, &destination_port);
-    if (!rawChannel) {
-        return nil;
+- (instancetype)initWithSession:(SSHKitSession *)session destinationPort:(NSUInteger)port {
+    if (self = [super initWithSession:session delegate:nil]) {
+        _destinationPort = port;
     }
     
-    SSHKitForwardChannel *channel = [[self alloc] initWithSession:session delegate:nil];
-    
-    channel->_destinationPort = destination_port;
-    
-    [channel _initiateWithRawChannel:rawChannel];
-    
-    channel.stage = SSHKitChannelStageReadWrite;
-    [channel _registerCallbacks];
-    
-    return channel;
+    return self;
 }
 
 - (void)_doProcess {

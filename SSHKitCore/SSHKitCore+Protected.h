@@ -23,7 +23,9 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     SSHKitChannelStderrData,
 };
 
-@interface SSHKitSession ()
+@interface SSHKitSession () {
+    NSMutableArray      *_forwardRequests;
+}
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_session rawSession;
@@ -62,6 +64,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
+- (void)_doOpen;
+
 - (void)_doWrite;
 - (void)_doProcess;
 - (void)_doCloseWithError:(NSError *)error;
@@ -70,19 +74,19 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @interface SSHKitForwardChannel()
 
-+ (instancetype)tryAcceptForwardChannelOnSession:(SSHKitSession *)session;
+- (instancetype)initWithSession:(SSHKitSession *)session destinationPort:(NSUInteger)port;
 
 @end
 
 @interface SSHKitDirectChannel()
 
-- (void)openWithTargetHost:(NSString *)host port:(NSUInteger)port;
+- (instancetype)initWithSession:(SSHKitSession *)session targetHost:(NSString *)host targetPort:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
 @end
 
 @interface SSHKitSessionChannel()
 
-- (void)openShellWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows;
+- (instancetype)initWithSession:(SSHKitSession *)session terminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
 @end
 

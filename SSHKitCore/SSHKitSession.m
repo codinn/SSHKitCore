@@ -4,7 +4,7 @@
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
 #import "SSHKitConnector.h"
-#import "SSHKitHelpers.h"
+#import "SSHKitSession+Channels.h"
 #import "SSHKitPrivateKeyParser.h"
 #import "SSHKitForwardChannel.h"
 
@@ -30,7 +30,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         unsigned int didReceiveIssueBanner          : 1;
         unsigned int authenticateWithAllowedMethodsPartialSuccess : 1;
         unsigned int didAuthenticateUser            : 1;
-        unsigned int didAcceptForwardChannel        : 1;
+        unsigned int didOpenForwardChannel          : 1;
 	} _delegateFlags;
     
     dispatch_source_t   _socketReadSource;
@@ -42,8 +42,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     void *_isOnSessionQueueKey;
     
     SSHKitConnector     *_connector;
-    
-    NSMutableArray      *_forwardRequests;
     NSMutableArray      *_channels;
 }
 
@@ -158,7 +156,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
         _delegateFlags.didReceiveIssueBanner = [delegate respondsToSelector:@selector(session:didReceiveIssueBanner:)];
-        _delegateFlags.didAcceptForwardChannel = [delegate respondsToSelector:@selector(session:didAcceptForwardChannel:)];
+        _delegateFlags.didOpenForwardChannel = [delegate respondsToSelector:@selector(session:didOpenForwardChannel:)];
         _delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
 	}
 }
@@ -841,17 +839,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 break;
             case SSHKitSessionStageAuthenticated: {
                 // try forward-tcpip requests
-                [strongSelf _doSendForwardRequest];
+                [strongSelf doSendForwardRequest];
                 
                 // probe forward channel from accepted forward
                 // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
                 //       another method is create a temporary channel, and let it consumes the wild data.
                 //       The real cause is unkown, may be it's caused by data arrived while channels already closed
-                SSHKitForwardChannel *forwardChannel = [SSHKitForwardChannel tryAcceptForwardChannelOnSession:strongSelf];
+                SSHKitForwardChannel *forwardChannel = [self openForwardChannel];
                 
                 if (forwardChannel) {
-                    if (strongSelf->_delegateFlags.didAcceptForwardChannel) {
-                        [strongSelf->_delegate session:strongSelf didAcceptForwardChannel:forwardChannel];
+                    if (strongSelf->_delegateFlags.didOpenForwardChannel) {
+                        [strongSelf->_delegate session:strongSelf didOpenForwardChannel:forwardChannel];
                     }
                 }
                 
@@ -874,93 +872,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_resume(_socketReadSource);
 }
 
-/** !WARNING!
- tcpip-forward is session global request, requests must go one by one serially.
- Otherwise, forward request will be failed
- */
-- (void)_doSendForwardRequest {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    SSHKitForwardRequest *request = _forwardRequests.firstObject;
-    
-    if (!request) return;
-    
-    int boundport = 0;
-    
-    int rc = ssh_channel_listen_forward(self.rawSession, request.listenHost.UTF8String, request.listenPort, &boundport);
-    
-    switch (rc) {
-        case SSH_OK: {
-            // success
-            [_forwardRequests removeObject:request];
-            
-            // boundport may equals 0, if listenPort is NOT 0.
-            boundport = boundport ? boundport : request.listenPort;
-            if (request.completionHandler) request.completionHandler(YES, boundport, nil);
-            
-            // try next
-            if (_forwardRequests.firstObject) {
-                [self _doSendForwardRequest];
-            }
-            
-            break;
-        }
-            
-        case SSH_AGAIN:
-            // try next time
-            break;
-            
-        case SSH_ERROR:
-        default: {
-            // failed
-            [_forwardRequests removeAllObjects];
-            
-            if (request.completionHandler) {
-                NSError *error = self.coreError;
-                error = [NSError errorWithDomain:error.domain code:SSHKitErrorChannelFailure userInfo:error.userInfo];
-                request.completionHandler(NO, request.listenPort, error);
-            }
-            
-            [self disconnectIfNeeded];
-            break;
-        }
-    }
-}
-
 - (void)_cancelSocketReadSource {
     if (_socketReadSource) {
         dispatch_source_cancel(_socketReadSource);
         _socketReadSource = nil;
     }
-}
-
-#pragma mark - Creating Channels
-
-- (SSHKitDirectChannel *)directChannelWithTargetHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate {
-    SSHKitDirectChannel *channel = [[SSHKitDirectChannel alloc] initWithSession:self delegate:aDelegate];
-    [channel openWithTargetHost:host port:port];
-    return channel;
-}
-
-- (void)enqueueForwardRequestWithListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler {
-    __weak SSHKitSession *weakSelf = self;
-    
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        SSHKitSession *strongSelf = weakSelf;
-        if (!strongSelf.isConnected) {
-            return_from_block;
-        }
-        
-        SSHKitForwardRequest *request = [[SSHKitForwardRequest alloc] initWithListenHost:host port:port completionHandler:completionHandler];
-        
-        [strongSelf->_forwardRequests addObject:request];
-        [strongSelf _doSendForwardRequest];
-    }}];
-}
-
-- (SSHKitSessionChannel *)sessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitSessionChannelDelegate>)aDelegate {
-    SSHKitSessionChannel *channel = [[SSHKitSessionChannel alloc] initWithSession:self delegate:aDelegate];
-    [channel openShellWithTerminalType:type columns:columns rows:rows];
-    return channel;
 }
 
 // -----------------------------------------------------------------------------
