@@ -25,13 +25,11 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @interface SSHKitSession () {
     NSMutableArray      *_forwardRequests;
+    NSMutableArray      *_channels;
 }
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_session rawSession;
-
-- (void)addChannel:(SSHKitChannel *)channel;
-- (void)removeChannel:(SSHKitChannel *)channel;
 
 - (BOOL)isOnSessionQueue;
 - (void)disconnectIfNeeded;

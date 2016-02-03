@@ -42,7 +42,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     void *_isOnSessionQueueKey;
     
     SSHKitConnector     *_connector;
-    NSMutableArray      *_channels;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
@@ -866,6 +865,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                             break;
                             
                         case SSHKitChannelStageClosed:
+                            [strongSelf->_channels removeObject:channel];
+                            break;
+                            
                         default:
                             break;
                     }
@@ -969,17 +971,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         dispatch_source_cancel(_keepAliveTimer);
         _keepAliveTimer = nil;
     }
-}
-
-#pragma mark - Enqueue / Dequeue Channel
-
-- (void)addChannel:(SSHKitChannel *)channel {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    [_channels addObject:channel];
-}
-- (void)removeChannel:(SSHKitChannel *)channel {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    [_channels removeObject:channel];
 }
 
 #pragma mark - Libssh logging

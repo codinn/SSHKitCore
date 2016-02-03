@@ -45,14 +45,14 @@ static channel_callbacks s_null_channel_callbacks = {0};
 
 - (void)closeWithError:(NSError *)error {
     __weak SSHKitChannel *weakSelf = self;
-    [self.session dispatchAsyncOnSessionQueue:^ { @autoreleasepool {
+    [self.session dispatchAsyncOnSessionQueue:^ {
         __strong SSHKitChannel *strongSelf = weakSelf;
         if (!strongSelf) {
             return_from_block;
         }
         
         [strongSelf doCloseWithError:error];
-    }}];
+    }];
 }
 
 - (void)doCloseWithError:(NSError *)error {
@@ -87,8 +87,6 @@ static channel_callbacks s_null_channel_callbacks = {0};
     if (_delegateFlags.didCloseWithError) {
         [self.delegate channelDidClose:self withError:error];
     }
-    
-    [self.session removeChannel:self];
 }
 
 #pragma mark - Read / Write
@@ -234,9 +232,6 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     
     // Register channle callback right after channel created, since data may comming before we've detected that channel is opened
     [self _registerCallbacks];
-    
-    // add channel to session list
-    [self.session addChannel:self];
     
     return YES;
 }

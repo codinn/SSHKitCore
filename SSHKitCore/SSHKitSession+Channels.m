@@ -24,9 +24,7 @@
 
 #pragma mark - Creating Channels
 
-- (SSHKitDirectChannel *)openDirectChannelWithTargetHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate {
-    SSHKitDirectChannel *channel = [[SSHKitDirectChannel alloc] initWithSession:self targetHost:host targetPort:port delegate:aDelegate];
-    
+- (void)_scheduleChannelForOpening:(SSHKitChannel *)channel {
     __weak SSHKitSession *weakSelf = self;
     
     // We must retain channel to prevent it be released before adding to session channel container
@@ -38,11 +36,21 @@
         }
         
         if ([channel doInitiateWithRawChannel:NULL]) {
+            // add channel to session list, retain it
+            [strongSelf->_channels addObject:channel];
+            
             channel.stage = SSHKitChannelStageOpening;
             [channel doOpen];
+        } else {
+            [channel closeWithError:nil];
         }
     }}];
+}
+
+- (SSHKitDirectChannel *)openDirectChannelWithTargetHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate {
+    SSHKitDirectChannel *channel = [[SSHKitDirectChannel alloc] initWithSession:self targetHost:host targetPort:port delegate:aDelegate];
     
+    [self _scheduleChannelForOpening:channel];
     return channel;
 }
 
@@ -58,7 +66,10 @@
     
     SSHKitForwardChannel *channel = [[SSHKitForwardChannel alloc] initWithSession:self destinationPort:destination_port];
     
-    [channel doInitiateWithRawChannel:rawChannel];
+    (void)[channel doInitiateWithRawChannel:rawChannel]; // never returns false
+    
+    // add channel to session list, retain it
+    [_channels addObject:channel];
     channel.stage = SSHKitChannelStageReady;
     
     return channel;
@@ -83,23 +94,7 @@
 - (SSHKitShellChannel *)openSessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate {
     SSHKitShellChannel *channel = [[SSHKitShellChannel alloc] initWithSession:self terminalType:type columns:columns rows:rows delegate:aDelegate];
     
-    __weak SSHKitSession *weakSelf = self;
-    
-    // We must retain channel to prevent it be released before adding to session channel container
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        __strong SSHKitSession *strongSelf = weakSelf;
-        
-        if (!strongSelf.isConnected) {
-            [channel closeWithError:nil];
-            return_from_block;
-        }
-        
-        if ([channel doInitiateWithRawChannel:NULL]) {
-            channel.stage = SSHKitChannelStageOpening;
-            [channel doOpen];
-        }
-    }}];
-    
+    [self _scheduleChannelForOpening:channel];
     return channel;
 }
 
