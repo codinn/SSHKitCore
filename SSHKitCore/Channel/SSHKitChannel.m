@@ -8,6 +8,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
 
 @interface SSHKitChannel () {
     channel_callbacks   _callback;
+    NSMutableData       *_pendingWriteData;
 }
 
 @end
@@ -28,6 +29,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate {
     if ((self = [super init])) {
         _session = session;
+        _pendingWriteData = [[NSMutableData alloc] init];
 		self.delegate = aDelegate;
         self.stage = SSHKitChannelStageInvalid;
     }
@@ -168,13 +170,14 @@ static void channel_eof_received(ssh_session session,
     [self.session dispatchAsyncOnSessionQueue:^{ @autoreleasepool {
         __strong SSHKitChannel *strongSelf = weakSelf;
         
+        [strongSelf->_pendingWriteData appendData:data];
+        
         if (strongSelf.stage != SSHKitChannelStageReadWrite || !strongSelf.session.isConnected) {
+            // push data and wait for channel prepared
             return_from_block;
         }
         
-        strongSelf->_pendingWriteData = data;
-        
-        // resume session write dispatch source
+        // do write if channel was opened
         [strongSelf doWrite];
     }}];
 }
@@ -205,13 +208,13 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     }
     
     if (wrote!=datalen) {
-        // libssh resize remote window, it's equivalent to E_AGAIN
-        _pendingWriteData = [_pendingWriteData subdataWithRange:NSMakeRange(wrote, datalen-wrote)];
+        // libssh will resize remote window, it's equivalent to E_AGAIN
+        [_pendingWriteData replaceBytesInRange:NSMakeRange(wrote, datalen-wrote) withBytes:NULL length:0];
         return;
     }
     
     // all data wrote
-    _pendingWriteData = nil;
+    _pendingWriteData.length = 0;
     
     if (_delegateFlags.didWriteData) {
         [self.delegate channelDidWriteData:self];

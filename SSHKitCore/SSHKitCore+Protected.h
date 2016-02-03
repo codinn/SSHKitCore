@@ -48,8 +48,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
         unsigned int didCloseWithError : 1;
         unsigned int didChangePtySizeToColumnsRows : 1;
     } _delegateFlags;
-    
-    NSData              *_pendingWriteData;
 }
 
 - (BOOL)doInitiateWithRawChannel:(ssh_channel)rawChannel;
