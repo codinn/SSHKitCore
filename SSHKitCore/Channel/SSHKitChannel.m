@@ -31,23 +31,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
         _session = session;
         _pendingWriteData = [[NSMutableData alloc] init];
 		self.delegate = aDelegate;
-        self.stage = SSHKitChannelStageInvalid;
+        self.stage = SSHKitChannelStageInitial;
     }
 
     return self;
-}
-
-- (BOOL)isOpened {
-    __block BOOL flag = NO;
-    
-    __weak SSHKitChannel *weakSelf = self;
-    [self.session dispatchSyncOnSessionQueue:^ { @autoreleasepool {
-        __strong SSHKitChannel *strongSelf = weakSelf;
-        
-        flag = strongSelf->_rawChannel && (ssh_channel_is_open(strongSelf->_rawChannel)!=0);
-    }}];
-    
-    return flag;
 }
 
 #pragma mark - Close Channel
@@ -112,12 +99,6 @@ static channel_callbacks s_null_channel_callbacks = {0};
                                  userInfo:nil];
 }
 
-- (void)doProcess {
-    @throw [NSException exceptionWithName:NSInternalInconsistencyException
-                                   reason:[NSString stringWithFormat:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)]
-                                 userInfo:nil];
-}
-
 /**
  * Reads the first available bytes that become available on the channel.
  **/
@@ -172,7 +153,7 @@ static void channel_eof_received(ssh_session session,
         
         [strongSelf->_pendingWriteData appendData:data];
         
-        if (strongSelf.stage != SSHKitChannelStageReadWrite || !strongSelf.session.isConnected) {
+        if (strongSelf.stage != SSHKitChannelStageReady || !strongSelf.session.isConnected) {
             // push data and wait for channel prepared
             return_from_block;
         }
@@ -256,8 +237,6 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     
     // add channel to session list
     [self.session addChannel:self];
-    
-    self.stage = SSHKitChannelStageOpening;
     
     return YES;
 }

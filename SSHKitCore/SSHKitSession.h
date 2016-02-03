@@ -1,8 +1,8 @@
 #import <SSHKitCore/SSHKitCoreCommon.h>
 
-@protocol SSHKitSessionDelegate, SSHKitChannelDelegate, SSHKitSessionChannelDelegate;
+@protocol SSHKitSessionDelegate, SSHKitChannelDelegate, SSHKitShellChannelDelegate;
 @class SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
-@class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitSessionChannel;
+@class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel;
 
 typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 

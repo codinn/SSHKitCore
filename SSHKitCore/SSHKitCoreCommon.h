@@ -46,12 +46,9 @@ typedef NS_ENUM(NSInteger, SSHKitProxyType) {
 };
 
 typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
-    SSHKitChannelStageInvalid = 0,  // channel has not been initiated correctly
-//    SSHKitChannelStageWating,       // channel is in the dispatch queue, and wating for opening
+    SSHKitChannelStageInitial = 0,  // channel has not been initiated correctly
     SSHKitChannelStageOpening,      // channel is opening
-    SSHKitChannelStageRequestPTY,   // channel is requesting a pty
-    SSHKitChannelStageRequestShell, // channel is requesting a shell
-    SSHKitChannelStageReadWrite,    // channel has been opened, we can read / write from the channel
+    SSHKitChannelStageReady,        // channel has been opened, we can read / write from the channel
     SSHKitChannelStageClosed,       // channel has been closed
 };
 

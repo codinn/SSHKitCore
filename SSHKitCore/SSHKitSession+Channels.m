@@ -38,6 +38,7 @@
         }
         
         if ([channel doInitiateWithRawChannel:NULL]) {
+            channel.stage = SSHKitChannelStageOpening;
             [channel doOpen];
         }
     }}];
@@ -58,8 +59,7 @@
     SSHKitForwardChannel *channel = [[SSHKitForwardChannel alloc] initWithSession:self destinationPort:destination_port];
     
     [channel doInitiateWithRawChannel:rawChannel];
-    
-    channel.stage = SSHKitChannelStageReadWrite;
+    channel.stage = SSHKitChannelStageReady;
     
     return channel;
 }
@@ -80,8 +80,8 @@
     }}];
 }
 
-- (SSHKitSessionChannel *)openSessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitSessionChannelDelegate>)aDelegate {
-    SSHKitSessionChannel *channel = [[SSHKitSessionChannel alloc] initWithSession:self terminalType:type columns:columns rows:rows delegate:aDelegate];
+- (SSHKitShellChannel *)openSessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate {
+    SSHKitShellChannel *channel = [[SSHKitShellChannel alloc] initWithSession:self terminalType:type columns:columns rows:rows delegate:aDelegate];
     
     __weak SSHKitSession *weakSelf = self;
     
@@ -95,6 +95,7 @@
         }
         
         if ([channel doInitiateWithRawChannel:NULL]) {
+            channel.stage = SSHKitChannelStageOpening;
             [channel doOpen];
         }
     }}];

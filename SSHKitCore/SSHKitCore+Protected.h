@@ -60,9 +60,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
 - (void)doOpen;
-
 - (void)doWrite;
-- (void)doProcess;
 - (void)doCloseWithError:(NSError *)error;
 @end
 
@@ -79,7 +77,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
-@interface SSHKitSessionChannel()
+@interface SSHKitShellChannel()
 
 - (instancetype)initWithSession:(SSHKitSession *)session terminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
 

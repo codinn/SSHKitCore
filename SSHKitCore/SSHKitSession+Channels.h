@@ -22,7 +22,7 @@
 
 - (void)enqueueForwardRequestWithListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
 
-- (SSHKitSessionChannel *)openSessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitSessionChannelDelegate>)aDelegate;
+- (SSHKitShellChannel *)openSessionChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate;
 
 // @internal
 - (void)doSendForwardRequest;

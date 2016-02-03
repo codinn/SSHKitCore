@@ -1,5 +1,5 @@
 //
-//  SSHKitSessionChannel.h
+//  SSHKitShellChannel.h
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 2/2/16.
@@ -8,9 +8,9 @@
 #import <SSHKitCore/SSHKitCoreCommon.h>
 #import "SSHKitChannel.h"
 
-@protocol SSHKitSessionChannelDelegate;
+@protocol SSHKitShellChannelDelegate;
 
-@interface SSHKitSessionChannel : SSHKitChannel
+@interface SSHKitShellChannel : SSHKitChannel
 
 - (void)changePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows;
 
@@ -20,9 +20,9 @@
 
 @end
 
-@protocol SSHKitSessionChannelDelegate <SSHKitChannelDelegate>
+@protocol SSHKitShellChannelDelegate <SSHKitChannelDelegate>
 
 @required
-- (void)channel:(SSHKitSessionChannel *)channel didChangePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows withError:(NSError *)error;
+- (void)channel:(SSHKitShellChannel *)channel didChangePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows withError:(NSError *)error;
 
 @end

@@ -1,22 +1,30 @@
 //
-//  SSHKitSessionChannel.m
+//  SSHKitShellChannel.m
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 2/2/16.
 //
 //
 
-#import "SSHKitSessionChannel.h"
+#import "SSHKitShellChannel.h"
 #import "SSHKitSession.h"
 #import "SSHKitCore+Protected.h"
 
-@interface SSHKitSessionChannel ()
+typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
+    SessionChannelReqNone = 0,  // session channel has not been opened yet
+    SessionChannelReqPty,       // is requesting a pty
+    SessionChannelReqShell,     // is requesting a shell
+};
 
-@property (nonatomic, weak) id<SSHKitSessionChannelDelegate> delegate;
+@interface SSHKitShellChannel ()
+
+@property (nonatomic, weak) id<SSHKitShellChannelDelegate> delegate;
+
+@property (nonatomic) SessionChannelReqState   reqState;
 
 @end
 
-@implementation SSHKitSessionChannel
+@implementation SSHKitShellChannel
 
 @dynamic delegate;
 
@@ -25,9 +33,29 @@
         _terminalType = type;
         _columns = columns;
         _rows = rows;
+        _reqState = SessionChannelReqNone;
     }
     
     return self;
+}
+
+- (void)doOpen {
+    switch (self.reqState) {
+        case SessionChannelReqNone:
+            // 1. open session channel
+            [self _openSession];
+            break;
+            
+        case SessionChannelReqPty:
+            // 2. request pty
+            [self _requestPty];
+            break;
+            
+        case SessionChannelReqShell:
+            // 2. request shell
+            [self _requestShell];
+            break;
+    }
 }
 
 - (void)_openSession {
@@ -35,15 +63,13 @@
     
     switch (result) {
         case SSH_AGAIN:
-            // try again
-            break;
+            // try next time
+            break;;
             
         case SSH_OK:
-            self.stage = SSHKitChannelStageRequestPTY;
-            
-            // opened
+            // succeed, requests a pty
+            self.reqState = SessionChannelReqPty;
             [self _requestPty];
-            
             break;
             
         default:
@@ -59,13 +85,12 @@
     
     switch (result) {
         case SSH_AGAIN:
-            // try again
+            // try next time
             break;
             
         case SSH_OK:
-            self.stage = SSHKitChannelStageRequestShell;
-            
-            // opened
+            // succeed, requests a pty
+            self.reqState = SessionChannelReqShell;
             [self _requestShell];
             
             break;
@@ -83,13 +108,13 @@
     
     switch (result) {
         case SSH_AGAIN:
-            // try again
+            // try next time
             break;
             
         case SSH_OK:
-            self.stage = SSHKitChannelStageReadWrite;
-            
-            // opened
+            self.reqState = SessionChannelReqNone;
+            // succeed, mark channel ready
+            self.stage = SSHKitChannelStageReady;
             if (_delegateFlags.didOpen) {
                 [self.delegate channelDidOpen:self];
             }
@@ -103,41 +128,13 @@
     }
 }
 
-- (void)doProcess {
-    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
-    
-    switch (self.stage) {
-        case SSHKitChannelStageOpening:
-                [self _openSession];
-            
-            break;
-            
-        case SSHKitChannelStageRequestPTY:
-            [self _requestPty];
-            break;
-            
-            
-        case SSHKitChannelStageRequestShell:
-            [self _requestShell];
-            break;
-            
-        case SSHKitChannelStageReadWrite:
-            [self doWrite];
-            break;
-            
-        case SSHKitChannelStageClosed:
-        default:
-            break;
-    }
-}
-
 - (void)changePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows {
-    __weak SSHKitSessionChannel *weakSelf = self;
+    __weak SSHKitShellChannel *weakSelf = self;
     
     [self.session dispatchAsyncOnSessionQueue:^{ @autoreleasepool {
-        __strong SSHKitSessionChannel *strongSelf = weakSelf;
+        __strong SSHKitShellChannel *strongSelf = weakSelf;
         
-        if (strongSelf.stage != SSHKitChannelStageReadWrite || !strongSelf.session.isConnected) {
+        if (strongSelf.stage != SSHKitChannelStageReady || !strongSelf.session.isConnected) {
             return_from_block;
         }
         

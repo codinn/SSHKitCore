@@ -4,7 +4,7 @@
 #import "SSHKitChannel.h"
 #import "SSHKitDirectChannel.h"
 #import "SSHKitForwardChannel.h"
-#import "SSHKitSessionChannel.h"
+#import "SSHKitShellChannel.h"
 #import "SSHKitPrivateKeyParser.h"
 #import "SSHKitHostKeyParser.h"
 #import "CoSOCKSMessage.h"

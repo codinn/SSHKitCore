@@ -856,7 +856,19 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 // copy channels here, NSEnumerationReverse still not safe while removing object in array
                 NSArray *channels = [strongSelf->_channels copy];
                 for (SSHKitChannel *channel in channels) {
-                    [channel doProcess];
+                    switch (channel.stage) {
+                        case SSHKitChannelStageOpening:
+                            [channel doOpen];
+                            break;
+                            
+                        case SSHKitChannelStageReady:
+                            [channel doWrite];
+                            break;
+                            
+                        case SSHKitChannelStageClosed:
+                        default:
+                            break;
+                    }
                 }
                 
                 break;

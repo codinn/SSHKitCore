@@ -20,19 +20,8 @@
     return self;
 }
 
-- (void)doProcess {
-    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
-    
-    switch (self.stage) {
-        case SSHKitChannelStageReadWrite:
-            [self doWrite];
-            break;
-            
-        case SSHKitChannelStageOpening:
-        case SSHKitChannelStageClosed:
-        default:
-            break;
-    }
+- (void)doOpen {
+    // do nothing, forwarded-tcpip channel is created when remote server response a global channel request
 }
 
 @end

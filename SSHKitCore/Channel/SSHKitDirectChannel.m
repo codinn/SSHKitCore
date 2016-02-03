@@ -32,7 +32,7 @@
             break;
             
         case SSH_OK:
-            self.stage = SSHKitChannelStageReadWrite;
+            self.stage = SSHKitChannelStageReady;
             // opened
             if (_delegateFlags.didOpen) {
                 [self.delegate channelDidOpen:self];
@@ -50,25 +50,6 @@
             [self.session disconnectIfNeeded];
             break;
         }
-    }
-}
-
-- (void)doProcess {
-    NSAssert([self.session isOnSessionQueue], @"Must be dispatched on session queue");
-    
-    switch (self.stage) {
-        case SSHKitChannelStageOpening:
-            [self doOpen];
-            
-            break;
-            
-        case SSHKitChannelStageReadWrite:
-            [self doWrite];
-            break;
-            
-        case SSHKitChannelStageClosed:
-        default:
-            break;
     }
 }
 
