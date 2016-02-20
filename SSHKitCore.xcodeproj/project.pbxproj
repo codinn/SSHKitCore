@@ -33,6 +33,12 @@
 		4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */; };
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
+		CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */ = {isa = PBXBuildFile; fileRef = CC2ADE841C57B46C0025CBB7 /* sshd_config */; };
+		CC7763201C5665F700B584F5 /* SSHKitCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77631F1C5665F700B584F5 /* SSHKitCoreTests.swift */; };
+		CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */; };
+		CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_host_rsa_key */; };
+		CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */; };
+		CCB4D4741C7595D900B9A925 /* README.MD in Sources */ = {isa = PBXBuildFile; fileRef = CCB4D4731C7595D900B9A925 /* README.MD */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
 		E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */ = {isa = PBXBuildFile; fileRef = E4E96D94158E10FD002E6E0A /* SSHKitCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -45,14 +51,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 4673579D3E1C47C8A26F106A;
+			remoteGlobalIDString = 200C00B961E04C8BA1AA884F;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = F93E8B57FAAE42829FF4B53A;
+			remoteGlobalIDString = B0CFC4D7C1F74049B4250A23;
 			remoteInfo = ssh_threads_static;
 		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
@@ -82,6 +88,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 9E33DB2DAFD54972AFEA3D42;
 			remoteInfo = ssh_threads_static;
+		};
+		CC7763231C5665F700B584F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E4E96D7A158E10FD002E6E0A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E4E96D83158E10FD002E6E0A;
+			remoteInfo = "SSHKitCore-Mac";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -125,6 +138,15 @@
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
+		CC2ADE841C57B46C0025CBB7 /* sshd_config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sshd_config; sourceTree = "<group>"; };
+		CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SSHKitCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC77631F1C5665F700B584F5 /* SSHKitCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSHKitCoreTests.swift; sourceTree = "<group>"; };
+		CC7763211C5665F700B584F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CC77632E1C5666D200B584F5 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		CC7763301C56704B00B584F5 /* ssh_host_rsa_key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key; sourceTree = "<group>"; };
+		CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key.pub; sourceTree = "<group>"; };
+		CC8EE9981C647813008817A3 /* initTestEnv.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = initTestEnv.sh; sourceTree = "<group>"; };
+		CCB4D4731C7595D900B9A925 /* README.MD */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.MD; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
 		E42815C11593D95200CF680C /* SSHKitSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSession.m; sourceTree = "<group>"; };
 		E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SSHKitCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,6 +161,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		CC77631A1C5665F700B584F5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4E96D80158E10FD002E6E0A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -220,6 +250,29 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		CC77631E1C5665F700B584F5 /* SSHKitCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				CC77632F1C566F0700B584F5 /* ssh */,
+				CC77631F1C5665F700B584F5 /* SSHKitCoreTests.swift */,
+				CC7763211C5665F700B584F5 /* Info.plist */,
+				CC77632E1C5666D200B584F5 /* Bridging-Header.h */,
+				CC8EE9981C647813008817A3 /* initTestEnv.sh */,
+				CCB4D4731C7595D900B9A925 /* README.MD */,
+			);
+			path = SSHKitCoreTests;
+			sourceTree = "<group>";
+		};
+		CC77632F1C566F0700B584F5 /* ssh */ = {
+			isa = PBXGroup;
+			children = (
+				CC7763301C56704B00B584F5 /* ssh_host_rsa_key */,
+				CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */,
+				CC2ADE841C57B46C0025CBB7 /* sshd_config */,
+			);
+			path = ssh;
+			sourceTree = "<group>";
+		};
 		E4E96D78158E10FD002E6E0A = {
 			isa = PBXGroup;
 			children = (
@@ -227,6 +280,7 @@
 				4AF3D46B1BCF8AA2009970A9 /* Makefile */,
 				4A49F61B1A491C6E00D9BA80 /* Vendor */,
 				E4E96D8D158E10FD002E6E0A /* SSHKitCore */,
+				CC77631E1C5665F700B584F5 /* SSHKitCoreTests */,
 				E4E96D86158E10FD002E6E0A /* Frameworks */,
 				E4E96D85158E10FD002E6E0A /* Products */,
 			);
@@ -236,6 +290,7 @@
 			isa = PBXGroup;
 			children = (
 				E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */,
+				CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -315,6 +370,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		CC77631C1C5665F700B584F5 /* SSHKitCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC77632D1C5665F700B584F5 /* Build configuration list for PBXNativeTarget "SSHKitCoreTests" */;
+			buildPhases = (
+				CC7763191C5665F700B584F5 /* Sources */,
+				CC77631A1C5665F700B584F5 /* Frameworks */,
+				CC77631B1C5665F700B584F5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CC7763241C5665F700B584F5 /* PBXTargetDependency */,
+			);
+			name = SSHKitCoreTests;
+			productName = SSHKitCoreTests;
+			productReference = CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		E4E96D83158E10FD002E6E0A /* SSHKitCore-Mac */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E4E96DAE158E10FD002E6E0A /* Build configuration list for PBXNativeTarget "SSHKitCore-Mac" */;
@@ -343,8 +416,14 @@
 		E4E96D7A158E10FD002E6E0A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0720;
 				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0700;
+				TargetAttributes = {
+					CC77631C1C5665F700B584F5 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+				};
 			};
 			buildConfigurationList = E4E96D7D158E10FD002E6E0A /* Build configuration list for PBXProject "SSHKitCore" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -365,6 +444,7 @@
 			projectRoot = "";
 			targets = (
 				E4E96D83158E10FD002E6E0A /* SSHKitCore-Mac */,
+				CC77631C1C5665F700B584F5 /* SSHKitCoreTests */,
 			);
 		};
 /* End PBXProject section */
@@ -401,6 +481,16 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		CC77631B1C5665F700B584F5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */,
+				CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */,
+				CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4E96D82158E10FD002E6E0A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -429,6 +519,15 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		CC7763191C5665F700B584F5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CCB4D4741C7595D900B9A925 /* README.MD in Sources */,
+				CC7763201C5665F700B584F5 /* SSHKitCoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4E96D7F158E10FD002E6E0A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -461,9 +560,53 @@
 			name = ssh_threads_static;
 			targetProxy = 4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */;
 		};
+		CC7763241C5665F700B584F5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E4E96D83158E10FD002E6E0A /* SSHKitCore-Mac */;
+			targetProxy = CC7763231C5665F700B584F5 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		CC7763251C5665F700B584F5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				INFOPLIST_FILE = SSHKitCoreTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.codinnstudio.SSHKitCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "SSHKitCoreTests/Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CC7763261C5665F700B584F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				INFOPLIST_FILE = SSHKitCoreTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.codinnstudio.SSHKitCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "SSHKitCoreTests/Bridging-Header.h";
+			};
+			name = Release;
+		};
 		E4E96DAC158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -588,6 +731,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		CC77632D1C5665F700B584F5 /* Build configuration list for PBXNativeTarget "SSHKitCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC7763251C5665F700B584F5 /* Debug */,
+				CC7763261C5665F700B584F5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E4E96D7D158E10FD002E6E0A /* Build configuration list for PBXProject "SSHKitCore" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
