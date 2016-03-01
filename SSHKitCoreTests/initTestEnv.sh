@@ -20,4 +20,4 @@ sudo mkdir /Users/sshtest/.ssh
 sudo sh -c "cat ./ssh/ssh_host_rsa_key.pub >> /Users/sshtest/.ssh/authorized_keys"
 sudo chmod -R 700 /Users/sshtest/.ssh
 sudo chown -R sshtest:staff /Users/sshtest/
-# vim /etc/ssh/ssh_config
+# vim /etc/ssh/sshd_config

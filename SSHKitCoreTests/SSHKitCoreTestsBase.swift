@@ -8,13 +8,14 @@
 
 import XCTest
 
-class SSHKitCoreTests: XCTestCase, SSHKitSessionDelegate {
+class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitChannelDelegate {
     // async test http://nshipster.com/xctestcase/
     var expectation: XCTestExpectation?// = expectationWithDescription("Common expectation")
     var authMethod: String?
     let username = "sshtest"
     let password = "v#.%-dzd"
     var publicKeyBase64: String?
+    let echoTask = NSTask()
     let task = NSTask()
     let userDefaults = NSUserDefaults.standardUserDefaults()
     
@@ -31,6 +32,16 @@ class SSHKitCoreTests: XCTestCase, SSHKitSessionDelegate {
         // userDefaults.setValue("", forKey: "password")
     }
     
+    func startEchoServer() {
+        let echoServer = NSBundle(forClass: self.dynamicType).pathForResource("echo_server.py", ofType: "");
+        echoTask.launchPath = echoServer
+        echoTask.launch()
+    }
+    
+    func stopEchoServer() {
+        echoTask.terminate()
+    }
+    
     func startSSHD() {
         let hostKeyPath = NSBundle(forClass: self.dynamicType).pathForResource("ssh_host_rsa_key", ofType: "");
         let sshConfigPath = NSBundle(forClass: self.dynamicType).pathForResource("sshd_config", ofType: "");
@@ -45,49 +56,77 @@ class SSHKitCoreTests: XCTestCase, SSHKitSessionDelegate {
         // task.terminate()
     }
     
-    func testConnectSessionByPublicKeyBase64() {
+    func connectSessionByPublicKeyBase64() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By PublicKey Base64")
         authMethod = "publickey"
         let session = SSHKitSession(delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
         session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
-        // NOTE: if debug(add break point), should extend this time
         waitForExpectationsWithTimeout(10) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }
         }
         XCTAssert(session.connected)
+        return session
+        // NOTE: if debug(add break point), should extend this time
     }
     
-    func testConnectSessionByPassword() {
-        authMethod = "password"
+    func connectSessionByPassword() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By Password")
+        authMethod = "password"
         let session = SSHKitSession(delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
         session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
-        // authenticateByPasswordHandler
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }
         }
         XCTAssert(session.connected)
+        return session
+        // authenticateByPasswordHandler
     }
     
-    func testConnectSessionByKeyboardInteractive() {
-        authMethod = "keyboard-interactive"
+    func connectSessionByKeyboardInteractive() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By Keyboard Interactive")
+        authMethod = "keyboard-interactive"
         let session = SSHKitSession(delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
         session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
-        // authenticateByPasswordHandler
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }
         }
         XCTAssert(session.connected)
+        return session
+        // authenticateByPasswordHandler
+    }
+    
+    func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
+        expectation = expectationWithDescription("Open Direct Channel")
+        let channel = SSHKitChannel.directChannelFromSession(session, withHost: "127.0.0.1", port: 2200, delegate: self)
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+        XCTAssert(channel.opened)
+        return channel
+    }
+    
+    
+    func openShellChannel(session: SSHKitSession) -> SSHKitChannel {
+        expectation = expectationWithDescription("Open Shell Channel")
+        let channel = SSHKitChannel.shellChannelFromSession(session, withTerminalType: "", columns: 10, rows: 10, delegate: self)
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+        XCTAssert(channel.opened)
+        return channel
     }
     
     //MARK: SSHKitSessionDelegate
@@ -146,6 +185,27 @@ class SSHKitCoreTests: XCTestCase, SSHKitSessionDelegate {
             break
         }
         return nil
+    }
+    
+    // MARK: SSHKitChannelDelegate
+    func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
+    }
+    
+    func channel(channel: SSHKitChannel, didReadStderrData data: NSData) {
+    }
+    
+    func channelDidWriteData(channel: SSHKitChannel) {
+    }
+    
+    func channelDidClose(channel: SSHKitChannel, withError error: NSError) {
+        // expectation!.fulfill()
+    }
+    
+    func channelDidOpen(channel: SSHKitChannel) {
+        expectation!.fulfill()
+    }
+    
+    func channel(channel: SSHKitChannel, didChangePtySizeToColumns columns: Int, rows: Int, withError error: NSError) {
     }
 
 }
