@@ -119,7 +119,7 @@ class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitChannelDeleg
     
     func openShellChannel(session: SSHKitSession) -> SSHKitChannel {
         expectation = expectationWithDescription("Open Shell Channel")
-        let channel = SSHKitChannel.shellChannelFromSession(session, withTerminalType: "", columns: 10, rows: 10, delegate: self)
+        let channel = SSHKitChannel.shellChannelFromSession(session, withTerminalType: "xterm", columns: 10, rows: 10, delegate: self)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
