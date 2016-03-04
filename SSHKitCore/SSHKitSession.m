@@ -4,8 +4,9 @@
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
 #import "SSHKitConnector.h"
-#import "SSHKitConnector.h"
+#import "SSHKitSession+Channels.h"
 #import "SSHKitPrivateKeyParser.h"
+#import "SSHKitForwardChannel.h"
 
 #define SOCKET_NULL -1
 
@@ -29,7 +30,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         unsigned int didReceiveIssueBanner          : 1;
         unsigned int authenticateWithAllowedMethodsPartialSuccess : 1;
         unsigned int didAuthenticateUser            : 1;
-        unsigned int didAcceptForwardChannel        : 1;
+        unsigned int didOpenForwardChannel          : 1;
 	} _delegateFlags;
     
     dispatch_source_t   _socketReadSource;
@@ -41,9 +42,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     void *_isOnSessionQueueKey;
     
     SSHKitConnector     *_connector;
-    
-    NSMutableArray      *_forwardRequests;
-    NSMutableArray      *_channels;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
@@ -157,7 +155,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
         _delegateFlags.didReceiveIssueBanner = [delegate respondsToSelector:@selector(session:didReceiveIssueBanner:)];
-        _delegateFlags.didAcceptForwardChannel = [delegate respondsToSelector:@selector(session:didAcceptForwardChannel:)];
+        _delegateFlags.didOpenForwardChannel = [delegate respondsToSelector:@selector(session:didOpenForwardChannel:)];
         _delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
 	}
 }
@@ -449,7 +447,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     NSArray *channels = [_channels copy];
     for (SSHKitChannel* channel in channels) {
-        [channel _doCloseWithError:nil];
+        [channel doCloseWithError:nil];
     }
     
     [_channels removeAllObjects];
@@ -562,7 +560,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
         case SSH_AUTH_DENIED: {
             // pre auth success
-            if (_delegateFlags.didAcceptForwardChannel) {
+            if (_delegateFlags.didReceiveIssueBanner) {
                 /*
                  *** Does not work without calling ssh_userauth_none() first ***
                  *** That will be fixed ***
@@ -839,28 +837,44 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 
                 break;
             case SSHKitSessionStageAuthenticated: {
-                // try again forward-tcpip requests
-                [SSHKitChannel _doRequestRemoteForwardOnSession:strongSelf];
+                // try forward-tcpip requests
+                [strongSelf doSendForwardRequest];
                 
                 // probe forward channel from accepted forward
                 // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
                 //       another method is create a temporary channel, and let it consumes the wild data.
                 //       The real cause is unkown, may be it's caused by data arrived while channels already closed
-                SSHKitChannel *forwardChannel = [SSHKitChannel _doCreateForwardChannelFromSession:strongSelf];
+                SSHKitForwardChannel *forwardChannel = [self openForwardChannel];
                 
                 if (forwardChannel) {
-                    if (strongSelf->_delegateFlags.didAcceptForwardChannel) {
-                        [strongSelf->_delegate session:strongSelf didAcceptForwardChannel:forwardChannel];
+                    if (strongSelf->_delegateFlags.didOpenForwardChannel) {
+                        [strongSelf->_delegate session:strongSelf didOpenForwardChannel:forwardChannel];
                     }
                 }
                 
                 // copy channels here, NSEnumerationReverse still not safe while removing object in array
                 NSArray *channels = [strongSelf->_channels copy];
                 for (SSHKitChannel *channel in channels) {
-                    [channel _doProcess];
+                    switch (channel.stage) {
+                        case SSHKitChannelStageOpening:
+                            [channel doOpen];
+                            break;
+                            
+                        case SSHKitChannelStageReady:
+                            [channel doWrite];
+                            break;
+                            
+                        case SSHKitChannelStageClosed:
+                            [strongSelf->_channels removeObject:channel];
+                            break;
+                            
+                        default:
+                            break;
+                    }
                 }
-            }
+                
                 break;
+            }
                 
             case SSHKitSessionStageUnknown:
             default:
@@ -959,38 +973,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-#pragma mark - Enqueue / Dequeue Request and Channel
-
-- (void)addChannel:(SSHKitChannel *)channel {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    [_channels addObject:channel];
-}
-- (void)removeChannel:(SSHKitChannel *)channel {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    [_channels removeObject:channel];
-}
-
-- (SSHKitForwardRequest *)firstForwardRequest {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    return _forwardRequests.firstObject;
-}
-- (void)addForwardRequest:(SSHKitForwardRequest *)request {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    [_forwardRequests addObject:request];
-}
-- (void)removeForwardRequest:(SSHKitForwardRequest *)request {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    NSUInteger index = [_forwardRequests indexOfObject:request];
-    
-    if (index!=NSNotFound) {
-        [_forwardRequests removeObjectAtIndex:index];
-    }
-}
-- (void)removeAllForwardRequest {
-    NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
-    [_forwardRequests removeAllObjects];
-}
-
 #pragma mark - Libssh logging
 
 static void raw_session_log_callback(int priority, const char *function, const char *message, void *userdata) {
@@ -1036,39 +1018,6 @@ static void raw_session_log_callback(int priority, const char *function, const c
     ssh_set_log_userdata((__bridge void *)(self));
     ssh_set_log_level(SSH_LOG_TRACE);
 #endif
-}
-
-@end
-
-@interface SSHKitForwardRequest()
-
-@property (readwrite, copy) NSString    *listenHost;
-@property (readwrite)       uint16_t    listenPort;
-@property (readwrite, strong)       SSHKitRequestRemoteForwardCompletionBlock completionHandler;
-
-@end
-            
-@implementation SSHKitForwardRequest
-
-- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler {
-    self = [super init];
-    
-    if (self) {
-        if (!host.length) {
-            self.listenHost = @"localhost";
-        } else {
-            self.listenHost = host.lowercaseString;
-        }
-        
-        self.listenPort = port;
-        self.completionHandler = completionHandler;
-    }
-    
-    return self;
-}
-
-- (BOOL)isEqual:(id)object {
-    return [self.listenHost isEqualToString:[object listenHost]] && self.listenPort==[object listenPort];
 }
 
 @end
