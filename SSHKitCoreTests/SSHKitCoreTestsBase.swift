@@ -8,7 +8,8 @@
 
 import XCTest
 
-class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitChannelDelegate {
+
+class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegate {
     // async test http://nshipster.com/xctestcase/
     var expectation: XCTestExpectation?// = expectationWithDescription("Common expectation")
     var authMethod: String?
@@ -106,31 +107,43 @@ class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitChannelDeleg
     
     func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
         expectation = expectationWithDescription("Open Direct Channel")
-        let channel = SSHKitChannel.directChannelFromSession(session, withHost: "127.0.0.1", port: 2200, delegate: self)
+        let channel = session.openDirectChannelWithTargetHost("127.0.0.1", port: 2200, delegate: self)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }
         }
-        XCTAssert(channel.opened)
+        XCTAssert(channel.isOpen)
         return channel
     }
     
     
-    func openShellChannel(session: SSHKitSession) -> SSHKitChannel {
+    func openShellChannel(session: SSHKitSession) -> SSHKitShellChannel {
         expectation = expectationWithDescription("Open Shell Channel")
-        let channel = SSHKitChannel.shellChannelFromSession(session, withTerminalType: "xterm", columns: 10, rows: 10, delegate: self)
+        let channel = session.openShellChannelWithTerminalType("xterm", columns: 20, rows: 50, delegate: self)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }
         }
-        XCTAssert(channel.opened)
+        XCTAssert(channel.isOpen)
         return channel
     }
+    
+    func openForwardChannel(session: SSHKitSession) -> SSHKitChannel {
+        expectation = expectationWithDescription("Open Forward Channel")
+        let channel = session.openForwardChannel()
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+        XCTAssert(channel.isOpen)
+        return channel
+    }
+    
     
     //MARK: SSHKitSessionDelegate
-    
     func session(session: SSHKitSession!, didConnectToHost host: String!, port: UInt16) {
     }
     
@@ -198,14 +211,15 @@ class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitChannelDeleg
     }
     
     func channelDidClose(channel: SSHKitChannel, withError error: NSError) {
-        // expectation!.fulfill()
     }
     
     func channelDidOpen(channel: SSHKitChannel) {
         expectation!.fulfill()
     }
     
-    func channel(channel: SSHKitChannel, didChangePtySizeToColumns columns: Int, rows: Int, withError error: NSError) {
+    //MARK: SSHKitShellChannelDelegate
+    func channel(channel: SSHKitShellChannel, didChangePtySizeToColumns columns: Int, rows: Int, withError error: NSError) {
+        // print("didChangePtySizeToColumns")
     }
 
 }
