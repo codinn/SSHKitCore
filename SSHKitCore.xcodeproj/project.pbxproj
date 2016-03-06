@@ -51,7 +51,6 @@
 		CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */; };
 		CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */; };
 		CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */; };
-		CCB4D4741C7595D900B9A925 /* README.MD in Sources */ = {isa = PBXBuildFile; fileRef = CCB4D4731C7595D900B9A925 /* README.MD */; };
 		CCE0E5221C858CC400E81427 /* echo_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CCE0E5211C858CC400E81427 /* echo_server.py */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
@@ -504,7 +503,8 @@
 		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh.4.4.0.dylib;
+			name = libssh.dylib;
+			path = libssh.4.4.1.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -518,7 +518,8 @@
 		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			path = libssh_threads.4.4.0.dylib;
+			name = libssh_threads.dylib;
+			path = libssh_threads.4.4.1.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -575,7 +576,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CCB4D4741C7595D900B9A925 /* README.MD in Sources */,
 				CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
