@@ -119,7 +119,7 @@ static NSData * _localResolveHost(NSString *host, uint16_t port, NSError **errPt
     
     /* PORT: 2
      */
-    uint16_t target_port = ntohs(self.targetPort);
+    uint16_t target_port = htons(self.targetPort);
     memcpy(buffer+offset, &target_port, 2);
     offset+=2;
     
