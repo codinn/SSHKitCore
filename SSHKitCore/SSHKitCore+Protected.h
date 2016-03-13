@@ -26,49 +26,69 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     SSHKitChannelStderrData,
 };
 
-@interface SSHKitForwardRequest : NSObject
-
-- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
-
-@property (readonly, copy) NSString    *listenHost;
-@property (readonly)       uint16_t    listenPort;
-@property (readonly, strong)       SSHKitRequestRemoteForwardCompletionBlock completionHandler;
-
-@end
-
-@interface SSHKitSession ()
+@interface SSHKitSession () {
+    NSMutableArray      *_forwardRequests;
+    NSMutableArray      *_channels;
+}
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_session rawSession;
-
-- (void)addChannel:(SSHKitChannel *)channel;
-- (void)removeChannel:(SSHKitChannel *)channel;
-
-- (SSHKitForwardRequest *)firstForwardRequest;
-- (void)addForwardRequest:(SSHKitForwardRequest *)request;
-- (void)removeForwardRequest:(SSHKitForwardRequest *)request;
-- (void)removeAllForwardRequest;
 
 - (BOOL)isOnSessionQueue;
 - (void)disconnectIfNeeded;
 
 @end
 
-@interface SSHKitChannel ()
+@interface SSHKitChannel () {
+@public
+    struct {
+        unsigned int didReadStdoutData : 1;
+        unsigned int didReadStderrData : 1;
+        unsigned int didWriteData : 1;
+        unsigned int didOpen : 1;
+        unsigned int didCloseWithError : 1;
+        unsigned int didChangePtySizeToColumnsRows : 1;
+    } _delegateFlags;
+}
+
+- (BOOL)doInitiateWithRawChannel:(ssh_channel)rawChannel;
 
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_channel rawChannel;
 @property (nonatomic, readonly) sftp_session rawSFTPSession;
 
-+ (instancetype)_doCreateForwardChannelFromSession:(SSHKitSession *)session;
-+ (void)_doRequestRemoteForwardOnSession:(SSHKitSession *)session;
+@property (nonatomic, readwrite) SSHKitChannelStage stage;
 
-- (void)_doProcess;
-- (void)_doCloseWithError:(NSError *)error;
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
+
+- (void)doOpen;
+- (void)doWrite;
+- (void)doCloseWithError:(NSError *)error;
 @end
 
-@interface SSHKitPrivateKeyParser ()
-{
+
+@interface SSHKitForwardChannel()
+
+- (instancetype)initWithSession:(SSHKitSession *)session destinationPort:(NSUInteger)port;
+
+@end
+
+@interface SSHKitDirectChannel()
+
+- (instancetype)initWithSession:(SSHKitSession *)session targetHost:(NSString *)host targetPort:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
+
+@end
+
+@interface SSHKitShellChannel()
+
+- (instancetype)initWithSession:(SSHKitSession *)session terminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
+
+@end
+
+@interface SSHKitSFTPChannel()
+@end
+
+@interface SSHKitPrivateKeyParser () {
     SSHKitAskPassphrasePrivateKeyBlock _passhpraseHandler;
 }
 

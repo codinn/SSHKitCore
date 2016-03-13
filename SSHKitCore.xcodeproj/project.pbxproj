@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 47;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,6 +14,16 @@
 		4A2B5B071A4A6F3C007D20DF /* SSHKitHostKeyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B051A4A6F3C007D20DF /* SSHKitHostKeyParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A2B5B081A4A6F3C007D20DF /* SSHKitHostKeyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B5B061A4A6F3C007D20DF /* SSHKitHostKeyParser.m */; };
 		4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A3D1E2B1C603F21009F9760 /* SSHKitChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E291C603F21009F9760 /* SSHKitChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A3D1E2C1C603F22009F9760 /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E2A1C603F21009F9760 /* SSHKitChannel.m */; };
+		4A3D1E2F1C604405009F9760 /* SSHKitDirectChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E2D1C604405009F9760 /* SSHKitDirectChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A3D1E301C604405009F9760 /* SSHKitDirectChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E2E1C604405009F9760 /* SSHKitDirectChannel.m */; };
+		4A3D1E331C6044A6009F9760 /* SSHKitForwardChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E311C6044A6009F9760 /* SSHKitForwardChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A3D1E341C6044A6009F9760 /* SSHKitForwardChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E321C6044A6009F9760 /* SSHKitForwardChannel.m */; };
+		4A3D1E371C6048CD009F9760 /* SSHKitShellChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E351C6048CD009F9760 /* SSHKitShellChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A3D1E381C6048CD009F9760 /* SSHKitShellChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E361C6048CD009F9760 /* SSHKitShellChannel.m */; };
+		4A3D1E431C60934A009F9760 /* SSHKitSession+Channels.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E411C60934A009F9760 /* SSHKitSession+Channels.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A3D1E441C60934A009F9760 /* SSHKitSession+Channels.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E421C60934A009F9760 /* SSHKitSession+Channels.m */; };
 		4A49F63B1A491C8400D9BA80 /* CoSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6301A491C8400D9BA80 /* CoSocket.h */; };
 		4A49F63C1A491C8400D9BA80 /* CoSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6311A491C8400D9BA80 /* CoSocket.m */; };
 		4A49F65A1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F64F1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m */; };
@@ -30,18 +40,26 @@
 		4A759CB11BCEBD3900301730 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CAF1BCEBD3900301730 /* libcrypto.a */; };
 		4A759CB21BCEBD3900301730 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CB01BCEBD3900301730 /* libssl.a */; };
 		4A759CB41BCEBD8F00301730 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CB31BCEBD8F00301730 /* libz.tbd */; };
-		4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */; };
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
-		CC23133E1B8DB0520040183C /* SSHKitSFTPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = CC23133C1B8DB0520040183C /* SSHKitSFTPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CC23133F1B8DB0520040183C /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CC23133D1B8DB0520040183C /* SSHKitSFTPChannel.m */; };
-		CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */; };
+		CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */ = {isa = PBXBuildFile; fileRef = CC2ADE841C57B46C0025CBB7 /* sshd_config */; };
+		CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */; };
+		CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */; };
+		CC7763201C5665F700B584F5 /* SSHKitCoreTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77631F1C5665F700B584F5 /* SSHKitCoreTestsBase.swift */; };
+		CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */; };
+		CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_host_rsa_key */; };
+		CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */; };
+		CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */; };
+		CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */; };
+		CCBEE2561C8D5EE0004394A4 /* SSHKitSFTPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */; };
+		CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CCBEE2591C8D5EE0004394A4 /* SSHKitSFTPFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */; };
+		CCE0E5221C858CC400E81427 /* echo_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CCE0E5211C858CC400E81427 /* echo_server.py */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
 		E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */ = {isa = PBXBuildFile; fileRef = E4E96D94158E10FD002E6E0A /* SSHKitCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E4E96D88158E10FD002E6E0A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E96D87158E10FD002E6E0A /* Cocoa.framework */; };
-		E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,14 +67,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 4673579D3E1C47C8A26F106A;
+			remoteGlobalIDString = 3AC875A698B345EA94BE14B3;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = F93E8B57FAAE42829FF4B53A;
+			remoteGlobalIDString = BCFB18B1D64247E79523C3F4;
 			remoteInfo = ssh_threads_static;
 		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
@@ -87,6 +105,13 @@
 			remoteGlobalIDString = 9E33DB2DAFD54972AFEA3D42;
 			remoteInfo = ssh_threads_static;
 		};
+		CC7763231C5665F700B584F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E4E96D7A158E10FD002E6E0A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E4E96D83158E10FD002E6E0A;
+			remoteInfo = "SSHKitCore-Mac";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -108,6 +133,16 @@
 		4A2B5B051A4A6F3C007D20DF /* SSHKitHostKeyParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitHostKeyParser.h; sourceTree = "<group>"; };
 		4A2B5B061A4A6F3C007D20DF /* SSHKitHostKeyParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitHostKeyParser.m; sourceTree = "<group>"; };
 		4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitCoreCommon.h; sourceTree = "<group>"; };
+		4A3D1E291C603F21009F9760 /* SSHKitChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitChannel.h; sourceTree = "<group>"; };
+		4A3D1E2A1C603F21009F9760 /* SSHKitChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitChannel.m; sourceTree = "<group>"; };
+		4A3D1E2D1C604405009F9760 /* SSHKitDirectChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitDirectChannel.h; sourceTree = "<group>"; };
+		4A3D1E2E1C604405009F9760 /* SSHKitDirectChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitDirectChannel.m; sourceTree = "<group>"; };
+		4A3D1E311C6044A6009F9760 /* SSHKitForwardChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitForwardChannel.h; sourceTree = "<group>"; };
+		4A3D1E321C6044A6009F9760 /* SSHKitForwardChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitForwardChannel.m; sourceTree = "<group>"; };
+		4A3D1E351C6048CD009F9760 /* SSHKitShellChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitShellChannel.h; sourceTree = "<group>"; };
+		4A3D1E361C6048CD009F9760 /* SSHKitShellChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitShellChannel.m; sourceTree = "<group>"; };
+		4A3D1E411C60934A009F9760 /* SSHKitSession+Channels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitSession+Channels.h"; sourceTree = "<group>"; };
+		4A3D1E421C60934A009F9760 /* SSHKitSession+Channels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SSHKitSession+Channels.m"; sourceTree = "<group>"; };
 		4A49F6301A491C8400D9BA80 /* CoSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoSocket.h; sourceTree = "<group>"; };
 		4A49F6311A491C8400D9BA80 /* CoSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CoSocket.m; sourceTree = "<group>"; };
 		4A49F64F1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitConnectorHTTPS.m; sourceTree = "<group>"; };
@@ -129,10 +164,24 @@
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
-		CC23133C1B8DB0520040183C /* SSHKitSFTPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPChannel.h; path = SFTP/SSHKitSFTPChannel.h; sourceTree = "<group>"; };
-		CC23133D1B8DB0520040183C /* SSHKitSFTPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPChannel.m; path = SFTP/SSHKitSFTPChannel.m; sourceTree = "<group>"; };
-		CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SSHKitSFTPFile.h; path = SFTP/SSHKitSFTPFile.h; sourceTree = "<group>"; };
-		CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SSHKitSFTPFile.m; path = SFTP/SSHKitSFTPFile.m; sourceTree = "<group>"; };
+		CC2ADE841C57B46C0025CBB7 /* sshd_config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sshd_config; sourceTree = "<group>"; };
+		CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
+		CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectChannelTests.swift; sourceTree = "<group>"; };
+		CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SSHKitCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CC77631F1C5665F700B584F5 /* SSHKitCoreTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSHKitCoreTestsBase.swift; sourceTree = "<group>"; };
+		CC7763211C5665F700B584F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CC77632E1C5666D200B584F5 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		CC7763301C56704B00B584F5 /* ssh_host_rsa_key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key; sourceTree = "<group>"; };
+		CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key.pub; sourceTree = "<group>"; };
+		CC8EE9981C647813008817A3 /* initTestEnv.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = initTestEnv.sh; sourceTree = "<group>"; };
+		CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShellChannelTests.swift; sourceTree = "<group>"; };
+		CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ForwardChannelTests.swift; sourceTree = "<group>"; };
+		CCB4D4731C7595D900B9A925 /* README.MD */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.MD; sourceTree = "<group>"; };
+		CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPChannel.h; sourceTree = "<group>"; };
+		CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPChannel.m; sourceTree = "<group>"; };
+		CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPFile.h; sourceTree = "<group>"; };
+		CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPFile.m; sourceTree = "<group>"; };
+		CCE0E5211C858CC400E81427 /* echo_server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = echo_server.py; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
 		E42815C11593D95200CF680C /* SSHKitSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSession.m; sourceTree = "<group>"; };
 		E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SSHKitCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,11 +191,17 @@
 		E4E96D8C158E10FD002E6E0A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		E4E96D8F158E10FD002E6E0A /* SSHKitCore-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SSHKitCore-Info.plist"; sourceTree = "<group>"; };
 		E4E96D94158E10FD002E6E0A /* SSHKitCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SSHKitCore.h; sourceTree = "<group>"; };
-		E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitChannel.h; sourceTree = "<group>"; };
-		E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitChannel.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		CC77631A1C5665F700B584F5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4E96D80158E10FD002E6E0A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -173,6 +228,21 @@
 				4A2B5B061A4A6F3C007D20DF /* SSHKitHostKeyParser.m */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		4A3D1E281C603F21009F9760 /* Channel */ = {
+			isa = PBXGroup;
+			children = (
+				4A3D1E291C603F21009F9760 /* SSHKitChannel.h */,
+				4A3D1E2A1C603F21009F9760 /* SSHKitChannel.m */,
+				4A3D1E2D1C604405009F9760 /* SSHKitDirectChannel.h */,
+				4A3D1E2E1C604405009F9760 /* SSHKitDirectChannel.m */,
+				4A3D1E311C6044A6009F9760 /* SSHKitForwardChannel.h */,
+				4A3D1E321C6044A6009F9760 /* SSHKitForwardChannel.m */,
+				4A3D1E351C6048CD009F9760 /* SSHKitShellChannel.h */,
+				4A3D1E361C6048CD009F9760 /* SSHKitShellChannel.m */,
+			);
+			path = Channel;
 			sourceTree = "<group>";
 		};
 		4A49F61B1A491C6E00D9BA80 /* Vendor */ = {
@@ -228,15 +298,43 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		CCFF7DE71B8CAEE0000EDFD4 /* SFTP */ = {
+		CC77631E1C5665F700B584F5 /* SSHKitCoreTests */ = {
 			isa = PBXGroup;
 			children = (
-				CC23133C1B8DB0520040183C /* SSHKitSFTPChannel.h */,
-				CC23133D1B8DB0520040183C /* SSHKitSFTPChannel.m */,
-				CCD5DFF41B8FE86D00737B03 /* SSHKitSFTPFile.h */,
-				CCD5DFF51B8FE86D00737B03 /* SSHKitSFTPFile.m */,
+				CC77632F1C566F0700B584F5 /* ssh */,
+				CC7763211C5665F700B584F5 /* Info.plist */,
+				CC77632E1C5666D200B584F5 /* Bridging-Header.h */,
+				CC8EE9981C647813008817A3 /* initTestEnv.sh */,
+				CCB4D4731C7595D900B9A925 /* README.MD */,
+				CC77631F1C5665F700B584F5 /* SSHKitCoreTestsBase.swift */,
+				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
+				CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */,
+				CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */,
+				CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */,
 			);
-			name = SFTP;
+			path = SSHKitCoreTests;
+			sourceTree = "<group>";
+		};
+		CC77632F1C566F0700B584F5 /* ssh */ = {
+			isa = PBXGroup;
+			children = (
+				CCE0E5211C858CC400E81427 /* echo_server.py */,
+				CC7763301C56704B00B584F5 /* ssh_host_rsa_key */,
+				CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */,
+				CC2ADE841C57B46C0025CBB7 /* sshd_config */,
+			);
+			path = ssh;
+			sourceTree = "<group>";
+		};
+		CCBEE2511C8D5EE0004394A4 /* SFTP */ = {
+			isa = PBXGroup;
+			children = (
+				CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */,
+				CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */,
+				CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */,
+				CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */,
+			);
+			path = SFTP;
 			sourceTree = "<group>";
 		};
 		E4E96D78158E10FD002E6E0A = {
@@ -246,6 +344,7 @@
 				4AF3D46B1BCF8AA2009970A9 /* Makefile */,
 				4A49F61B1A491C6E00D9BA80 /* Vendor */,
 				E4E96D8D158E10FD002E6E0A /* SSHKitCore */,
+				CC77631E1C5665F700B584F5 /* SSHKitCoreTests */,
 				E4E96D86158E10FD002E6E0A /* Frameworks */,
 				E4E96D85158E10FD002E6E0A /* Products */,
 			);
@@ -255,6 +354,7 @@
 			isa = PBXGroup;
 			children = (
 				E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */,
+				CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -285,18 +385,19 @@
 		E4E96D8D158E10FD002E6E0A /* SSHKitCore */ = {
 			isa = PBXGroup;
 			children = (
-				CCFF7DE71B8CAEE0000EDFD4 /* SFTP */,
 				4A281DBE1A4A570D00EA1583 /* Utils */,
 				4A49F64E1A491CD100D9BA80 /* Connector */,
 				4A49F6551A491CD100D9BA80 /* CoMessage */,
+				4A3D1E281C603F21009F9760 /* Channel */,
+				CCBEE2511C8D5EE0004394A4 /* SFTP */,
 				E4E96D94158E10FD002E6E0A /* SSHKitCore.h */,
 				4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */,
 				4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */,
 				4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */,
 				E42815C01593D95200CF680C /* SSHKitSession.h */,
 				E42815C11593D95200CF680C /* SSHKitSession.m */,
-				E4F1E67E159F5B13007B0B2F /* SSHKitChannel.h */,
-				E4F1E67F159F5B13007B0B2F /* SSHKitChannel.m */,
+				4A3D1E411C60934A009F9760 /* SSHKitSession+Channels.h */,
+				4A3D1E421C60934A009F9760 /* SSHKitSession+Channels.m */,
 				E4E96D8E158E10FD002E6E0A /* Supporting Files */,
 			);
 			path = SSHKitCore;
@@ -321,22 +422,44 @@
 				E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */,
 				4A49F6621A491CD100D9BA80 /* CoSOCKSMessage.h in Headers */,
 				4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */,
+				4A3D1E2B1C603F21009F9760 /* SSHKitChannel.h in Headers */,
+				4A3D1E331C6044A6009F9760 /* SSHKitForwardChannel.h in Headers */,
+				4A3D1E2F1C604405009F9760 /* SSHKitDirectChannel.h in Headers */,
 				4A49F65B1A491CD100D9BA80 /* SSHKitConnector+Protected.h in Headers */,
+				CCBEE2561C8D5EE0004394A4 /* SSHKitSFTPChannel.h in Headers */,
 				E42815C21593D95200CF680C /* SSHKitSession.h in Headers */,
-				E4F1E680159F5B13007B0B2F /* SSHKitChannel.h in Headers */,
 				4A2B5B071A4A6F3C007D20DF /* SSHKitHostKeyParser.h in Headers */,
 				4A281DC11A4A570D00EA1583 /* SSHKitPrivateKeyParser.h in Headers */,
-				CCD5DFF61B8FE86D00737B03 /* SSHKitSFTPFile.h in Headers */,
 				4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */,
 				4A49F6661A49282600D9BA80 /* SSHKitConnector.h in Headers */,
 				4A49F63B1A491C8400D9BA80 /* CoSocket.h in Headers */,
-				CC23133E1B8DB0520040183C /* SSHKitSFTPChannel.h in Headers */,
+				CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */,
+				4A3D1E431C60934A009F9760 /* SSHKitSession+Channels.h in Headers */,
+				4A3D1E371C6048CD009F9760 /* SSHKitShellChannel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		CC77631C1C5665F700B584F5 /* SSHKitCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CC77632D1C5665F700B584F5 /* Build configuration list for PBXNativeTarget "SSHKitCoreTests" */;
+			buildPhases = (
+				CC7763191C5665F700B584F5 /* Sources */,
+				CC77631A1C5665F700B584F5 /* Frameworks */,
+				CC77631B1C5665F700B584F5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CC7763241C5665F700B584F5 /* PBXTargetDependency */,
+			);
+			name = SSHKitCoreTests;
+			productName = SSHKitCoreTests;
+			productReference = CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		E4E96D83158E10FD002E6E0A /* SSHKitCore-Mac */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E4E96DAE158E10FD002E6E0A /* Build configuration list for PBXNativeTarget "SSHKitCore-Mac" */;
@@ -365,12 +488,17 @@
 		E4E96D7A158E10FD002E6E0A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0700;
+				LastSwiftUpdateCheck = 0720;
 				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0700;
+				TargetAttributes = {
+					CC77631C1C5665F700B584F5 = {
+						CreatedOnToolsVersion = 7.2;
+					};
+				};
 			};
 			buildConfigurationList = E4E96D7D158E10FD002E6E0A /* Build configuration list for PBXProject "SSHKitCore" */;
-			compatibilityVersion = "Xcode 3.2";
+			compatibilityVersion = "Xcode 6.3";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -388,6 +516,7 @@
 			projectRoot = "";
 			targets = (
 				E4E96D83158E10FD002E6E0A /* SSHKitCore-Mac */,
+				CC77631C1C5665F700B584F5 /* SSHKitCoreTests */,
 			);
 		};
 /* End PBXProject section */
@@ -424,6 +553,17 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		CC77631B1C5665F700B584F5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */,
+				CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */,
+				CCE0E5221C858CC400E81427 /* echo_server.py in Resources */,
+				CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4E96D82158E10FD002E6E0A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -452,23 +592,39 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		CC7763191C5665F700B584F5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */,
+				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
+				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
+				CC7763201C5665F700B584F5 /* SSHKitCoreTestsBase.swift in Sources */,
+				CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E4E96D7F158E10FD002E6E0A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				4A49F63C1A491C8400D9BA80 /* CoSocket.m in Sources */,
+				4A3D1E2C1C603F22009F9760 /* SSHKitChannel.m in Sources */,
+				CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */,
 				4A2B5B081A4A6F3C007D20DF /* SSHKitHostKeyParser.m in Sources */,
-				CC23133F1B8DB0520040183C /* SSHKitSFTPChannel.m in Sources */,
+				4A3D1E441C60934A009F9760 /* SSHKitSession+Channels.m in Sources */,
 				4A49F6631A491CD100D9BA80 /* CoSOCKSMessage.m in Sources */,
+				4A3D1E301C604405009F9760 /* SSHKitDirectChannel.m in Sources */,
 				4A49F6671A49282600D9BA80 /* SSHKitConnector.m in Sources */,
 				4A49F65F1A491CD100D9BA80 /* SSHKitConnectorSOCKS5.m in Sources */,
 				4A49F65A1A491CD100D9BA80 /* SSHKitConnectorHTTPS.m in Sources */,
-				4ABBEA9819D06956005B73CC /* SSHKitChannel.m in Sources */,
+				CCBEE2591C8D5EE0004394A4 /* SSHKitSFTPFile.m in Sources */,
+				4A3D1E341C6044A6009F9760 /* SSHKitForwardChannel.m in Sources */,
+				4A3D1E381C6048CD009F9760 /* SSHKitShellChannel.m in Sources */,
 				4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */,
 				4A281DC21A4A570D00EA1583 /* SSHKitPrivateKeyParser.m in Sources */,
 				4A49F6611A491CD100D9BA80 /* CoHTTPMessage.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,
-				CCD5DFF71B8FE86D00737B03 /* SSHKitSFTPFile.m in Sources */,
 				4A49F65E1A491CD100D9BA80 /* SSHKitConnectorSOCKS4.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -486,9 +642,53 @@
 			name = ssh_threads_static;
 			targetProxy = 4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */;
 		};
+		CC7763241C5665F700B584F5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E4E96D83158E10FD002E6E0A /* SSHKitCore-Mac */;
+			targetProxy = CC7763231C5665F700B584F5 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		CC7763251C5665F700B584F5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				INFOPLIST_FILE = SSHKitCoreTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.codinnstudio.SSHKitCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "SSHKitCoreTests/Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CC7763261C5665F700B584F5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				INFOPLIST_FILE = SSHKitCoreTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.codinnstudio.SSHKitCoreTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "SSHKitCoreTests/Bridging-Header.h";
+			};
+			name = Release;
+		};
 		E4E96DAC158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -573,7 +773,6 @@
 		E4E96DAF158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -586,7 +785,6 @@
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/openssl/openssl-1.0.2d-osx/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.codinn.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = SSHKitCore;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VERSIONING_SYSTEM = "apple-generic";
 				WRAPPER_EXTENSION = framework;
 			};
@@ -595,7 +793,6 @@
 		E4E96DB0158E10FD002E6E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -616,6 +813,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		CC77632D1C5665F700B584F5 /* Build configuration list for PBXNativeTarget "SSHKitCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CC7763251C5665F700B584F5 /* Debug */,
+				CC7763261C5665F700B584F5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E4E96D7D158E10FD002E6E0A /* Build configuration list for PBXProject "SSHKitCore" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -12,14 +12,6 @@
  */
 @interface SSHKitChannel : NSObject
 
-- (instancetype)initSFTPChannelWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
-
-+ (instancetype)shellChannelFromSession:(SSHKitSession *)session withTerminalType:(NSString *)terminalType columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitChannelDelegate>)aDelegate;
-
-+ (instancetype)directChannelFromSession:(SSHKitSession *)session withHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
-
-+ (void)requestRemoteForwardOnSession:(SSHKitSession *)session withListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
-
 /** A valid SSHKitSession instance */
 @property (nonatomic, weak, readonly) SSHKitSession *session;
 
@@ -38,33 +30,21 @@
 /// @name Initializer
 /// ----------------------------------------------------------------------------
 
-/** Current channel type */
-@property (nonatomic, readonly) SSHKitChannelType type;
-
 @property (nonatomic, readonly) SSHKitChannelStage stage;
-
-/** direct-tcpip channel properties */
-@property (readonly) NSString      *directHost;
-@property (readonly) NSUInteger    directPort;
-
-/** tcpip-forward channel properties */
-@property (readonly) NSInteger forwardDestinationPort;
-
-@property (readonly, nonatomic) NSInteger  shellColumns;
-@property (readonly, nonatomic) NSInteger  shellRows;
 
 /**
  A Boolean value indicating whether the channel is opened successfully
  (read-only).
  */
-@property (nonatomic, readonly, getter = isOpened) BOOL opened;
+@property (nonatomic, readonly) BOOL isOpen;
+
+/* if YES return 0 in channel_data_available */
+@property (nonatomic, readonly) BOOL passDataToChannelRead;
 
 - (void)close;
 - (void)closeWithError:(NSError *)error;
 
 - (void)writeData:(NSData *)data;
-- (void)changePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows;
-- (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data;
 
 @end
 
@@ -102,7 +82,5 @@
 - (void)channelDidClose:(SSHKitChannel *)channel withError:(NSError *)error;
 
 - (void)channelDidOpen:(SSHKitChannel *)channel;
-
-- (void)channel:(SSHKitChannel *)channel didChangePtySizeToColumns:(NSInteger)columns rows:(NSInteger)rows withError:(NSError *)error;
 
 @end
