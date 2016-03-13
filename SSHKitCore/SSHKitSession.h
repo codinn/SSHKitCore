@@ -2,7 +2,7 @@
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate, SSHKitShellChannelDelegate;
 @class SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
-@class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel;
+@class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel, SSHKitSFTPChannel;
 
 typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 

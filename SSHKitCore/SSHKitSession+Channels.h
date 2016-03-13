@@ -24,6 +24,8 @@
 
 - (SSHKitShellChannel *)openShellChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate;
 
+- (SSHKitSFTPChannel *)openSFTPChannel:(id<SSHKitChannelDelegate>)aDelegate;
+
 // @internal
 - (void)doSendForwardRequest;
 

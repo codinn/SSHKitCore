@@ -98,6 +98,13 @@
     return channel;
 }
 
+- (SSHKitSFTPChannel *)openSFTPChannel:(id<SSHKitChannelDelegate>)aDelegate {
+    SSHKitSFTPChannel *channel = [[SSHKitSFTPChannel alloc] initWithSession:self delegate:aDelegate];
+    
+    [self _scheduleChannelForOpening:channel];
+    return channel;
+}
+
 /** !WARNING!
  tcpip-forward is session global request, requests must go one by one serially.
  Otherwise, forward request will be failed
