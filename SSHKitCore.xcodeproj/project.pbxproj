@@ -50,7 +50,6 @@
 		CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_host_rsa_key */; };
 		CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */; };
 		CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */; };
-		CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */; };
 		CCE0E5221C858CC400E81427 /* echo_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CCE0E5211C858CC400E81427 /* echo_server.py */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
@@ -63,14 +62,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 200C00B961E04C8BA1AA884F;
+			remoteGlobalIDString = 3AC875A698B345EA94BE14B3;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = B0CFC4D7C1F74049B4250A23;
+			remoteGlobalIDString = BCFB18B1D64247E79523C3F4;
 			remoteInfo = ssh_threads_static;
 		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
@@ -171,7 +170,6 @@
 		CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key.pub; sourceTree = "<group>"; };
 		CC8EE9981C647813008817A3 /* initTestEnv.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = initTestEnv.sh; sourceTree = "<group>"; };
 		CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShellChannelTests.swift; sourceTree = "<group>"; };
-		CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ForwardChannelTests.swift; sourceTree = "<group>"; };
 		CCB4D4731C7595D900B9A925 /* README.MD */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.MD; sourceTree = "<group>"; };
 		CCE0E5211C858CC400E81427 /* echo_server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = echo_server.py; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
@@ -282,9 +280,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 			);
 			name = Products;
@@ -301,7 +299,6 @@
 				CC77631F1C5665F700B584F5 /* SSHKitCoreTestsBase.swift */,
 				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
 				CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */,
-				CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */,
 				CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */,
 			);
 			path = SSHKitCoreTests;
@@ -500,11 +497,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh.dylib;
-			path = libssh.4.4.1.dylib;
+			path = libssh.4.4.0.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -515,11 +511,10 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
-			name = libssh_threads.dylib;
-			path = libssh_threads.4.4.1.dylib;
+			path = libssh_threads.4.4.0.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
@@ -576,7 +571,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
 				CC7763201C5665F700B584F5 /* SSHKitCoreTestsBase.swift in Sources */,
