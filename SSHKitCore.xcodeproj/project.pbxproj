@@ -50,7 +50,6 @@
 		CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_host_rsa_key */; };
 		CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */; };
 		CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */; };
-		CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */; };
 		CCBEE2561C8D5EE0004394A4 /* SSHKitSFTPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */; };
 		CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -175,7 +174,6 @@
 		CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key.pub; sourceTree = "<group>"; };
 		CC8EE9981C647813008817A3 /* initTestEnv.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = initTestEnv.sh; sourceTree = "<group>"; };
 		CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShellChannelTests.swift; sourceTree = "<group>"; };
-		CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ForwardChannelTests.swift; sourceTree = "<group>"; };
 		CCB4D4731C7595D900B9A925 /* README.MD */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.MD; sourceTree = "<group>"; };
 		CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPChannel.h; sourceTree = "<group>"; };
 		CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPChannel.m; sourceTree = "<group>"; };
@@ -290,9 +288,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 			);
 			name = Products;
@@ -309,7 +307,6 @@
 				CC77631F1C5665F700B584F5 /* SSHKitCoreTestsBase.swift */,
 				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
 				CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */,
-				CC9D3B5A1C892DD700DF3C0A /* ForwardChannelTests.swift */,
 				CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */,
 			);
 			path = SSHKitCoreTests;
@@ -522,7 +519,7 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
 			path = libssh.4.4.0.dylib;
@@ -536,7 +533,7 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
 			path = libssh_threads.4.4.0.dylib;
@@ -596,7 +593,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC9D3B5B1C892DD700DF3C0A /* ForwardChannelTests.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
 				CC7763201C5665F700B584F5 /* SSHKitCoreTestsBase.swift in Sources */,
