@@ -54,6 +54,7 @@
 		CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */; };
 		CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCBEE2591C8D5EE0004394A4 /* SSHKitSFTPFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */; };
+		CCCDEA561C9DAE9400319B01 /* SFTPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */; };
 		CCE0E5221C858CC400E81427 /* echo_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CCE0E5211C858CC400E81427 /* echo_server.py */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
@@ -179,6 +180,7 @@
 		CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPChannel.m; sourceTree = "<group>"; };
 		CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPFile.h; sourceTree = "<group>"; };
 		CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPFile.m; sourceTree = "<group>"; };
+		CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SFTPTests.swift; sourceTree = "<group>"; };
 		CCE0E5211C858CC400E81427 /* echo_server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = echo_server.py; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
 		E42815C11593D95200CF680C /* SSHKitSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSession.m; sourceTree = "<group>"; };
@@ -288,9 +290,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 			);
 			name = Products;
@@ -306,6 +308,7 @@
 				CCB4D4731C7595D900B9A925 /* README.MD */,
 				CC77631F1C5665F700B584F5 /* SSHKitCoreTestsBase.swift */,
 				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
+				CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */,
 				CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */,
 				CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */,
 			);
@@ -519,9 +522,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
+			name = libssh.dylib;
 			path = libssh.4.4.0.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -533,9 +537,10 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.0.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
+			name = libssh_threads.dylib;
 			path = libssh_threads.4.4.0.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -593,6 +598,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CCCDEA561C9DAE9400319B01 /* SFTPTests.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
 				CC7763201C5665F700B584F5 /* SSHKitCoreTestsBase.swift in Sources */,

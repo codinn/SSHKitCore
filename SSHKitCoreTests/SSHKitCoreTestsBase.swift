@@ -130,6 +130,18 @@ class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannel
         return channel
     }
     
+    func openSFTPChannel(session: SSHKitSession) -> SSHKitSFTPChannel {
+        expectation = expectationWithDescription("Open SFTP Channel")
+        let channel = session.openSFTPChannel(self)
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+        XCTAssert(channel.isOpen)
+        return channel
+    }
+    
     func openForwardChannel(session: SSHKitSession) -> SSHKitChannel {
         expectation = expectationWithDescription("Open Forward Channel")
         let channel = session.openForwardChannel()
