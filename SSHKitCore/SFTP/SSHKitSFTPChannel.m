@@ -17,17 +17,20 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 @interface SSHKitSFTPChannel()
 
 @property (nonatomic, readwrite) sftp_session rawSFTPSession;
+@property (nonatomic, readwrite) BOOL passDataToChannelRead;
 @property (nonatomic) SessionChannelReqState   reqState;
 
 @end
 
 @implementation SSHKitSFTPChannel
 
-- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate
-{
-    if ((self = [super init])) {
-        self.delegate = aDelegate;
+@synthesize rawSFTPSession;
+@synthesize passDataToChannelRead;
+
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate {
+    if (self = [super initWithSession:session delegate:aDelegate]) {
         _reqState = SessionChannelReqNone;
+        self.passDataToChannelRead = YES;
     }
     
     return self;
