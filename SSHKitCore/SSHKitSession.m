@@ -9,7 +9,6 @@
 #import "SSHKitForwardChannel.h"
 
 #define SOCKET_NULL -1
-#undef DEBUG
 
 typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitSessionStageUnknown   = 0,
