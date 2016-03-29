@@ -1,5 +1,5 @@
 //
-//  SSHKitHostKeyParser.h
+//  SSHKitHostKey.h
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 12/24/14.
@@ -11,7 +11,7 @@
 
 @class SSHKitSession;
 
-@interface SSHKitHostKeyParser : NSObject
+@interface SSHKitHostKey : NSObject
 
 + (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr;
 + (instancetype)parserFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr;

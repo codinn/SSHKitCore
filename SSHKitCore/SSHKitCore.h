@@ -6,7 +6,7 @@
 #import "SSHKitForwardChannel.h"
 #import "SSHKitShellChannel.h"
 #import "SSHKitPrivateKeyParser.h"
-#import "SSHKitHostKeyParser.h"
+#import "SSHKitHostKey.h"
 #import "CoSOCKSMessage.h"
 #import "CoHTTPMessage.h"
 #import "SSHKitSFTPChannel.h"

@@ -1,7 +1,7 @@
 #import <SSHKitCore/SSHKitCoreCommon.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate, SSHKitShellChannelDelegate;
-@class SSHKitHostKeyParser, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
+@class SSHKitHostKey, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 @class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel, SSHKitSFTPChannel;
 
 typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
@@ -229,7 +229,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  @param fingerprint The host's fingerprint
  @returns YES if the session should trust the host, otherwise NO.
  */
-- (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(SSHKitHostKeyParser *)hostKey;
+- (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(SSHKitHostKey *)hostKey;
 - (NSError *)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray *)methods partialSuccess:(BOOL)partialSuccess;
 - (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 

@@ -166,7 +166,7 @@ class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannel
         }
     }
     
-    func session(session: SSHKitSession!, shouldConnectWithHostKey hostKey: SSHKitHostKeyParser!) -> Bool {
+    func session(session: SSHKitSession!, shouldConnectWithHostKey hostKey: SSHKitHostKey!) -> Bool {
         return true
     }
     

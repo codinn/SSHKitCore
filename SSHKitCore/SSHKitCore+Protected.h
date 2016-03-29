@@ -7,7 +7,7 @@
 #import "SSHKitSession.h"
 #import "SSHKitChannel.h"
 #import "SSHKitPrivateKeyParser.h"
-#import "SSHKitHostKeyParser.h"
+#import "SSHKitHostKey.h"
 #import "SSHKitSFTPChannel.h"
 #import "SSHKitSFTPFile.h"
 
@@ -97,7 +97,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @end
 
-@interface SSHKitHostKeyParser ()
+@interface SSHKitHostKey ()
 
 @property (nonatomic, readonly) ssh_key hostKey;
 
