@@ -10,7 +10,8 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 
-void SSHKitCoreInitiate() {
+__attribute__((constructor))
+static void SSHKitCoreInitiate() {
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
@@ -28,7 +29,8 @@ void SSHKitCoreInitiate() {
     });
 }
 
-void SSHKitCoreFinalize() {
+__attribute__((destructor))
+static void SSHKitCoreFinalize() {
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
