@@ -13,8 +13,8 @@
 
 @interface SSHKitHostKey : NSObject
 
-+ (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr;
-+ (instancetype)parserFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr;
++ (instancetype)hostKeyFromSession:(SSHKitSession *)session error:(NSError **)errPtr;
++ (instancetype)hostKeyFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr;
 
 @property (nonatomic, readonly) NSInteger           keyType;
 @property (nonatomic, readonly) NSString            *typeName;

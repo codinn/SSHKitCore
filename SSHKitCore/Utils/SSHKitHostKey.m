@@ -11,7 +11,7 @@
 
 @implementation SSHKitHostKey
 
-+ (instancetype)parserFromSession:(SSHKitSession *)session error:(NSError **)errPtr
++ (instancetype)hostKeyFromSession:(SSHKitSession *)session error:(NSError **)errPtr
 {
     // --------------------------------------------------
     // get host key from session
@@ -67,7 +67,7 @@
     return parser;
 }
 
-+ (instancetype)parserFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr
++ (instancetype)hostKeyFromBase64:(NSString *)base64 withType:(NSInteger)type error:(NSError **)errPtr
 {
     SSHKitHostKey *parser = [[SSHKitHostKey alloc] init];
     if (!parser) {
