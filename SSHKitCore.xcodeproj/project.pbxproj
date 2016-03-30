@@ -67,14 +67,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 08706C3E034C4B888E55C9C2;
+			remoteGlobalIDString = 5355301826C74E07862C586F;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 3F01D52FA4E048B79D4AC892;
+			remoteGlobalIDString = 1088479A4142495CB47142E6;
 			remoteInfo = ssh_threads_static;
 		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
@@ -161,6 +161,7 @@
 		4A759CB31BCEBD8F00301730 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		4AC052C71B4ACB8F00B555F6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitCoreCommon.m; sourceTree = "<group>"; };
+		4AE647B31CAC09E000F1023A /* osx-adduser.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "osx-adduser.sh"; sourceTree = "<group>"; };
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
@@ -290,9 +291,9 @@
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */,
+				4AEF725819FFE2AE009B0CC7 /* libssh.dylib */,
 				4AEF725A19FFE2AE009B0CC7 /* libssh.a */,
-				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */,
+				4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */,
 				4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */,
 			);
 			name = Products;
@@ -301,10 +302,11 @@
 		CC77631E1C5665F700B584F5 /* SSHKitCoreTests */ = {
 			isa = PBXGroup;
 			children = (
+				4AE647B31CAC09E000F1023A /* osx-adduser.sh */,
+				CC8EE9981C647813008817A3 /* initTestEnv.sh */,
 				CC77632F1C566F0700B584F5 /* ssh */,
 				CC7763211C5665F700B584F5 /* Info.plist */,
 				CC77632E1C5666D200B584F5 /* Bridging-Header.h */,
-				CC8EE9981C647813008817A3 /* initTestEnv.sh */,
 				CCB4D4731C7595D900B9A925 /* README.MD */,
 				CC77631F1C5665F700B584F5 /* SSHKitCoreTestsBase.swift */,
 				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
@@ -522,9 +524,10 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */ = {
+		4AEF725819FFE2AE009B0CC7 /* libssh.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
+			name = libssh.dylib;
 			path = libssh.4.4.1.dylib;
 			remoteRef = 4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -536,9 +539,10 @@
 			remoteRef = 4AEF725919FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.4.4.1.dylib */ = {
+		4AEF725C19FFE2AE009B0CC7 /* libssh_threads.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
+			name = libssh_threads.dylib;
 			path = libssh_threads.4.4.1.dylib;
 			remoteRef = 4AEF725B19FFE2AE009B0CC7 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
