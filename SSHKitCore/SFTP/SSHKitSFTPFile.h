@@ -69,6 +69,5 @@
         fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
 fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock;
 - (long)write:(const void *)buffer size:(long)size;
-- (void)_doProcess;
 
 @end
