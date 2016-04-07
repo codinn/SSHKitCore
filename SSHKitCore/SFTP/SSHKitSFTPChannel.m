@@ -129,7 +129,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     return sftp_get_error(self.rawSFTPSession);
 }
 
-- (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
+- (void)didReadStdoutData:(NSData *)data {
     if (!self.isOpen) {
         return;
     }

@@ -238,13 +238,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
             NSLog(@"didReadStdoutData len: %lu", (unsigned long)data.length);
             [strongSelf _asyncReadFile];
         }];
-        // [self _asyncReadFile];
-    }
-}
-
-- (void)_doProcess {
-    if (_stage == SSHKitFileStageReadingFile) {
-        [self _asyncReadFile];
     }
 }
 

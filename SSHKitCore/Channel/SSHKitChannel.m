@@ -93,6 +93,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
     }
 }
 
+- (void)didReadStdoutData:(NSData *)data {
+    // implement is subclass
+}
+
 #pragma mark - Read / Write
 
 - (void)doOpen {
@@ -123,6 +127,7 @@ static int channel_data_available(ssh_session session,
             [selfChannel.delegate channel:selfChannel didReadStdoutData:readData];
         }
     }
+    [selfChannel didReadStdoutData:readData];
     if (selfChannel.passDataToChannelRead) {  // pass data to sshchannel_read
         return 0;
     }
