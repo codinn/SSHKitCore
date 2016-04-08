@@ -3,7 +3,6 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
-#import "SSHKitConnector.h"
 #import "SSHKitSession+Channels.h"
 #import "SSHKitPrivateKeyParser.h"
 #import "SSHKitForwardChannel.h"
@@ -40,12 +39,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_block_t    _authBlock;
     
     void *_isOnSessionQueueKey;
-    
-    SSHKitConnector     *_connector;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
 @property (nonatomic, readwrite)  NSString    *host;
+@property (nonatomic, readwrite)  NSString    *hostIP;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
 
@@ -63,6 +61,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (nonatomic)       uint16_t  proxyPort;
 @property (nonatomic, copy) NSString  *proxyUsername;
 @property (nonatomic, copy) NSString  *proxyPassword;
+
+@property (nonatomic, readwrite)  BOOL      usesCustomFileDescriptor;
 @end
 
 #pragma mark -
@@ -167,6 +167,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     switch (result) {
         case SSH_OK: {
             // connection established
+            if (!self.usesCustomFileDescriptor) {
+                // connect directly
+                int socket = ssh_get_fd(_rawSession);
+                self.hostIP = GetHostIPFromFD(socket);
+            }
+            
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
@@ -253,6 +259,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout {
+    self.usesCustomFileDescriptor = YES;
     self.username = [user copy];
     _timeout = (long)timeout;
     
@@ -404,15 +411,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }}];
 }
 
-- (void)impoliteDisconnect
-{
-    if (_connector) {
-        [_connector disconnect];
-    }
-    
-    [self disconnect];
-}
-
 - (void)_doDisconnectWithError:(NSError *)error {
     if (self.isDisconnected) { // already disconnected
         return;
@@ -438,11 +436,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     [self _cancelSocketReadSource];
     
-    if (_connector) {
-        [_connector disconnect];
-        _connector = nil;
-    }
-    
     if (_delegateFlags.didDisconnectWithError) {
         [self.delegate session:self didDisconnectWithError:error];
     }
@@ -450,13 +443,41 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark Diagnostics
 
-- (NSString *)hostIP {
-    if (self.proxyHost.length) { // connect over a proxy
+NS_INLINE NSString *GetHostIPFromFD(int fd) {
+    if (fd == SOCKET_NULL) {
         return nil;
     }
     
-    // _connector will be nil if use a custom socket fd
-    return _connector.connectedHost;
+    struct sockaddr_storage sock_addr;
+    socklen_t sock_addr_len = sizeof(sock_addr);
+    
+    if (getpeername(fd, (struct sockaddr *)&sock_addr, &sock_addr_len) != 0) {
+        return nil;
+    }
+    
+    if (sock_addr.ss_family == AF_INET) {
+        const struct sockaddr_in *sockAddr4 = (const struct sockaddr_in *)&sock_addr;
+        char addrBuf[INET_ADDRSTRLEN] = {0};
+        
+        if (inet_ntop(AF_INET, &sockAddr4->sin_addr, addrBuf, (socklen_t)sizeof(addrBuf)) == NULL) {
+            addrBuf[0] = '\0';
+        }
+        
+        return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
+    }
+    
+    if (sock_addr.ss_family == AF_INET6) {
+        const struct sockaddr_in6 *sockAddr6 = (const struct sockaddr_in6 *)&sock_addr;
+        char addrBuf[INET6_ADDRSTRLEN] = {0};
+        
+        if (inet_ntop(AF_INET6, &sockAddr6->sin6_addr, addrBuf, (socklen_t)sizeof(addrBuf)) == NULL) {
+            addrBuf[0] = '\0';
+        }
+        
+        return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
+    }
+    
+    return nil;
 }
 
 - (NSError *)coreError {

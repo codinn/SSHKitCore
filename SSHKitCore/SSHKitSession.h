@@ -58,7 +58,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /** Full server hostname in the format `@"{hostname}"`. */
 @property (nonatomic, readonly) NSString *host;
 
-/** The server actual IP address.
+/** The server actual IP address, available after session connected
  *  nil if session is connected over proxy
   */
 @property (nonatomic, readonly) NSString *hostIP;
@@ -152,7 +152,6 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  Close the session
  */
 - (void)disconnect;
-- (void)impoliteDisconnect;
 - (void)disconnectWithError:(NSError *)error;
 
 // -----------------------------------------------------------------------------
