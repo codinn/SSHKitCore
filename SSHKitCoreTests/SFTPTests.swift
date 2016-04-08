@@ -8,7 +8,7 @@
 
 import XCTest
 
-class SFTPTests: SSHKitCoreTestsBase {
+class SFTPTests: SSHTestsBase {
 
     override func setUp() {
         super.setUp()
