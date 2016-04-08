@@ -162,6 +162,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)_doConnect {
     int result = ssh_connect(_rawSession);
+    [self _setupSocketReadSource];
     
     switch (result) {
         case SSH_OK: {
@@ -241,131 +242,113 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        // disconnect if connected
-        if (strongSelf.isConnected) {
-            [strongSelf _doDisconnectWithError:nil];
-        }
-        
-        strongSelf->_rawSession = ssh_new();
-        
-        [strongSelf _registerLogCallback];
-        
-        if (!strongSelf->_rawSession) {
-            [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
+        BOOL prepared = [strongSelf _doPrepareWithFileDescriptor:SSH_INVALID_SOCKET];
+        if (!prepared) {
             return_from_block;
         }
         
-        if (!strongSelf->_connector) {
-            if (strongSelf.proxyType > SSHKitProxyTypeDirect) {
-                // connect over a proxy server
-                
-                if (strongSelf->_logDebug) strongSelf->_logDebug(@"Connect through proxy with type %d", strongSelf.proxyType);
-                
-                id ConnectProxyClass = SSHKitConnectorProxy.class;
-                
-                switch (strongSelf.proxyType) {
-                    case SSHKitProxyTypeHTTP:
-                    case SSHKitProxyTypeHTTPS:
-                        ConnectProxyClass = SSHKitConnectorHTTPS.class;
-                        break;
-                        
-                    case SSHKitProxyTypeSOCKS4:
-                        ConnectProxyClass = SSHKitConnectorSOCKS4.class;
-                        break;
-                        
-                    case SSHKitProxyTypeSOCKS4A:
-                        ConnectProxyClass = SSHKitConnectorSOCKS4A.class;
-                        break;
-                        
-                    case SSHKitProxyTypeSOCKS5:
-                    default:
-                        ConnectProxyClass = SSHKitConnectorSOCKS5.class;
-                        break;
-                }
-                
-                if (strongSelf.proxyUsername.length) {
-                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort username:strongSelf.proxyUsername password:strongSelf.proxyPassword];
-                } else {
-                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort];
-                }
-            } else {
-                if (strongSelf->_logDebug) strongSelf->_logDebug(@"Connect directly");
-                // connect directly
-                strongSelf->_connector = [[SSHKitConnector alloc] init];
-            }
-            
-            // configure ipv4/ipv6
-            strongSelf->_connector.IPv4Enabled = strongSelf.enableIPv4;
-            strongSelf->_connector.IPv6Enabled = strongSelf.enableIPv6;
-            
-            if (strongSelf.logDebug) {
-                strongSelf->_connector.logDebug = strongSelf.logDebug;
-            }
-            
-            strongSelf.stage = SSHKitSessionStageOpeningSocket;
-            
-            NSError *error = nil;
-            [strongSelf->_connector connectToHost:host onPort:port viaInterface:interface withTimeout:strongSelf.timeout error:&error];
-            
-            if (error) {
-                [strongSelf _doDisconnectWithError:error];
-                return_from_block;
-            }
-        }
-        
-        int socket = strongSelf->_connector.socketFD;
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_FD, &socket);
-        
-        // compression
-        
-        if (strongSelf.enableCompression) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_COMPRESSION, "yes");
-        } else {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_COMPRESSION, "no");
-        }
-        
-        // ciphers
-        if (strongSelf.ciphers.length) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_CIPHERS_C_S, strongSelf.ciphers.UTF8String);
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_CIPHERS_S_C, strongSelf.ciphers.UTF8String);
-        }
-        
-        // host key algorithms
-        if (strongSelf.keyExchangeAlgorithms.length) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_KEY_EXCHANGE, strongSelf.keyExchangeAlgorithms.UTF8String);
-        }
-        
-        // host key algorithms
-        if (strongSelf.hostKeyAlgorithms.length) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_HOSTKEYS, strongSelf.hostKeyAlgorithms.UTF8String);
-        }
-        
-        // tcp keepalive
-        if ( strongSelf.serverAliveCountMax<=0 ) {
-            int on = 1;
-            if (strongSelf->_logDebug) strongSelf->_logDebug(@"Enable TCP keepalive");
-            setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
-        }
-        
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
-#if DEBUG
-        int verbosity = SSH_LOG_FUNCTIONS;
-#else
-        int verbosity = SSH_LOG_NOLOG;
-#endif
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
-        
-        if (strongSelf->_timeout > 0) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_TIMEOUT, &strongSelf->_timeout);
-        }
-        
-        // set to non-blocking mode
-        ssh_set_blocking(strongSelf->_rawSession, 0);
-        
         strongSelf.stage = SSHKitSessionStageConnecting;
-        [strongSelf _setupSocketReadSource];
         [strongSelf _doConnect];
     }}];
+}
+
+- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout {
+    self.username = [user copy];
+    _timeout = (long)timeout;
+    
+    __weak SSHKitSession *weakSelf = self;
+    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+        __strong SSHKitSession *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return_from_block;
+        }
+        
+        BOOL prepared = [strongSelf _doPrepareWithFileDescriptor:fd];
+        if (!prepared) {
+            return_from_block;
+        }
+        
+        strongSelf.stage = SSHKitSessionStageConnecting;
+        [strongSelf _doConnect];
+    }}];
+}
+
+- (BOOL)_doPrepareWithFileDescriptor:(int)fd {
+    // disconnect if connected
+    if (self.isConnected) {
+        [self _doDisconnectWithError:nil];
+    }
+    
+    _rawSession = ssh_new();
+    
+    [self _registerLogCallback];
+    
+    if (!_rawSession) {
+        [self _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
+        return NO;
+    }
+    
+    if (fd != SSH_INVALID_SOCKET) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_FD, &fd);
+    } else {
+        // connect directly
+        if (_logDebug) _logDebug(@"Connect directly");
+    }
+    
+    // host and user name
+    if (self.host.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_HOST, self.host.UTF8String);
+    }
+    if (self.username.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_USER, self.username.UTF8String);
+    }
+    ssh_options_set(_rawSession, SSH_OPTIONS_PORT, &_port);
+    
+    // compression
+    if (self.enableCompression) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "yes");
+    } else {
+        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "no");
+    }
+    
+    // ciphers
+    if (self.ciphers.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_CIPHERS_C_S, self.ciphers.UTF8String);
+        ssh_options_set(_rawSession, SSH_OPTIONS_CIPHERS_S_C, self.ciphers.UTF8String);
+    }
+    
+    // host key algorithms
+    if (self.keyExchangeAlgorithms.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_KEY_EXCHANGE, self.keyExchangeAlgorithms.UTF8String);
+    }
+    
+    // host key algorithms
+    if (self.hostKeyAlgorithms.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_HOSTKEYS, self.hostKeyAlgorithms.UTF8String);
+    }
+    
+    // tcp keepalive
+    if ( self.serverAliveCountMax<=0 ) {
+        int on = 1;
+        if (_logDebug) _logDebug(@"Enable TCP keepalive");
+        setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
+    }
+    
+#if DEBUG
+    int verbosity = SSH_LOG_FUNCTIONS;
+#else
+    int verbosity = SSH_LOG_NOLOG;
+#endif
+    ssh_options_set(_rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
+    
+    if (_timeout > 0) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_TIMEOUT, &_timeout);
+    }
+    
+    // set to non-blocking mode
+    ssh_set_blocking(_rawSession, 0);
+    
+    return YES;
 }
 
 - (void)dispatchSyncOnSessionQueue:(dispatch_block_t)block {
@@ -792,9 +775,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
  * Reads the first available bytes that become available on the channel.
  **/
 - (void)_setupSocketReadSource {
-    [self _cancelSocketReadSource];
+    if (_socketReadSource) {
+        // already set
+        return;
+    }
     
-    _socketReadSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self->_connector.socketFD, 0, _sessionQueue);
+    // socket fd only available after ssh_connect was called
+    int socket = ssh_get_fd(_rawSession);
+    _socketReadSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, socket, 0, _sessionQueue);
     
     if (!_socketReadSource) {
         NSError *error = [[NSError alloc] initWithDomain:SSHKitCoreErrorDomain

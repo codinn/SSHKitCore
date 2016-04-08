@@ -127,16 +127,22 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user;
 
 /**
+ * Connects to the given host and port with an optional timeout.
+ *
+ **/
+- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
+
+/**
  * Connects to the given host and port via specified interface with an optional timeout.
  *
  **/
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
 
 /**
- * Connects to the given host and port with an optional timeout.
+ * Connects to the server via an opened socket.
  *
  **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
+- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout;
 
 // -----------------------------------------------------------------------------
 #pragma mark Disconnecting
