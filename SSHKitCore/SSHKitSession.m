@@ -281,8 +281,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _rawSession = ssh_new();
     
-    [self _registerLogCallback];
-    
     if (!_rawSession) {
         [self _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
         return NO;
