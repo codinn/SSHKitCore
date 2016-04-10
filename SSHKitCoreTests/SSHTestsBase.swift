@@ -9,7 +9,7 @@
 import XCTest
 
 
-class SSHKitCoreTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegate {
+class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegate {
     // async test http://nshipster.com/xctestcase/
     var expectation: XCTestExpectation?// = expectationWithDescription("Common expectation")
     var authMethod: String?

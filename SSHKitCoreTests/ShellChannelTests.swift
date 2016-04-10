@@ -8,7 +8,7 @@
 
 import XCTest
 
-class ShellChannelTests: SSHKitCoreTestsBase {
+class ShellChannelTests: SSHTestsBase {
 
     override func setUp() {
         super.setUp()

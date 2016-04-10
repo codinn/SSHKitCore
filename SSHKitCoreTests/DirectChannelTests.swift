@@ -8,7 +8,7 @@
 
 import XCTest
 
-class DirectChannelTests: SSHKitCoreTestsBase {
+class DirectChannelTests: SSHTestsBase {
     
     var writeDataCount: Int = 0
     var totoalDataLength: Int = -1
