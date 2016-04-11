@@ -59,7 +59,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 @property (nonatomic, readonly) NSString *host;
 
 /** The server actual IP address, available after session connected
- *  nil if session is connected over proxy
+ *  nil if session is connected over custom file descriptor
   */
 @property (nonatomic, readonly) NSString *hostIP;
 
@@ -68,6 +68,9 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 
 /** Username that will authenticate against the server. */
 @property (nonatomic, readonly) NSString *username;
+
+/** Is session connected with IPv6 address. */
+@property (nonatomic, readonly, getter=isIPv6) BOOL IPv6;
 
 @property (strong, readwrite) SSHKitCoreLogHandler logDebug;
 @property (strong, readwrite) SSHKitCoreLogHandler logInfo;
@@ -104,15 +107,10 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 #pragma mark Advanced Options, setting before connection
 // -----------------------------------------------------------------------------
 
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port;
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password;
-
 @property BOOL      enableCompression;
 @property NSString  *ciphers;
 @property NSString  *hostKeyAlgorithms;
 @property NSString  *keyExchangeAlgorithms;
-@property BOOL      enableIPv4;
-@property BOOL      enableIPv6;
 @property NSInteger serverAliveCountMax;
 
 // -----------------------------------------------------------------------------

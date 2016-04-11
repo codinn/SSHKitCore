@@ -46,6 +46,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (nonatomic, readwrite)  NSString    *hostIP;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
+@property (nonatomic, readwrite, getter=isIPv6) BOOL IPv6;
 
 @property (nonatomic, readwrite)  NSString    *clientBanner;
 @property (nonatomic, readwrite)  NSString    *serverBanner;
@@ -54,13 +55,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (nonatomic, readonly) long          timeout;
 
 @property (nonatomic, readonly) dispatch_queue_t sessionQueue;
-
-// connect over proxy
-@property (nonatomic) SSHKitProxyType proxyType;
-@property (nonatomic, copy) NSString  *proxyHost;
-@property (nonatomic)       uint16_t  proxyPort;
-@property (nonatomic, copy) NSString  *proxyUsername;
-@property (nonatomic, copy) NSString  *proxyPassword;
 
 @property (nonatomic, readwrite)  BOOL      usesCustomFileDescriptor;
 @end
@@ -80,13 +74,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
     if ((self = [super init])) {
         self.enableCompression = NO;
-        self.enableIPv4 = YES;
-        self.enableIPv6 = YES;
         
         self.stage = SSHKitSessionStageNotConnected;
         _channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
-        self.proxyType = SSHKitProxyTypeDirect;
         
 		self.delegate = aDelegate;
 		
@@ -167,10 +158,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     switch (result) {
         case SSH_OK: {
             // connection established
+            int socket = ssh_get_fd(_rawSession);
+            NSString *ip = GetHostIPFromFD(socket, &_IPv6);
+            
             if (!self.usesCustomFileDescriptor) {
                 // connect directly
-                int socket = ssh_get_fd(_rawSession);
-                self.hostIP = GetHostIPFromFD(socket);
+                self.hostIP = ip;
             }
             
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
@@ -443,7 +436,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark Diagnostics
 
-NS_INLINE NSString *GetHostIPFromFD(int fd) {
+NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
     if (fd == SOCKET_NULL) {
         return nil;
     }
@@ -456,25 +449,26 @@ NS_INLINE NSString *GetHostIPFromFD(int fd) {
     }
     
     if (sock_addr.ss_family == AF_INET) {
+        if (ipv6FlagPtr) *ipv6FlagPtr = NO;
+        
         const struct sockaddr_in *sockAddr4 = (const struct sockaddr_in *)&sock_addr;
         char addrBuf[INET_ADDRSTRLEN] = {0};
         
-        if (inet_ntop(AF_INET, &sockAddr4->sin_addr, addrBuf, (socklen_t)sizeof(addrBuf)) == NULL) {
-            addrBuf[0] = '\0';
+        if (inet_ntop(AF_INET, &sockAddr4->sin_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
+            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
         }
         
-        return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
     }
     
     if (sock_addr.ss_family == AF_INET6) {
+        if (ipv6FlagPtr) *ipv6FlagPtr = YES;
+        
         const struct sockaddr_in6 *sockAddr6 = (const struct sockaddr_in6 *)&sock_addr;
-        char addrBuf[INET6_ADDRSTRLEN] = {0};
+        char addrBuf[INET6_ADDRSTRLEN];
         
-        if (inet_ntop(AF_INET6, &sockAddr6->sin6_addr, addrBuf, (socklen_t)sizeof(addrBuf)) == NULL) {
-            addrBuf[0] = '\0';
+        if (inet_ntop(AF_INET6, &sockAddr6->sin6_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
+            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
         }
-        
-        return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
     }
     
     return nil;
@@ -899,19 +893,6 @@ NS_INLINE NSString *GetHostIPFromFD(int fd) {
 // -----------------------------------------------------------------------------
 #pragma mark - Extra Options
 // -----------------------------------------------------------------------------
-
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port {
-    self.proxyType = type;
-    self.proxyHost = host;
-    self.proxyPort = port;
-}
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password {
-    self.proxyType = type;
-    self.proxyHost = host;
-    self.proxyPort = port;
-    self.proxyUsername = user;
-    self.proxyPassword = password;
-}
 
 #pragma mark - Keep-alive Heartbeat
 
