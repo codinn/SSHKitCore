@@ -4,7 +4,7 @@
 @class SSHKitHostKey, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 @class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel, SSHKitSFTPChannel;
 
-typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
+typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -72,11 +72,7 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /** Is session connected with IPv6 address. */
 @property (nonatomic, readonly, getter=isIPv6) BOOL IPv6;
 
-@property (strong, readwrite) SSHKitCoreLogHandler logDebug;
-@property (strong, readwrite) SSHKitCoreLogHandler logInfo;
-@property (strong, readwrite) SSHKitCoreLogHandler logWarn;
-@property (strong, readwrite) SSHKitCoreLogHandler logError;
-@property (strong, readwrite) SSHKitCoreLogHandler logFatal;
+@property (strong, readwrite) SSHKitLogHandler logHandle;
 
 /** The client version string */
 @property (nonatomic, readonly)  NSString *clientBanner;

@@ -169,12 +169,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
-            if (_logDebug) _logDebug(@"Client banner: %@", self.clientBanner);
+            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Client banner: %@", self.clientBanner);
             
             const char *serverbanner = ssh_get_serverbanner(self.rawSession);
             if (serverbanner) self.serverBanner = @(serverbanner);
             
-            if (_logDebug) _logDebug(@"Server banner: %@", self.serverBanner);
+            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Server banner: %@", self.serverBanner);
             
             int ver = ssh_get_version(self.rawSession);
             
@@ -290,7 +290,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         ssh_options_set(_rawSession, SSH_OPTIONS_FD, &fd);
     } else {
         // connect directly
-        if (_logDebug) _logDebug(@"Connect directly");
+        if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Connect directly");
     }
     
     // host and user name
@@ -328,7 +328,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     // tcp keepalive
     if ( self.serverAliveCountMax<=0 ) {
         int on = 1;
-        if (_logDebug) _logDebug(@"Enable TCP keepalive");
+        if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Enable TCP keepalive");
         setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
     }
     
@@ -905,7 +905,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
     
     _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
     if (!_keepAliveTimer) {
-        if (_logDebug) _logDebug(@"Failed to create keep-alive timer");
+        if (_logHandle) _logHandle(SSHKitLogLevelWarn, @"Failed to create keep-alive timer");
         return;
     }
     
@@ -963,23 +963,23 @@ static void raw_session_log_callback(int priority, const char *function, const c
 #ifdef DEBUG
     SSHKitSession *aSelf = (__bridge SSHKitSession *)userdata;
     
-    if (aSelf) {
+    if (aSelf && aSelf->_logHandle) {
         switch (priority) {
             case SSH_LOG_TRACE:
             case SSH_LOG_DEBUG:
-                 if (aSelf->_logDebug) aSelf->_logDebug(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelDebug, @"%s", message);
                 break;
                 
             case SSH_LOG_INFO:
-                if (aSelf->_logInfo) aSelf->_logInfo(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelInfo, @"%s", message);
                 break;
                 
             case SSH_LOG_WARN:
-                if (aSelf->_logWarn) aSelf->_logWarn(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelWarn, @"%s", message);
                 break;
                 
             default:
-                if (aSelf->_logError) aSelf->_logError(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelError, @"%s", message);
                 break;
         }
     }
