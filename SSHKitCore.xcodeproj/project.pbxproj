@@ -24,10 +24,6 @@
 		4A3D1E381C6048CD009F9760 /* SSHKitShellChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E361C6048CD009F9760 /* SSHKitShellChannel.m */; };
 		4A3D1E431C60934A009F9760 /* SSHKitSession+Channels.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E411C60934A009F9760 /* SSHKitSession+Channels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A3D1E441C60934A009F9760 /* SSHKitSession+Channels.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E421C60934A009F9760 /* SSHKitSession+Channels.m */; };
-		4A49F6601A491CD100D9BA80 /* CoHTTPMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6561A491CD100D9BA80 /* CoHTTPMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A49F6611A491CD100D9BA80 /* CoHTTPMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6571A491CD100D9BA80 /* CoHTTPMessage.m */; };
-		4A49F6621A491CD100D9BA80 /* CoSOCKSMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A49F6581A491CD100D9BA80 /* CoSOCKSMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A49F6631A491CD100D9BA80 /* CoSOCKSMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A49F6591A491CD100D9BA80 /* CoSOCKSMessage.m */; };
 		4A652E9319AD891400FAEB28 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A652E9219AD891400FAEB28 /* Security.framework */; };
 		4A759CB11BCEBD3900301730 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CAF1BCEBD3900301730 /* libcrypto.a */; };
 		4A759CB21BCEBD3900301730 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CB01BCEBD3900301730 /* libssl.a */; };
@@ -135,10 +131,6 @@
 		4A3D1E361C6048CD009F9760 /* SSHKitShellChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitShellChannel.m; sourceTree = "<group>"; };
 		4A3D1E411C60934A009F9760 /* SSHKitSession+Channels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitSession+Channels.h"; sourceTree = "<group>"; };
 		4A3D1E421C60934A009F9760 /* SSHKitSession+Channels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SSHKitSession+Channels.m"; sourceTree = "<group>"; };
-		4A49F6561A491CD100D9BA80 /* CoHTTPMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoHTTPMessage.h; sourceTree = "<group>"; };
-		4A49F6571A491CD100D9BA80 /* CoHTTPMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CoHTTPMessage.m; sourceTree = "<group>"; };
-		4A49F6581A491CD100D9BA80 /* CoSOCKSMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoSOCKSMessage.h; sourceTree = "<group>"; };
-		4A49F6591A491CD100D9BA80 /* CoSOCKSMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CoSOCKSMessage.m; sourceTree = "<group>"; };
 		4A652E9219AD891400FAEB28 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4A759CAF1BCEBD3900301730 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "openssl/openssl-1.0.2d-osx/lib/libcrypto.a"; sourceTree = SOURCE_ROOT; };
 		4A759CB01BCEBD3900301730 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "openssl/openssl-1.0.2d-osx/lib/libssl.a"; sourceTree = SOURCE_ROOT; };
@@ -228,17 +220,6 @@
 				4A3D1E361C6048CD009F9760 /* SSHKitShellChannel.m */,
 			);
 			path = Channel;
-			sourceTree = "<group>";
-		};
-		4A49F6551A491CD100D9BA80 /* CoMessage */ = {
-			isa = PBXGroup;
-			children = (
-				4A49F6561A491CD100D9BA80 /* CoHTTPMessage.h */,
-				4A49F6571A491CD100D9BA80 /* CoHTTPMessage.m */,
-				4A49F6581A491CD100D9BA80 /* CoSOCKSMessage.h */,
-				4A49F6591A491CD100D9BA80 /* CoSOCKSMessage.m */,
-			);
-			path = CoMessage;
 			sourceTree = "<group>";
 		};
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
@@ -341,7 +322,6 @@
 			isa = PBXGroup;
 			children = (
 				4A281DBE1A4A570D00EA1583 /* Utils */,
-				4A49F6551A491CD100D9BA80 /* CoMessage */,
 				4A3D1E281C603F21009F9760 /* Channel */,
 				CCBEE2511C8D5EE0004394A4 /* SFTP */,
 				E4E96D94158E10FD002E6E0A /* SSHKitCore.h */,
@@ -372,9 +352,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A49F6601A491CD100D9BA80 /* CoHTTPMessage.h in Headers */,
 				E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */,
-				4A49F6621A491CD100D9BA80 /* CoSOCKSMessage.h in Headers */,
 				4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */,
 				4A3D1E2B1C603F21009F9760 /* SSHKitChannel.h in Headers */,
 				4A3D1E331C6044A6009F9760 /* SSHKitForwardChannel.h in Headers */,
@@ -563,14 +541,12 @@
 				CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */,
 				4A2B5B081A4A6F3C007D20DF /* SSHKitHostKey.m in Sources */,
 				4A3D1E441C60934A009F9760 /* SSHKitSession+Channels.m in Sources */,
-				4A49F6631A491CD100D9BA80 /* CoSOCKSMessage.m in Sources */,
 				4A3D1E301C604405009F9760 /* SSHKitDirectChannel.m in Sources */,
 				CCBEE2591C8D5EE0004394A4 /* SSHKitSFTPFile.m in Sources */,
 				4A3D1E341C6044A6009F9760 /* SSHKitForwardChannel.m in Sources */,
 				4A3D1E381C6048CD009F9760 /* SSHKitShellChannel.m in Sources */,
 				4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */,
 				4A281DC21A4A570D00EA1583 /* SSHKitPrivateKeyParser.m in Sources */,
-				4A49F6611A491CD100D9BA80 /* CoHTTPMessage.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
