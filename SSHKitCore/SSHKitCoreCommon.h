@@ -34,7 +34,6 @@ typedef NS_ENUM(NSInteger, SSHKitLogLevel) {
     
     SSHKitLogLevelDebug,
     SSHKitLogLevelInfo,
-    SSHKitLogLevelSuccess,
     SSHKitLogLevelWarn,
     SSHKitLogLevelError,
     SSHKitLogLevelFatal
