@@ -12,7 +12,6 @@
 typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitSessionStageUnknown   = 0,
     SSHKitSessionStageNotConnected,
-    SSHKitSessionStageOpeningSocket,
     SSHKitSessionStageConnecting,
     SSHKitSessionStagePreAuthenticate,
     SSHKitSessionStageAuthenticating,
@@ -221,14 +220,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user {
-    [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:0.0];
+    [self connectToHost:host onPort:port withUser:(NSString*)user timeout:0.0];
 }
 
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout {
-    [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:timeout];
-}
-
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout {
     self.host = [host copy];
     self.port = port;
     self.username = [user copy];
@@ -819,7 +814,6 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
         
         switch (strongSelf->_stage) {
             case SSHKitSessionStageNotConnected:
-            case SSHKitSessionStageOpeningSocket:
                 break;
             case SSHKitSessionStageConnecting:
                 [strongSelf _doConnect];
