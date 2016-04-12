@@ -219,10 +219,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user {
-    [self connectToHost:host onPort:port withUser:(NSString*)user timeout:0.0];
-}
-
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout {
     self.host = [host copy];
     self.port = port;

@@ -114,14 +114,8 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 // -----------------------------------------------------------------------------
 
 /**
- * Connect to the server using the default timeout (TCP default timeout)
- *
- * This method invokes connectToHost:onPort:withUser:timeout:, and no timeout.
- **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user;
-
-/**
  * Connects to the given host and port with an optional timeout.
+ * @param timeout Using 0.0 set default timeout (TCP default timeout)
  *
  **/
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
