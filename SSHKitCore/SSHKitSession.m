@@ -3,7 +3,6 @@
 #import <libssh/libssh.h>
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
-#import "SSHKitConnector.h"
 #import "SSHKitSession+Channels.h"
 #import "SSHKitPrivateKeyParser.h"
 #import "SSHKitForwardChannel.h"
@@ -13,7 +12,6 @@
 typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     SSHKitSessionStageUnknown   = 0,
     SSHKitSessionStageNotConnected,
-    SSHKitSessionStageOpeningSocket,
     SSHKitSessionStageConnecting,
     SSHKitSessionStagePreAuthenticate,
     SSHKitSessionStageAuthenticating,
@@ -40,14 +38,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_block_t    _authBlock;
     
     void *_isOnSessionQueueKey;
-    
-    SSHKitConnector     *_connector;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
 @property (nonatomic, readwrite)  NSString    *host;
+@property (nonatomic, readwrite)  NSString    *hostIP;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
+@property (nonatomic, readwrite, getter=isIPv6) BOOL IPv6;
 
 @property (nonatomic, readwrite)  NSString    *clientBanner;
 @property (nonatomic, readwrite)  NSString    *serverBanner;
@@ -57,12 +55,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @property (nonatomic, readonly) dispatch_queue_t sessionQueue;
 
-// connect over proxy
-@property (nonatomic) SSHKitProxyType proxyType;
-@property (nonatomic, copy) NSString  *proxyHost;
-@property (nonatomic)       uint16_t  proxyPort;
-@property (nonatomic, copy) NSString  *proxyUsername;
-@property (nonatomic, copy) NSString  *proxyPassword;
+@property (nonatomic, readwrite)  BOOL      usesCustomFileDescriptor;
 @end
 
 #pragma mark -
@@ -80,13 +73,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
     if ((self = [super init])) {
         self.enableCompression = NO;
-        self.enableIPv4 = YES;
-        self.enableIPv6 = YES;
         
         self.stage = SSHKitSessionStageNotConnected;
         _channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
-        self.proxyType = SSHKitProxyTypeDirect;
         
 		self.delegate = aDelegate;
 		
@@ -162,19 +152,28 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)_doConnect {
     int result = ssh_connect(_rawSession);
+    [self _setupSocketReadSource];
     
     switch (result) {
         case SSH_OK: {
             // connection established
+            int socket = ssh_get_fd(_rawSession);
+            NSString *ip = GetHostIPFromFD(socket, &_IPv6);
+            
+            if (!self.usesCustomFileDescriptor) {
+                // connect directly
+                self.hostIP = ip;
+            }
+            
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
             
-            if (_logDebug) _logDebug(@"Client banner: %@", self.clientBanner);
+            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Client banner: %@", self.clientBanner);
             
             const char *serverbanner = ssh_get_serverbanner(self.rawSession);
             if (serverbanner) self.serverBanner = @(serverbanner);
             
-            if (_logDebug) _logDebug(@"Server banner: %@", self.serverBanner);
+            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Server banner: %@", self.serverBanner);
             
             int ver = ssh_get_version(self.rawSession);
             
@@ -220,15 +219,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user {
-    [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:0.0];
-}
-
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout {
-    [self connectToHost:host onPort:port viaInterface:nil withUser:(NSString*)user timeout:timeout];
-}
-
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout {
     self.host = [host copy];
     self.port = port;
     self.username = [user copy];
@@ -241,131 +232,112 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        // disconnect if connected
-        if (strongSelf.isConnected) {
-            [strongSelf _doDisconnectWithError:nil];
-        }
-        
-        strongSelf->_rawSession = ssh_new();
-        
-        [strongSelf _registerLogCallback];
-        
-        if (!strongSelf->_rawSession) {
-            [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
+        BOOL prepared = [strongSelf _doPrepareWithFileDescriptor:SSH_INVALID_SOCKET];
+        if (!prepared) {
             return_from_block;
         }
         
-        if (!strongSelf->_connector) {
-            if (strongSelf.proxyType > SSHKitProxyTypeDirect) {
-                // connect over a proxy server
-                
-                if (strongSelf->_logDebug) strongSelf->_logDebug(@"Connect through proxy with type %d", strongSelf.proxyType);
-                
-                id ConnectProxyClass = SSHKitConnectorProxy.class;
-                
-                switch (strongSelf.proxyType) {
-                    case SSHKitProxyTypeHTTP:
-                    case SSHKitProxyTypeHTTPS:
-                        ConnectProxyClass = SSHKitConnectorHTTPS.class;
-                        break;
-                        
-                    case SSHKitProxyTypeSOCKS4:
-                        ConnectProxyClass = SSHKitConnectorSOCKS4.class;
-                        break;
-                        
-                    case SSHKitProxyTypeSOCKS4A:
-                        ConnectProxyClass = SSHKitConnectorSOCKS4A.class;
-                        break;
-                        
-                    case SSHKitProxyTypeSOCKS5:
-                    default:
-                        ConnectProxyClass = SSHKitConnectorSOCKS5.class;
-                        break;
-                }
-                
-                if (strongSelf.proxyUsername.length) {
-                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort username:strongSelf.proxyUsername password:strongSelf.proxyPassword];
-                } else {
-                    strongSelf->_connector = [[ConnectProxyClass alloc] initWithProxyHost:strongSelf.proxyHost port:strongSelf.proxyPort];
-                }
-            } else {
-                if (strongSelf->_logDebug) strongSelf->_logDebug(@"Connect directly");
-                // connect directly
-                strongSelf->_connector = [[SSHKitConnector alloc] init];
-            }
-            
-            // configure ipv4/ipv6
-            strongSelf->_connector.IPv4Enabled = strongSelf.enableIPv4;
-            strongSelf->_connector.IPv6Enabled = strongSelf.enableIPv6;
-            
-            if (strongSelf.logDebug) {
-                strongSelf->_connector.logDebug = strongSelf.logDebug;
-            }
-            
-            strongSelf.stage = SSHKitSessionStageOpeningSocket;
-            
-            NSError *error = nil;
-            [strongSelf->_connector connectToHost:host onPort:port viaInterface:interface withTimeout:strongSelf.timeout error:&error];
-            
-            if (error) {
-                [strongSelf _doDisconnectWithError:error];
-                return_from_block;
-            }
-        }
-        
-        int socket = strongSelf->_connector.socketFD;
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_FD, &socket);
-        
-        // compression
-        
-        if (strongSelf.enableCompression) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_COMPRESSION, "yes");
-        } else {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_COMPRESSION, "no");
-        }
-        
-        // ciphers
-        if (strongSelf.ciphers.length) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_CIPHERS_C_S, strongSelf.ciphers.UTF8String);
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_CIPHERS_S_C, strongSelf.ciphers.UTF8String);
-        }
-        
-        // host key algorithms
-        if (strongSelf.keyExchangeAlgorithms.length) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_KEY_EXCHANGE, strongSelf.keyExchangeAlgorithms.UTF8String);
-        }
-        
-        // host key algorithms
-        if (strongSelf.hostKeyAlgorithms.length) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_HOSTKEYS, strongSelf.hostKeyAlgorithms.UTF8String);
-        }
-        
-        // tcp keepalive
-        if ( strongSelf.serverAliveCountMax<=0 ) {
-            int on = 1;
-            if (strongSelf->_logDebug) strongSelf->_logDebug(@"Enable TCP keepalive");
-            setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
-        }
-        
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_USER, strongSelf.username.UTF8String);
-#if DEBUG
-        int verbosity = SSH_LOG_FUNCTIONS;
-#else
-        int verbosity = SSH_LOG_NOLOG;
-#endif
-        ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
-        
-        if (strongSelf->_timeout > 0) {
-            ssh_options_set(strongSelf->_rawSession, SSH_OPTIONS_TIMEOUT, &strongSelf->_timeout);
-        }
-        
-        // set to non-blocking mode
-        ssh_set_blocking(strongSelf->_rawSession, 0);
-        
         strongSelf.stage = SSHKitSessionStageConnecting;
-        [strongSelf _setupSocketReadSource];
         [strongSelf _doConnect];
     }}];
+}
+
+- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout {
+    self.usesCustomFileDescriptor = YES;
+    self.username = [user copy];
+    _timeout = (long)timeout;
+    
+    __weak SSHKitSession *weakSelf = self;
+    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
+        __strong SSHKitSession *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return_from_block;
+        }
+        
+        BOOL prepared = [strongSelf _doPrepareWithFileDescriptor:fd];
+        if (!prepared) {
+            return_from_block;
+        }
+        
+        strongSelf.stage = SSHKitSessionStageConnecting;
+        [strongSelf _doConnect];
+    }}];
+}
+
+- (BOOL)_doPrepareWithFileDescriptor:(int)fd {
+    // disconnect if connected
+    if (self.isConnected) {
+        [self _doDisconnectWithError:nil];
+    }
+    
+    _rawSession = ssh_new();
+    
+    if (!_rawSession) {
+        [self _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
+        return NO;
+    }
+    
+    if (fd != SSH_INVALID_SOCKET) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_FD, &fd);
+    } else {
+        // connect directly
+        if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Connect directly");
+    }
+    
+    // host and user name
+    if (self.host.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_HOST, self.host.UTF8String);
+    }
+    if (self.username.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_USER, self.username.UTF8String);
+    }
+    ssh_options_set(_rawSession, SSH_OPTIONS_PORT, &_port);
+    
+    // compression
+    if (self.enableCompression) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "yes");
+    } else {
+        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "no");
+    }
+    
+    // ciphers
+    if (self.ciphers.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_CIPHERS_C_S, self.ciphers.UTF8String);
+        ssh_options_set(_rawSession, SSH_OPTIONS_CIPHERS_S_C, self.ciphers.UTF8String);
+    }
+    
+    // host key algorithms
+    if (self.keyExchangeAlgorithms.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_KEY_EXCHANGE, self.keyExchangeAlgorithms.UTF8String);
+    }
+    
+    // host key algorithms
+    if (self.hostKeyAlgorithms.length) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_HOSTKEYS, self.hostKeyAlgorithms.UTF8String);
+    }
+    
+    // tcp keepalive
+    if ( self.serverAliveCountMax<=0 ) {
+        int on = 1;
+        if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Enable TCP keepalive");
+        setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
+    }
+    
+#if DEBUG
+    int verbosity = SSH_LOG_FUNCTIONS;
+#else
+    int verbosity = SSH_LOG_NOLOG;
+#endif
+    ssh_options_set(_rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
+    
+    if (_timeout > 0) {
+        ssh_options_set(_rawSession, SSH_OPTIONS_TIMEOUT, &_timeout);
+    }
+    
+    // set to non-blocking mode
+    ssh_set_blocking(_rawSession, 0);
+    
+    return YES;
 }
 
 - (void)dispatchSyncOnSessionQueue:(dispatch_block_t)block {
@@ -423,15 +395,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }}];
 }
 
-- (void)impoliteDisconnect
-{
-    if (_connector) {
-        [_connector disconnect];
-    }
-    
-    [self disconnect];
-}
-
 - (void)_doDisconnectWithError:(NSError *)error {
     if (self.isDisconnected) { // already disconnected
         return;
@@ -457,11 +420,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     [self _cancelSocketReadSource];
     
-    if (_connector) {
-        [_connector disconnect];
-        _connector = nil;
-    }
-    
     if (_delegateFlags.didDisconnectWithError) {
         [self.delegate session:self didDisconnectWithError:error];
     }
@@ -469,13 +427,42 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark Diagnostics
 
-- (NSString *)hostIP {
-    if (self.proxyHost.length) { // connect over a proxy
+NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
+    if (fd == SOCKET_NULL) {
         return nil;
     }
     
-    // _connector will be nil if use a custom socket fd
-    return _connector.connectedHost;
+    struct sockaddr_storage sock_addr;
+    socklen_t sock_addr_len = sizeof(sock_addr);
+    
+    if (getpeername(fd, (struct sockaddr *)&sock_addr, &sock_addr_len) != 0) {
+        return nil;
+    }
+    
+    if (sock_addr.ss_family == AF_INET) {
+        if (ipv6FlagPtr) *ipv6FlagPtr = NO;
+        
+        const struct sockaddr_in *sockAddr4 = (const struct sockaddr_in *)&sock_addr;
+        char addrBuf[INET_ADDRSTRLEN] = {0};
+        
+        if (inet_ntop(AF_INET, &sockAddr4->sin_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
+            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
+        }
+        
+    }
+    
+    if (sock_addr.ss_family == AF_INET6) {
+        if (ipv6FlagPtr) *ipv6FlagPtr = YES;
+        
+        const struct sockaddr_in6 *sockAddr6 = (const struct sockaddr_in6 *)&sock_addr;
+        char addrBuf[INET6_ADDRSTRLEN];
+        
+        if (inet_ntop(AF_INET6, &sockAddr6->sin6_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
+            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
+        }
+    }
+    
+    return nil;
 }
 
 - (NSError *)coreError {
@@ -792,9 +779,14 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
  * Reads the first available bytes that become available on the channel.
  **/
 - (void)_setupSocketReadSource {
-    [self _cancelSocketReadSource];
+    if (_socketReadSource) {
+        // already set
+        return;
+    }
     
-    _socketReadSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self->_connector.socketFD, 0, _sessionQueue);
+    // socket fd only available after ssh_connect was called
+    int socket = ssh_get_fd(_rawSession);
+    _socketReadSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, socket, 0, _sessionQueue);
     
     if (!_socketReadSource) {
         NSError *error = [[NSError alloc] initWithDomain:SSHKitCoreErrorDomain
@@ -818,7 +810,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         switch (strongSelf->_stage) {
             case SSHKitSessionStageNotConnected:
-            case SSHKitSessionStageOpeningSocket:
                 break;
             case SSHKitSessionStageConnecting:
                 [strongSelf _doConnect];
@@ -893,19 +884,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark - Extra Options
 // -----------------------------------------------------------------------------
 
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port {
-    self.proxyType = type;
-    self.proxyHost = host;
-    self.proxyPort = port;
-}
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password {
-    self.proxyType = type;
-    self.proxyHost = host;
-    self.proxyPort = port;
-    self.proxyUsername = user;
-    self.proxyPassword = password;
-}
-
 #pragma mark - Keep-alive Heartbeat
 
 - (void)_setupKeepAliveTimer {
@@ -917,7 +895,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
     if (!_keepAliveTimer) {
-        if (_logDebug) _logDebug(@"Failed to create keep-alive timer");
+        if (_logHandle) _logHandle(SSHKitLogLevelWarn, @"Failed to create keep-alive timer");
         return;
     }
     
@@ -975,23 +953,23 @@ static void raw_session_log_callback(int priority, const char *function, const c
 #ifdef DEBUG
     SSHKitSession *aSelf = (__bridge SSHKitSession *)userdata;
     
-    if (aSelf) {
+    if (aSelf && aSelf->_logHandle) {
         switch (priority) {
             case SSH_LOG_TRACE:
             case SSH_LOG_DEBUG:
-                 if (aSelf->_logDebug) aSelf->_logDebug(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelDebug, @"%s", message);
                 break;
                 
             case SSH_LOG_INFO:
-                if (aSelf->_logInfo) aSelf->_logInfo(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelInfo, @"%s", message);
                 break;
                 
             case SSH_LOG_WARN:
-                if (aSelf->_logWarn) aSelf->_logWarn(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelWarn, @"%s", message);
                 break;
                 
             default:
-                if (aSelf->_logError) aSelf->_logError(@"%s", message);
+                aSelf->_logHandle(SSHKitLogLevelError, @"%s", message);
                 break;
         }
     }

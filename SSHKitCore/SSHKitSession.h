@@ -4,7 +4,7 @@
 @class SSHKitHostKey, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
 @class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel, SSHKitSFTPChannel;
 
-typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
+typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 // -----------------------------------------------------------------------------
 #pragma mark -
@@ -58,8 +58,8 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /** Full server hostname in the format `@"{hostname}"`. */
 @property (nonatomic, readonly) NSString *host;
 
-/** The server actual IP address.
- *  nil if session is connected over proxy
+/** The server actual IP address, available after session connected
+ *  nil if session is connected over custom file descriptor
   */
 @property (nonatomic, readonly) NSString *hostIP;
 
@@ -69,11 +69,10 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 /** Username that will authenticate against the server. */
 @property (nonatomic, readonly) NSString *username;
 
-@property (strong, readwrite) SSHKitCoreLogHandler logDebug;
-@property (strong, readwrite) SSHKitCoreLogHandler logInfo;
-@property (strong, readwrite) SSHKitCoreLogHandler logWarn;
-@property (strong, readwrite) SSHKitCoreLogHandler logError;
-@property (strong, readwrite) SSHKitCoreLogHandler logFatal;
+/** Is session connected with IPv6 address. */
+@property (nonatomic, readonly, getter=isIPv6) BOOL IPv6;
+
+@property (strong, readwrite) SSHKitLogHandler logHandle;
 
 /** The client version string */
 @property (nonatomic, readonly)  NSString *clientBanner;
@@ -104,15 +103,10 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 #pragma mark Advanced Options, setting before connection
 // -----------------------------------------------------------------------------
 
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port;
-- (void)enableProxyWithType:(SSHKitProxyType)type host:(NSString *)host port:(uint16_t)port user:(NSString *)user password:(NSString *)password;
-
 @property BOOL      enableCompression;
 @property NSString  *ciphers;
 @property NSString  *hostKeyAlgorithms;
 @property NSString  *keyExchangeAlgorithms;
-@property BOOL      enableIPv4;
-@property BOOL      enableIPv6;
 @property NSInteger serverAliveCountMax;
 
 // -----------------------------------------------------------------------------
@@ -120,23 +114,16 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
 // -----------------------------------------------------------------------------
 
 /**
- * Connect to the server using the default timeout (TCP default timeout)
- *
- * This method invokes connectToHost:onPort:withUser:timeout:, and no timeout.
- **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user;
-
-/**
- * Connects to the given host and port via specified interface with an optional timeout.
- *
- **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port viaInterface:(NSString *)interface withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
-
-/**
  * Connects to the given host and port with an optional timeout.
+ * @param timeout Using 0.0 set default timeout (TCP default timeout)
  *
  **/
 - (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
+/**
+ * Connects to the server via an opened socket.
+ *
+ **/
+- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout;
 
 // -----------------------------------------------------------------------------
 #pragma mark Disconnecting
@@ -146,7 +133,6 @@ typedef void (^ SSHKitCoreLogHandler)(NSString *fmt, ...);
  Close the session
  */
 - (void)disconnect;
-- (void)impoliteDisconnect;
 - (void)disconnectWithError:(NSError *)error;
 
 // -----------------------------------------------------------------------------
