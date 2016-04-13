@@ -186,7 +186,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         return;
     }
     _readFileBlock(buffer, nbytes);
-    _progressBlock(_totalBytes, self.fileSize.longLongValue);
+    _progressBlock(nbytes, _totalBytes, self.fileSize.longLongValue);
     _readedpackageLen += nbytes;
     if (_readedpackageLen < MAX_XFER_BUF_SIZE && _totalBytes < self.fileSize.longLongValue) {  // if not all data readed
         NSLog(@"not all data readed.");
