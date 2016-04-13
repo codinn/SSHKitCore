@@ -10,10 +10,9 @@ Implemented with Python standard module SocketServer.
 
 """
 
-port = 2200  # Standard port is 7 but, on Unix, you need to be root to use it
-
 import SocketServer
 from SocketServer import TCPServer, ThreadingMixIn, StreamRequestHandler
+import optparse
 import sys
 import time
 import re
@@ -74,6 +73,15 @@ class EchoHandler(StreamRequestHandler):
         self.log(peer, size)
 
 if __name__ == '__main__':
+    parser = optparse.OptionParser()
+    parser.add_option('-p', '--port',
+                      help="specify listening port",
+                      type="int",
+                      default="2200", # Standard port is 7 but, on Unix, you need to be root to use it
+                      )
+                      
+    options, args = parser.parse_args()
+
     ThreadingTCPServer.allow_reuse_address = True
     # SocketServer should transparently accept IPv6 connections. But
     # it does not. So, we tell it. Note that using socket.AF_INET6
@@ -84,5 +92,5 @@ if __name__ == '__main__':
     # See the very detailed study
     # <https://edms.cern.ch/document/971407>
     ThreadingTCPServer.address_family = socket.AF_INET6
-    server = ThreadingTCPServer(("", port), EchoHandler)
+    server = ThreadingTCPServer(("", options.port), EchoHandler)
     server.serve_forever()
