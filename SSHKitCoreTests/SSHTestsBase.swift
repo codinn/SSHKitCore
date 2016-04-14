@@ -19,6 +19,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     let echoTask = NSTask()
     let task = NSTask()
     let userDefaults = NSUserDefaults.standardUserDefaults()
+    let echoPort : UInt16 = 6007
     
     override func setUp() {
         super.setUp()
@@ -34,9 +35,43 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     }
     
     func startEchoServer() {
+        expectation = expectationWithDescription("Start echo server")
         let echoServer = NSBundle(forClass: self.dynamicType).pathForResource("echo_server.py", ofType: "");
         echoTask.launchPath = echoServer
+        echoTask.arguments = ["-p", "\(echoPort)"]
+        
+        let pipe = NSPipe()
+        echoTask.standardOutput = pipe
+        echoTask.standardError = pipe
+        echoTask.standardInput = NSFileHandle.fileHandleWithNullDevice()
+        pipe.fileHandleForReading.readabilityHandler = { (handler: NSFileHandle?) in
+            if let data = handler?.availableData {
+                if let output = String(data: data, encoding: NSUTF8StringEncoding) {
+                    print(output)
+                }
+            }
+            
+            self.expectation?.fulfill()
+            // stop catch output
+            pipe.fileHandleForReading.readabilityHandler = nil;
+        }
+        
+        echoTask.terminationHandler = { (task: NSTask) in
+            // set readabilityHandler block to nil; otherwise, you'll encounter high CPU usage
+            pipe.fileHandleForReading.readabilityHandler = nil;
+        }
+        
         echoTask.launch()
+        waitEchoServerStart()
+    }
+    
+    func waitEchoServerStart() {
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            }
+            self.stopEchoServer()
+        }
     }
     
     func stopEchoServer() {
@@ -107,7 +142,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
         expectation = expectationWithDescription("Open Direct Channel")
-        let channel = session.openDirectChannelWithTargetHost("127.0.0.1", port: 2200, delegate: self)
+        let channel = session.openDirectChannelWithTargetHost("127.0.0.1", port: UInt(echoPort), delegate: self)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")

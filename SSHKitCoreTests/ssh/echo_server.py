@@ -18,7 +18,6 @@ import time
 import re
 import socket
 
-
 def current_time():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 
@@ -26,6 +25,10 @@ def current_time():
 # We mix with ThreadingMixIn to allow several simultaneous
 # clients. Otherwise, a slow client may block everyone.
 class ThreadingTCPServer(ThreadingMixIn, TCPServer):
+    def server_activate(self):
+        SocketServer.TCPServer.server_activate(self)
+        sys.stdout.write("Server listening on %s\n" % (self.server_address,) )
+        sys.stdout.flush()
 
     def server_bind(self):
         # Override this method to be sure v6only is false: we want to
@@ -36,7 +39,6 @@ class ThreadingTCPServer(ThreadingMixIn, TCPServer):
 
 # StreamRequestHandler provides us with the rfile and wfile attributes
 class EchoHandler(StreamRequestHandler):
-
     def log(self, peer, size):
         mapped = re.compile("^::ffff:", re.IGNORECASE)
         peer = re.sub(mapped, "", peer)  # Clean IPv4-mapped addresses because I find
