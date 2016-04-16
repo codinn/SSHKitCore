@@ -163,11 +163,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     nbytes = [self _asyncRead:_asyncRequest buffer:buffer];
     if (nbytes == SSHKit_SSH_AGAIN) {
         _againCount += 1;
-        NSLog(@"SSHKit_SSH_AGAIN");
+        // NSLog(@"SSHKit_SSH_AGAIN");
         return;
     }
     _totalBytes += nbytes;
-    NSLog(@"AGAIN: %d;  _asyncRequest: %d; len: %d; total: %llu", _againCount, _asyncRequest, nbytes, _totalBytes);
+    // NSLog(@"AGAIN: %d;  _asyncRequest: %d; len: %d; total: %llu", _againCount, _asyncRequest, nbytes, _totalBytes);
     _againCount = 0;
     if (nbytes < 0) {
         // finish or fail
@@ -189,7 +189,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     _progressBlock(nbytes, _totalBytes, self.fileSize.longLongValue);
     _readedpackageLen += nbytes;
     if (_readedpackageLen < MAX_XFER_BUF_SIZE && _totalBytes < self.fileSize.longLongValue) {  // if not all data readed
-        NSLog(@"not all data readed.");
+        // NSLog(@"not all data readed.");
         return;
     }
     _readedpackageLen = 0;
@@ -235,7 +235,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         // 16397 - 16384
         [self.sftp.session dispatchAsyncOnSessionQueue:^{
             __strong SSHKitSFTPFile *strongSelf = weakSelf;
-            NSLog(@"didReadStdoutData len: %lu", (unsigned long)data.length);
             [strongSelf _asyncReadFile];
         }];
     }
