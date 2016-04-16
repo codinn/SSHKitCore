@@ -15,16 +15,14 @@ class DirectChannelTests: SSHTestsBase {
     var totoalReadLength: Int = -1
 
     override func setUp() {
-        startEchoServer()
         super.setUp()
         totoalReadLength = 0
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        startEchoServer()
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
         stopEchoServer()
+        super.tearDown()
     }
     
     func testOpenDirectChannel() {
