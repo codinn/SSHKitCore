@@ -1,5 +1,5 @@
 //
-//  SSHKitPrivateKeyParser.h
+//  SSHKitKeyPair.h
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 12/24/14.
@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "SSHKitCore.h"
 
-@interface SSHKitPrivateKeyParser : NSObject
+@interface SSHKitKeyPair : NSObject
 
 + (instancetype)parserFromFilePath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr;
 

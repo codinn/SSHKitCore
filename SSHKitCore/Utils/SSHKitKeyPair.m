@@ -1,14 +1,14 @@
 //
-//  SSHKitPrivateKeyParser.m
+//  SSHKitKeyPair.m
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 12/24/14.
 //
 //
 #import "SSHKitCore+Protected.h"
-#import "SSHKitPrivateKeyParser.h"
+#import "SSHKitKeyPair.h"
 
-@implementation SSHKitPrivateKeyParser
+@implementation SSHKitKeyPair
 
 + (instancetype)parserFromFilePath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
 {
@@ -31,7 +31,7 @@
     }
     
     int ret = 0;
-    SSHKitPrivateKeyParser *parser = [[SSHKitPrivateKeyParser alloc] init];
+    SSHKitKeyPair *parser = [[SSHKitKeyPair alloc] init];
     
     // import private key
     if (isBase64) {

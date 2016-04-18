@@ -4,7 +4,7 @@
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
 #import "SSHKitSession+Channels.h"
-#import "SSHKitPrivateKeyParser.h"
+#import "SSHKitKeyPair.h"
 #import "SSHKitForwardChannel.h"
 
 #define SOCKET_NULL -1
@@ -718,19 +718,19 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
 }
 
 - (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityFile:(NSString *)path {
-    SSHKitPrivateKeyParser *parser = [SSHKitPrivateKeyParser parserFromFilePath:path withPassphraseHandler:askPassphrase error:nil];
+    SSHKitKeyPair *parser = [SSHKitKeyPair parserFromFilePath:path withPassphraseHandler:askPassphrase error:nil];
     if (parser) {
         [self authenticateByPrivateKeyParser:parser];
     }
 }
 - (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityBase64:(NSString *)base64 {
-    SSHKitPrivateKeyParser *parser = [SSHKitPrivateKeyParser parserFromBase64:base64 withPassphraseHandler:askPassphrase error:nil];
+    SSHKitKeyPair *parser = [SSHKitKeyPair parserFromBase64:base64 withPassphraseHandler:askPassphrase error:nil];
     if (parser) {
         [self authenticateByPrivateKeyParser:parser];
     }
 }
 
-- (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser {
+- (void)authenticateByPrivateKeyParser:(SSHKitKeyPair *)parser {
     self.stage = SSHKitSessionStageAuthenticating;
     
     __block BOOL publicKeySuccess = NO;
