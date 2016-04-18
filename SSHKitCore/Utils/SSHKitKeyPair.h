@@ -11,8 +11,8 @@
 
 @interface SSHKitKeyPair : NSObject
 
-+ (instancetype)keyPairFromFilePath:(NSString *)path withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr;
+- (instancetype)initWithKeyPath:(NSString *)path withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr;
 
-+ (instancetype)keyPairFromBase64:(NSString *)base64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr;
+- (instancetype)initWithKeyBase64:(NSString *)base64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr;
 
 @end

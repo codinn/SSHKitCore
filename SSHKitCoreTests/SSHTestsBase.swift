@@ -228,7 +228,12 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
             })
             break
         case "publickey":
-            session.authenticateWithAskPassphrase(nil, forIdentityBase64:publicKeyBase64)
+            do {
+                let keyPair = try SSHKitKeyPair.init(keyBase64: publicKeyBase64, withAskPass: nil)
+                session.authenticateWithKeyPair(keyPair)
+            } catch let error as NSError {
+                XCTFail(error.description)
+            }
             break
         case "keyboard-interactive":
             session.authenticateWithAskInteractiveInfo({
