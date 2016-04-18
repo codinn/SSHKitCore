@@ -228,7 +228,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
             })
             break
         case "publickey":
-            session.authenticateByPrivateKeyBase64(publicKeyBase64)
+            session.authenticateWithAskPassphrase(nil, forIdentityBase64:publicKeyBase64)
             break
         case "keyboard-interactive":
             session.authenticateWithAskInteractiveInfo({

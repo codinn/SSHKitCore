@@ -162,7 +162,9 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  @param passphraseHandler Password handle for encrypted private key
  */
 - (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser;
-- (void)authenticateByPrivateKeyBase64:(NSString *)base64;
+
+- (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityFile:(NSString *)path;
+- (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityBase64:(NSString *)base64;
 
 /**
  Authenticate by keyboard-interactive

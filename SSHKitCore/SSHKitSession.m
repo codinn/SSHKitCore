@@ -717,12 +717,17 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
     [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
-- (void)authenticateByPrivateKeyBase64:(NSString *)base64 {
-    SSHKitPrivateKeyParser *parser = [SSHKitPrivateKeyParser parserFromBase64:base64 withPassphraseHandler:NULL error:nil];
+- (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityFile:(NSString *)path {
+    SSHKitPrivateKeyParser *parser = [SSHKitPrivateKeyParser parserFromFilePath:path withPassphraseHandler:askPassphrase error:nil];
     if (parser) {
         [self authenticateByPrivateKeyParser:parser];
     }
-    
+}
+- (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityBase64:(NSString *)base64 {
+    SSHKitPrivateKeyParser *parser = [SSHKitPrivateKeyParser parserFromBase64:base64 withPassphraseHandler:askPassphrase error:nil];
+    if (parser) {
+        [self authenticateByPrivateKeyParser:parser];
+    }
 }
 
 - (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser {
