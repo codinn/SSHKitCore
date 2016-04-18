@@ -10,19 +10,16 @@
 
 @implementation SSHKitKeyPair
 
-+ (instancetype)keyPairFromFilePath:(NSString *)path withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr
-{
++ (instancetype)keyPairFromFilePath:(NSString *)path withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr {
     return [self parserFromContent:path isBase64:NO withAskPass:askPass error:errPtr];
 }
 
-+ (instancetype)keyPairFromBase64:(NSString *)base64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr
-{
++ (instancetype)keyPairFromBase64:(NSString *)base64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr {
     return [self parserFromContent:base64 isBase64:YES withAskPass:askPass error:errPtr];
 }
 
 
-+ (instancetype)parserFromContent:(NSString *)content isBase64:(BOOL)isBase64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr
-{
++ (instancetype)parserFromContent:(NSString *)content isBase64:(BOOL)isBase64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr {
     if (!content.length) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                   code:SSHKitErrorIdentityParseFailure
@@ -35,9 +32,9 @@
     
     // import private key
     if (isBase64) {
-        ret = ssh_pki_import_privkey_base64(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(askPass), &parser->_privateKey);
+        ret = ssh_pki_import_privkey_base64(content.UTF8String, NULL, auth_callback, (__bridge void *)(askPass), &parser->_privateKey);
     } else {
-        ret = ssh_pki_import_privkey_file(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(askPass), &parser->_privateKey);
+        ret = ssh_pki_import_privkey_file(content.UTF8String, NULL, auth_callback, (__bridge void *)(askPass), &parser->_privateKey);
     }
     
     switch (ret) {
@@ -83,8 +80,7 @@
     return parser;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
     if (_publicKey) {
         ssh_key_free(_publicKey);
     }
@@ -93,8 +89,7 @@
     }
 }
 
-static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, int verify, void *userdata)
-{
+static int auth_callback(const char *prompt, char *buf, size_t len, int echo, int verify, void *userdata) {
     if (!userdata) {
         return SSH_ERROR;
     }
