@@ -320,7 +320,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if ( self.serverAliveCountMax<=0 ) {
         int on = 1;
         if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Enable TCP keepalive");
-        setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
+        setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
     }
     
 #if DEBUG
