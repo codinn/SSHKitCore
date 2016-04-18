@@ -10,18 +10,18 @@
 
 @implementation SSHKitKeyPair
 
-+ (instancetype)parserFromFilePath:(NSString *)path withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
++ (instancetype)keyPairFromFilePath:(NSString *)path withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr
 {
-    return [self parserFromContent:path isBase64:NO withPassphraseHandler:passphraseHandler error:errPtr];
+    return [self parserFromContent:path isBase64:NO withAskPass:askPass error:errPtr];
 }
 
-+ (instancetype)parserFromBase64:(NSString *)base64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
++ (instancetype)keyPairFromBase64:(NSString *)base64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr
 {
-    return [self parserFromContent:base64 isBase64:YES withPassphraseHandler:passphraseHandler error:errPtr];
+    return [self parserFromContent:base64 isBase64:YES withAskPass:askPass error:errPtr];
 }
 
 
-+ (instancetype)parserFromContent:(NSString *)content isBase64:(BOOL)isBase64 withPassphraseHandler:(SSHKitAskPassphrasePrivateKeyBlock)passphraseHandler error:(NSError **)errPtr
++ (instancetype)parserFromContent:(NSString *)content isBase64:(BOOL)isBase64 withAskPass:(SSHKitAskPassBlock)askPass error:(NSError **)errPtr
 {
     if (!content.length) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
@@ -35,9 +35,9 @@
     
     // import private key
     if (isBase64) {
-        ret = ssh_pki_import_privkey_base64(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(passphraseHandler), &parser->_privateKey);
+        ret = ssh_pki_import_privkey_base64(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(askPass), &parser->_privateKey);
     } else {
-        ret = ssh_pki_import_privkey_file(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(passphraseHandler), &parser->_privateKey);
+        ret = ssh_pki_import_privkey_file(content.UTF8String, NULL, _askPassphrase, (__bridge void *)(askPass), &parser->_privateKey);
     }
     
     switch (ret) {
@@ -99,7 +99,7 @@ static int _askPassphrase(const char *prompt, char *buf, size_t len, int echo, i
         return SSH_ERROR;
     }
     
-    SSHKitAskPassphrasePrivateKeyBlock handler = (__bridge SSHKitAskPassphrasePrivateKeyBlock)userdata;
+    SSHKitAskPassBlock handler = (__bridge SSHKitAskPassBlock)userdata;
     
     if (!handler) {
         return SSH_ERROR;

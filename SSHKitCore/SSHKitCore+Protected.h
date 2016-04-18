@@ -88,9 +88,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @interface SSHKitSFTPChannel()
 @end
 
-@interface SSHKitKeyPair () {
-    SSHKitAskPassphrasePrivateKeyBlock _passhpraseHandler;
-}
+@interface SSHKitKeyPair ()
 
 @property (nonatomic, readonly) ssh_key privateKey;
 @property (nonatomic, readonly) ssh_key publicKey;

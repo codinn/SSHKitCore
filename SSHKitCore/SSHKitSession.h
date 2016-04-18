@@ -156,10 +156,10 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 /**
  Authenticate by private key pair
 
- Use passphraseHandler:nil when the key is unencrypted
+ Use askPass:nil when the key is unencrypted
 
  @param privateKeyPath Filepath to private key
- @param passphraseHandler Password handle for encrypted private key
+ @param askPass Password handle for encrypted private key
  */
 - (void)authenticateByPrivateKeyParser:(SSHKitKeyPair *)parser;
 

@@ -718,13 +718,13 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
 }
 
 - (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityFile:(NSString *)path {
-    SSHKitKeyPair *parser = [SSHKitKeyPair parserFromFilePath:path withPassphraseHandler:askPassphrase error:nil];
+    SSHKitKeyPair *parser = [SSHKitKeyPair keyPairFromFilePath:path withAskPass:askPassphrase error:nil];
     if (parser) {
         [self authenticateByPrivateKeyParser:parser];
     }
 }
 - (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityBase64:(NSString *)base64 {
-    SSHKitKeyPair *parser = [SSHKitKeyPair parserFromBase64:base64 withPassphraseHandler:askPassphrase error:nil];
+    SSHKitKeyPair *parser = [SSHKitKeyPair keyPairFromBase64:base64 withAskPass:askPassphrase error:nil];
     if (parser) {
         [self authenticateByPrivateKeyParser:parser];
     }
