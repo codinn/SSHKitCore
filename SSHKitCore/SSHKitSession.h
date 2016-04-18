@@ -151,7 +151,7 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
  @param passwordHandler Password handler for get password
  */
-- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler;
+- (void)authenticateWithAskPassword:(NSString *(^)(void))passwordHandler;
 
 /**
  Authenticate by private key pair
@@ -169,7 +169,7 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  
  @param interactiveHandler Interactive handler for connected user
  */
-- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
+- (void)authenticateWithAskInteractiveInfo:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
 
 @end
 

@@ -622,7 +622,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
 }
 
 
-- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler {
+- (void)authenticateWithAskInteractiveInfo:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler {
     self.stage = SSHKitSessionStageAuthenticating;
 
     __block NSInteger index = 0;
@@ -691,7 +691,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
     [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
-- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler {
+- (void)authenticateWithAskPassword:(NSString *(^)(void))passwordHandler {
     NSString *password = passwordHandler();
     
     self.stage = SSHKitSessionStageAuthenticating;

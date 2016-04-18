@@ -18,6 +18,7 @@ class DirectChannelTests: SSHTestsBase {
         super.setUp()
         totoalReadLength = 0
         startEchoServer()
+        waitEchoServerStart()
     }
     
     override func tearDown() {

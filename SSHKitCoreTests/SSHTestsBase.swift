@@ -35,7 +35,6 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     }
     
     func startEchoServer() {
-        expectation = expectationWithDescription("Start echo server")
         let echoServer = NSBundle(forClass: self.dynamicType).pathForResource("echo_server.py", ofType: "");
         echoTask.launchPath = echoServer
         echoTask.arguments = ["-p", "\(echoPort)"]
@@ -62,20 +61,20 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         }
         
         echoTask.launch()
-        waitEchoServerStart()
-    }
-    
-    func waitEchoServerStart() {
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-            self.stopEchoServer()
-        }
     }
     
     func stopEchoServer() {
         echoTask.terminate()
+    }
+    
+    func waitEchoServerStart() {
+        expectation = expectationWithDescription("Wait echo server start")
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                XCTFail(error.localizedDescription)
+                self.stopEchoServer()
+            }
+        }
     }
     
     func startSSHD() {
@@ -121,7 +120,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         }
         XCTAssert(session.connected)
         return session
-        // authenticateByPasswordHandler
+        // authenticateWithAskPassword
     }
     
     func connectSessionByKeyboardInteractive() -> SSHKitSession {
@@ -137,7 +136,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         }
         XCTAssert(session.connected)
         return session
-        // authenticateByPasswordHandler
+        // authenticateWithAskPassword
     }
     
     func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
@@ -223,7 +222,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         
         switch authMethod! {
         case "password":
-            session.authenticateByPasswordHandler({
+            session.authenticateWithAskPassword({
                 () in
                 return self.password
             })
@@ -232,7 +231,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
             session.authenticateByPrivateKeyBase64(publicKeyBase64)
             break
         case "keyboard-interactive":
-            session.authenticateByInteractiveHandler({
+            session.authenticateWithAskInteractiveInfo({
                 (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
                 return [self.password];
                 })
