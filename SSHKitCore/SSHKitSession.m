@@ -717,20 +717,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
     [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
-- (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityFile:(NSString *)path {
-    SSHKitKeyPair *parser = [SSHKitKeyPair keyPairFromFilePath:path withAskPass:askPassphrase error:nil];
-    if (parser) {
-        [self authenticateByPrivateKeyParser:parser];
-    }
-}
-- (void)authenticateWithAskPassphrase:(NSString *(^)(void))askPassphrase forIdentityBase64:(NSString *)base64 {
-    SSHKitKeyPair *parser = [SSHKitKeyPair keyPairFromBase64:base64 withAskPass:askPassphrase error:nil];
-    if (parser) {
-        [self authenticateByPrivateKeyParser:parser];
-    }
-}
-
-- (void)authenticateByPrivateKeyParser:(SSHKitKeyPair *)parser {
+- (void)authenticateWithKeyPair:(SSHKitKeyPair *)keyPair {
     self.stage = SSHKitSessionStageAuthenticating;
     
     __block BOOL publicKeySuccess = NO;
@@ -744,7 +731,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
         
         if (!publicKeySuccess) {
             // try public key
-            int ret = ssh_userauth_try_publickey(strongSelf->_rawSession, NULL, parser.publicKey);
+            int ret = ssh_userauth_try_publickey(strongSelf->_rawSession, NULL, keyPair.publicKey);
             switch (ret) {
                 case SSH_AUTH_AGAIN:
                     // try again
@@ -763,7 +750,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
         publicKeySuccess = YES;
         
         // authenticate using private key
-        int ret = ssh_userauth_publickey(strongSelf->_rawSession, NULL, parser.privateKey);
+        int ret = ssh_userauth_publickey(strongSelf->_rawSession, NULL, keyPair.privateKey);
         switch (ret) {
             case SSH_AUTH_AGAIN:
                 // try again
