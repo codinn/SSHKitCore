@@ -145,4 +145,5 @@ class KeyPairTests: XCTestCase {
         doTestEncryptedPKCS8KeyPair("id_rsa.pkcs8.password")
     }
     
+    // TODO: Add tests for base64 api
 }

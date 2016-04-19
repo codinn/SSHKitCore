@@ -22,3 +22,13 @@
 @property (nonatomic, readonly) NSString            *fingerprint;
 
 @end
+
+/* 
+ * name can be one of following values:
+ *  - rsa1, ssh-rsa1
+ *  - rsa, ssh-rsa
+ *  - dsa, ssh-dss
+ *  - ecdsa, ssh-ecdsa, ecdsa-sha2-nistp256, ecdsa-sha2-nistp384, ecdsa-sha2-nistp521
+ *  - ssh-ed25519
+ */
+NSInteger SSHKitHostKeyTypeFromName(NSString *name);

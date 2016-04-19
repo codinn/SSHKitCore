@@ -29,9 +29,6 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         } catch {
             XCTFail("read base64 fail")
         }
-        // startSSHD()
-        // userDefaults.setValue("", forKey: "username")
-        // userDefaults.setValue("", forKey: "password")
     }
     
     func startEchoServer() {
@@ -77,18 +74,9 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         }
     }
     
-    func startSSHD() {
-        let hostKeyPath = NSBundle(forClass: self.dynamicType).pathForResource("ssh_host_rsa_key", ofType: "");
-        let sshConfigPath = NSBundle(forClass: self.dynamicType).pathForResource("sshd_config", ofType: "");
-        task.launchPath = "/usr/sbin/sshd"
-        task.arguments = ["-h", hostKeyPath!, "-f", sshConfigPath!, "-p", "4000"]
-        task.launch()
-    }
-    
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
-        // task.terminate()
     }
     
     func connectSessionByPublicKeyBase64() -> SSHKitSession {
