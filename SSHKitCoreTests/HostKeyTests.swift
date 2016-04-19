@@ -20,6 +20,8 @@ class HostKeyTests: SSHTestsBase {
         super.tearDown()
     }
 
+    // MARK: from session
+    
     func testKeyFromSession() {
         let session = self.connectSessionByPassword()
         
@@ -32,6 +34,19 @@ class HostKeyTests: SSHTestsBase {
         }
     }
     
+    func testKeyWithNilSession() {
+        do {
+            let _ = try SSHKitHostKey.init(fromSession: nil)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.HostKeyMismatch.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("Host key initializing shoud fail")
+    }
+    
+    
+    // MARK: - Valid base64
     // Use command "ssh-keygen -l -E md5 -f ssh_host_dsa_key.pub" to calculate fingerprint
 
     func testDSABase64() {
@@ -72,5 +87,19 @@ class HostKeyTests: SSHTestsBase {
         } catch let error as NSError {
             XCTFail(error.description)
         }
+    }
+    
+    // MARK: - Invalid base64
+    
+    func testED25519InvalidBase64() {
+        let type = SSHKitHostKeyTypeFromName("ssh-ed25519")
+        do {
+            let _ = try SSHKitHostKey.init(fromBase64: "AAAA3NzaC1lZDI1NTE5AAAAIENqyrs+ld8H3fu7xebmZZgCBkCiRTem7SkLeGma2NTf", withType: type)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.HostKeyMismatch.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("Host key initializing shoud fail")
     }
 }
