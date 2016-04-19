@@ -82,9 +82,9 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     func connectSessionByPublicKeyBase64() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By PublicKey Base64")
         authMethod = "publickey"
-        let session = SSHKitSession(delegate: self)
+        let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
+        session.connectWithTimeout(1)
         waitForExpectationsWithTimeout(10) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
@@ -98,9 +98,9 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     func connectSessionByPassword() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By Password")
         authMethod = "password"
-        let session = SSHKitSession(delegate: self)
+        let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
+        session.connectWithTimeout(1)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
@@ -114,9 +114,9 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     func connectSessionByKeyboardInteractive() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By Keyboard Interactive")
         authMethod = "keyboard-interactive"
-        let session = SSHKitSession(delegate: self)
+        let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
+        session.connectWithTimeout(1)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")

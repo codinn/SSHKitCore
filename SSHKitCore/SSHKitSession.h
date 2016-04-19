@@ -36,9 +36,8 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  * If you choose to provide a session queue, and the session queue has a configured target queue,
  *
  **/
-- (instancetype)init;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate;
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
 
 // -----------------------------------------------------------------------------
 #pragma mark Configuration
@@ -58,19 +57,15 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 /** Full server hostname in the format `@"{hostname}"`. */
 @property (nonatomic, readonly) NSString *host;
 
-/** The server actual IP address, available after session connected
- *  nil if session is connected over custom file descriptor
-  */
-@property (nonatomic, readonly) NSString *hostIP;
-
 /** The server port to connect to. */
 @property (nonatomic, readonly) uint16_t port;
 
+/** Get the file descriptor of current session connection
+ */
+@property (nonatomic, readonly) int      fd;
+
 /** Username that will authenticate against the server. */
 @property (nonatomic, readonly) NSString *username;
-
-/** Is session connected with IPv6 address. */
-@property (nonatomic, readonly, getter=isIPv6) BOOL IPv6;
 
 @property (strong, readwrite) SSHKitLogHandler logHandle;
 
@@ -89,12 +84,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  */
 @property (nonatomic, readonly, getter = isConnected) BOOL connected;
 @property (nonatomic, readonly, getter = isDisconnected) BOOL disconnected;
-
-/**
- A Boolean value indicating whether the session is successfully authorized
- (read-only).
- */
-@property (nonatomic, readonly, getter = isAuthorized) BOOL authorized;
 
 /** Last session error. */
 - (NSError *)coreError;
@@ -118,12 +107,12 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  * @param timeout Using 0.0 set default timeout (TCP default timeout)
  *
  **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
+- (void)connectWithTimeout:(NSTimeInterval)timeout;
 /**
  * Connects to the server via an opened socket.
  *
  **/
-- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout;
+- (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd;
 
 // -----------------------------------------------------------------------------
 #pragma mark Disconnecting

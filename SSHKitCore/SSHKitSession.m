@@ -42,10 +42,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
 @property (nonatomic, readwrite)  NSString    *host;
-@property (nonatomic, readwrite)  NSString    *hostIP;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
-@property (nonatomic, readwrite, getter=isIPv6) BOOL IPv6;
 
 @property (nonatomic, readwrite)  NSString    *clientBanner;
 @property (nonatomic, readwrite)  NSString    *serverBanner;
@@ -55,23 +53,23 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @property (nonatomic, readonly) dispatch_queue_t sessionQueue;
 
-@property (nonatomic, readwrite)  BOOL      usesCustomFileDescriptor;
+@property (nonatomic, readwrite)  int         fd;
 @end
 
 #pragma mark -
 
 @implementation SSHKitSession
 
-- (instancetype)init {
-	return [self initWithDelegate:nil sessionQueue:NULL];
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate {
+    return [self initWithHost:host port:port user:user delegate:aDelegate sessionQueue:NULL];
 }
 
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate {
-	return [self initWithDelegate:aDelegate sessionQueue:NULL];
-}
-
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
     if ((self = [super init])) {
+        self.host = [host copy];
+        self.port = port;
+        self.username = [user copy];
+        
         self.enableCompression = NO;
         
         self.stage = SSHKitSessionStageNotConnected;
@@ -157,13 +155,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     switch (result) {
         case SSH_OK: {
             // connection established
-            int socket = ssh_get_fd(_rawSession);
-            NSString *ip = GetHostIPFromFD(socket, &_IPv6);
-            
-            if (!self.usesCustomFileDescriptor) {
-                // connect directly
-                self.hostIP = ip;
-            }
+            self.fd = ssh_get_fd(_rawSession);
             
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
             if (clientbanner) self.clientBanner = @(clientbanner);
@@ -219,10 +211,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout {
-    self.host = [host copy];
-    self.port = port;
-    self.username = [user copy];
+- (void)connectWithTimeout:(NSTimeInterval)timeout {
     _timeout = (long)timeout;
     
     __weak SSHKitSession *weakSelf = self;
@@ -242,9 +231,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }}];
 }
 
-- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout {
-    self.usesCustomFileDescriptor = YES;
-    self.username = [user copy];
+- (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd {
     _timeout = (long)timeout;
     
     __weak SSHKitSession *weakSelf = self;
@@ -426,44 +413,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 #pragma mark Diagnostics
-
-NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
-    if (fd == SOCKET_NULL) {
-        return nil;
-    }
-    
-    struct sockaddr_storage sock_addr;
-    socklen_t sock_addr_len = sizeof(sock_addr);
-    
-    if (getpeername(fd, (struct sockaddr *)&sock_addr, &sock_addr_len) != 0) {
-        return nil;
-    }
-    
-    if (sock_addr.ss_family == AF_INET) {
-        if (ipv6FlagPtr) *ipv6FlagPtr = NO;
-        
-        const struct sockaddr_in *sockAddr4 = (const struct sockaddr_in *)&sock_addr;
-        char addrBuf[INET_ADDRSTRLEN] = {0};
-        
-        if (inet_ntop(AF_INET, &sockAddr4->sin_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
-            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
-        }
-        
-    }
-    
-    if (sock_addr.ss_family == AF_INET6) {
-        if (ipv6FlagPtr) *ipv6FlagPtr = YES;
-        
-        const struct sockaddr_in6 *sockAddr6 = (const struct sockaddr_in6 *)&sock_addr;
-        char addrBuf[INET6_ADDRSTRLEN];
-        
-        if (inet_ntop(AF_INET6, &sockAddr6->sin6_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
-            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
-        }
-    }
-    
-    return nil;
-}
 
 - (NSError *)coreError {
     if(!_rawSession) {
