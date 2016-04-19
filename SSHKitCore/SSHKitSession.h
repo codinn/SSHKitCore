@@ -69,15 +69,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 @property (strong, readwrite) SSHKitLogHandler logHandle;
 
-/** The client version string */
-@property (nonatomic, readonly)  NSString *clientBanner;
-
-/** Get the software version of the remote server. */
-@property (nonatomic, readonly) NSString  *serverBanner;
-
-/** Get the protocol version of remote host. */
-@property (nonatomic, readonly) NSString  *protocolVersion;
-
 /**
  A Boolean value indicating whether the session connected successfully
  (read-only).
@@ -194,6 +185,14 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 - (void)session:(SSHKitSession *)session didDisconnectWithError:(NSError *)error;
 
 - (void)session:(SSHKitSession *)session didReceiveIssueBanner:(NSString *)banner;
+
+
+/**
+ @param serverBanner Get the software version of the remote server
+ @param clientBanner The client version string
+ @param protocolVersion Get the protocol version of remote host
+ */
+- (void)session:(SSHKitSession *)session didReceiveServerBanner:(NSString *)serverBanner clientBanner:(NSString *)clientBanner protocolVersion:(int)protocolVersion;
 
 /**
  Called when a session is connecting to a host, the fingerprint is used

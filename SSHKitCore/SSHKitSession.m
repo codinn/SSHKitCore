@@ -26,6 +26,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
         unsigned int didReceiveIssueBanner          : 1;
+        unsigned int didReceiveServerBannerClientBannerProtocolVersion  : 1;
         unsigned int authenticateWithAllowedMethodsPartialSuccess : 1;
         unsigned int didAuthenticateUser            : 1;
         unsigned int didOpenForwardChannel          : 1;
@@ -44,10 +45,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @property (nonatomic, readwrite)  NSString    *host;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
-
-@property (nonatomic, readwrite)  NSString    *clientBanner;
-@property (nonatomic, readwrite)  NSString    *serverBanner;
-@property (nonatomic, readwrite)  NSString    *protocolVersion;
 
 @property (nonatomic, readonly) long          timeout;
 
@@ -139,6 +136,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
         _delegateFlags.didReceiveIssueBanner = [delegate respondsToSelector:@selector(session:didReceiveIssueBanner:)];
+        _delegateFlags.didReceiveServerBannerClientBannerProtocolVersion = [delegate respondsToSelector:@selector(session:didReceiveServerBanner:clientBanner:protocolVersion:)];
         _delegateFlags.didOpenForwardChannel = [delegate respondsToSelector:@selector(session:didOpenForwardChannel:)];
         _delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
 	}
@@ -157,20 +155,20 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             // connection established
             self.fd = ssh_get_fd(_rawSession);
             
-            const char *clientbanner = ssh_get_clientbanner(self.rawSession);
-            if (clientbanner) self.clientBanner = @(clientbanner);
+            NSString *serverBanner = nil;
+            NSString *clientBanner = nil;
+            int protocolVersion = 0;
             
-            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Client banner: %@", self.clientBanner);
+            const char *clientbanner = ssh_get_clientbanner(self.rawSession);
+            clientBanner = clientbanner ? @(clientbanner) : @"";
             
             const char *serverbanner = ssh_get_serverbanner(self.rawSession);
-            if (serverbanner) self.serverBanner = @(serverbanner);
+            serverBanner = serverbanner ?  @(serverbanner) : @"";
             
-            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Server banner: %@", self.serverBanner);
+            protocolVersion = ssh_get_version(self.rawSession);
             
-            int ver = ssh_get_version(self.rawSession);
-            
-            if (ver>0) {
-                self.protocolVersion = @(ver).stringValue;
+            if (_delegateFlags.didReceiveServerBannerClientBannerProtocolVersion) {
+                [self.delegate session:self didReceiveServerBanner:serverBanner clientBanner:clientBanner protocolVersion:protocolVersion];
             }
             
             if (_delegateFlags.didConnectToHostPort) {
