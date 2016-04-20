@@ -11,25 +11,26 @@ import XCTest
 
 class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegate {
     // async test http://nshipster.com/xctestcase/
-    var expectation: XCTestExpectation?// = expectationWithDescription("Common expectation")
+    var expectation: XCTestExpectation?
     var authMethod: String?
+    
     let username = "sshtest"
     let password = "v#.%-dzd"
-    var publicKeyBase64: String?
+    let identity = "ssh_rsa_key"
+    
     let echoTask = NSTask()
-    let task = NSTask()
-    let userDefaults = NSUserDefaults.standardUserDefaults()
     let echoPort : UInt16 = 6007
     
     override func setUp() {
         super.setUp()
-        let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource("ssh_host_rsa_key", ofType: "");
-        do {
-            publicKeyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
-        } catch {
-            XCTFail("read base64 fail")
-        }
     }
+    
+    override func tearDown() {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        super.tearDown()
+    }
+    
+    // MARK: - Echo Server
     
     func startEchoServer() {
         let echoServer = NSBundle(forClass: self.dynamicType).pathForResource("echo_server.py", ofType: "");
@@ -74,10 +75,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         }
     }
     
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
+    // MARK: - Connect Utils
     
     func connectSessionByPublicKeyBase64() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By PublicKey Base64")
@@ -126,6 +124,8 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         return session
         // authenticateWithAskPassword
     }
+    
+    // MARK: - Open Channel
     
     func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
         expectation = expectationWithDescription("Open Direct Channel")
@@ -216,13 +216,16 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
             })
             break
         case "publickey":
+            let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource(identity, ofType: "");
+            
             do {
-                let keyPair = try SSHKitKeyPair.init(fromBase64: publicKeyBase64, withAskPass: nil)
+                let keyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
+                let keyPair = try SSHKitKeyPair(fromBase64: keyBase64, withAskPass: nil)
                 session.authenticateWithKeyPair(keyPair)
             } catch let error as NSError {
                 XCTFail(error.description)
             }
-            break
+            
         case "keyboard-interactive":
             session.authenticateWithAskInteractiveInfo({
                 (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
