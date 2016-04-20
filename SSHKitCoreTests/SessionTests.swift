@@ -20,16 +20,9 @@ class SessionTests: SSHTestsBase {
         super.tearDown()
     }
 
-    func testConnectSessionByPublicKeyBase64() {
+    func testSessionSingleFactorAuth() {
         self.launchSessionWithAuthMethod(.PublicKey)
-    }
-    
-    func testConnectSessionByPassword() {
         self.launchSessionWithAuthMethod(.Password)
-    }
-    
-    func testConnectSessionByKeyboardInteractive() {
         self.launchSessionWithAuthMethod(.Interactive)
     }
-
 }
