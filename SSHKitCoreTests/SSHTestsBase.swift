@@ -82,52 +82,21 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     // MARK: - Connect Utils
     
-    func connectSessionByPublicKeyBase64() -> SSHKitSession {
-        expectation = expectationWithDescription("Connect Session By PublicKey Base64")
-        authMethod = .PublicKey
+    func launchSessionWithAuthMethod(method: AuthMethod) -> SSHKitSession {
+        expectation = expectationWithDescription("Launch session with \(method.rawValue) auth method")
+        authMethod = method
+        
         let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
-        //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
         session.connectWithTimeout(1)
-        waitForExpectationsWithTimeout(10) { error in
+        
+        waitForExpectationsWithTimeout(1) { error in
             if let error = error {
-                print("Error: \(error.localizedDescription)")
+                XCTFail(error.localizedDescription)
             }
         }
+        
         XCTAssert(session.connected)
         return session
-        // NOTE: if debug(add break point), should extend this time
-    }
-    
-    func connectSessionByPassword() -> SSHKitSession {
-        expectation = expectationWithDescription("Connect Session By Password")
-        authMethod = .Password
-        let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
-        //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectWithTimeout(1)
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-        }
-        XCTAssert(session.connected)
-        return session
-        // authenticateWithAskPassword
-    }
-    
-    func connectSessionByKeyboardInteractive() -> SSHKitSession {
-        expectation = expectationWithDescription("Connect Session By Keyboard Interactive")
-        authMethod = .Interactive
-        let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
-        //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectWithTimeout(1)
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-        }
-        XCTAssert(session.connected)
-        return session
-        // authenticateWithAskPassword
     }
     
     // MARK: - Open Channel

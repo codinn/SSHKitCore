@@ -23,7 +23,7 @@ class HostKeyTests: SSHTestsBase {
     // MARK: from session
     
     func testKeyFromSession() {
-        let session = self.connectSessionByPassword()
+        let session = self.launchSessionWithAuthMethod(.Password)
         
         do {
             let hostKey = try SSHKitHostKey.init(fromSession: session)

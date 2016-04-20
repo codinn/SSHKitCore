@@ -19,14 +19,14 @@ class ShellChannelTests: SSHTestsBase {
     }
     
     func testOpenShellChannel() {
-        let session = self.connectSessionByPublicKeyBase64()
+        let session = self.launchSessionWithAuthMethod(.PublicKey)
         self.openShellChannel(session)
         session.disconnect()
     }
     
     
     func testShellChangePtySizeToColumns() {
-        let session = self.connectSessionByPublicKeyBase64()
+        let session = self.launchSessionWithAuthMethod(.PublicKey)
         let channel = self.openShellChannel(session)
         expectation = expectationWithDescription("Shell Change Pty Size To Columns(")
         channel.changePtySizeToColumns(150, rows: 150)

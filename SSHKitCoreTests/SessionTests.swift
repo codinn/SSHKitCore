@@ -21,15 +21,15 @@ class SessionTests: SSHTestsBase {
     }
 
     func testConnectSessionByPublicKeyBase64() {
-        self.connectSessionByPublicKeyBase64()
+        self.launchSessionWithAuthMethod(.PublicKey)
     }
     
     func testConnectSessionByPassword() {
-        self.connectSessionByPassword()
+        self.launchSessionWithAuthMethod(.Password)
     }
     
     func testConnectSessionByKeyboardInteractive() {
-        self.connectSessionByKeyboardInteractive()
+        self.launchSessionWithAuthMethod(.Interactive)
     }
 
 }
