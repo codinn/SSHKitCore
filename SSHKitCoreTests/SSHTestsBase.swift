@@ -8,11 +8,16 @@
 
 import XCTest
 
+enum AuthMethod: String {
+    case Password       = "password"
+    case PublicKey      = "publickey"
+    case Interactive    = "keyboard-interactive"
+}
 
 class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegate {
     // async test http://nshipster.com/xctestcase/
     var expectation: XCTestExpectation?
-    var authMethod: String?
+    private var authMethod = AuthMethod.Password
     
     let username = "sshtest"
     let password = "v#.%-dzd"
@@ -79,7 +84,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     func connectSessionByPublicKeyBase64() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By PublicKey Base64")
-        authMethod = "publickey"
+        authMethod = .PublicKey
         let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
         session.connectWithTimeout(1)
@@ -95,7 +100,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     func connectSessionByPassword() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By Password")
-        authMethod = "password"
+        authMethod = .Password
         let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
         session.connectWithTimeout(1)
@@ -111,7 +116,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     func connectSessionByKeyboardInteractive() -> SSHKitSession {
         expectation = expectationWithDescription("Connect Session By Keyboard Interactive")
-        authMethod = "keyboard-interactive"
+        authMethod = .Interactive
         let session = SSHKitSession(host: "127.0.0.1", port: 22, user: username, delegate: self)
         //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
         session.connectWithTimeout(1)
@@ -202,42 +207,35 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         } else {
             // self.logInfo("Authentication that can continue: %@", methods.componentsJoinedByString(", "))
         }
-        if !(methods as! [String]).contains(authMethod!) {
+        if !(methods as! [String]).contains(authMethod.rawValue) {
             XCTFail("No match authentication method found")
             expectation!.fulfill()
             return nil
         }
         
-        switch authMethod! {
-        case "password":
-            session.authenticateWithAskPassword({
-                () in
-                return self.password
-            })
-            break
-        case "publickey":
-            let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource(identity, ofType: "");
-            
-            do {
-                let keyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
-                let keyPair = try SSHKitKeyPair(fromBase64: keyBase64, withAskPass: nil)
-                session.authenticateWithKeyPair(keyPair)
-            } catch let error as NSError {
-                XCTFail(error.description)
-            }
-            
-        case "keyboard-interactive":
-            session.authenticateWithAskInteractiveInfo({
-                (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
-                return [self.password];
+        switch authMethod {
+            case .Password:
+                session.authenticateWithAskPassword({
+                    () in
+                    return self.password
                 })
-            break
-        case "hostbased":
-            break
-        case "gssapi-with-mic":
-            break
-        default:
-            break
+            
+            case .PublicKey:
+                let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource(identity, ofType: "");
+                
+                do {
+                    let keyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
+                    let keyPair = try SSHKitKeyPair(fromBase64: keyBase64, withAskPass: nil)
+                    session.authenticateWithKeyPair(keyPair)
+                } catch let error as NSError {
+                    XCTFail(error.description)
+                }
+                
+            case .Interactive:
+                session.authenticateWithAskInteractiveInfo({
+                    (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
+                    return [self.password];
+                    })
         }
         return nil
     }
