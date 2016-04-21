@@ -177,7 +177,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
             // self.logInfo("Authentication that can continue: %@", methods.componentsJoinedByString(", "))
         }
         if !(methods as! [String]).contains(authMethod.rawValue) {
-            XCTFail("No match authentication method found")
+            XCTFail("No match authentication method found: \(authMethod.rawValue)")
             expectation!.fulfill()
             return nil
         }
