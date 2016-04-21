@@ -18,6 +18,11 @@ USERNAME=$1
 FULLNAME=$2
 PASSWORD=$3
 
+if id -u "$USERNAME" >/dev/null 2>&1; then
+    echo "User '$USERNAME' exists"
+    exit 255
+fi
+
 # ====
 
 # A list of (secondary) groups the user should belong to
