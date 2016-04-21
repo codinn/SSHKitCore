@@ -452,7 +452,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark Authentication
 // -----------------------------------------------------------------------------
 
-- (NSArray *)_getUserAuthList {
+- (NSArray<NSString *> *)_getUserAuthList {
     NSMutableArray *authMethods = [@[] mutableCopy];
     int authList = ssh_userauth_list(_rawSession, NULL);
     
@@ -499,7 +499,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 if (banner) [self.delegate session:self didReceiveIssueBanner:@(banner)];
             }
             
-            NSArray *authMethods = [self _getUserAuthList];
+            NSArray<NSString *> *authMethods = [self _getUserAuthList];
             
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
                 NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:NO];
@@ -545,7 +545,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             
         case SSH_AUTH_PARTIAL: {
             // pre auth success
-            NSArray *authMethods = [self _getUserAuthList];
+            NSArray<NSString *> *authMethods = [self _getUserAuthList];
             
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
                 NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:YES];

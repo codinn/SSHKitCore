@@ -53,7 +53,6 @@
 		4A9FCFD31CC5DE4300FD4608 /* id_rsa_password.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBE1CC5DE4300FD4608 /* id_rsa_password.pub */; };
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
-		CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */ = {isa = PBXBuildFile; fileRef = CC2ADE841C57B46C0025CBB7 /* sshd_config */; };
 		CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */; };
 		CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */; };
 		CC7763201C5665F700B584F5 /* SSHTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77631F1C5665F700B584F5 /* SSHTestsBase.swift */; };
@@ -77,14 +76,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 08706C3E034C4B888E55C9C2;
+			remoteGlobalIDString = 885B3534361C48CE8968C51D;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 3F01D52FA4E048B79D4AC892;
+			remoteGlobalIDString = E070549D51EE4C8B9D0965F7;
 			remoteInfo = ssh_threads_static;
 		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
@@ -187,7 +186,6 @@
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
-		CC2ADE841C57B46C0025CBB7 /* sshd_config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sshd_config; sourceTree = "<group>"; };
 		CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
 		CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectChannelTests.swift; sourceTree = "<group>"; };
 		CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SSHKitCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -333,7 +331,6 @@
 				CCE0E5211C858CC400E81427 /* echo_server.py */,
 				CC7763301C56704B00B584F5 /* ssh_rsa_key */,
 				CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */,
-				CC2ADE841C57B46C0025CBB7 /* sshd_config */,
 			);
 			path = ssh;
 			sourceTree = "<group>";
@@ -583,7 +580,6 @@
 				4A9FCFC91CC5DE4300FD4608 /* id_ed25519.pub in Resources */,
 				4A9FCFD11CC5DE4300FD4608 /* id_rsa_4096.pub in Resources */,
 				4A9FCFC31CC5DE4300FD4608 /* id_dsa.pub in Resources */,
-				CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */,
 				CC7763331C56704B00B584F5 /* ssh_rsa_key.pub in Resources */,
 				4A9FCFC81CC5DE4300FD4608 /* id_ed25519 in Resources */,
 			);
