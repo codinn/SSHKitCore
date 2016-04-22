@@ -8,7 +8,7 @@
 
 import XCTest
 
-class SessionTests: SSHTestsBase {
+class SessionTests: BasicSessionDelegate {
 
     override func setUp() {
         super.setUp()
