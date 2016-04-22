@@ -20,7 +20,7 @@ class SFTPTests: SSHTestsBase {
     
     func testOpenSFTPChannel() {
         do {
-            let session = try launchSessionWithAuthMethod(.PublicKey)
+            let session = try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             self.openSFTPChannel(session)
             session.disconnect()
         } catch let error as NSError {

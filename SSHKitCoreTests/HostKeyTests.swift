@@ -24,7 +24,7 @@ class HostKeyTests: SSHTestsBase {
     
     func testKeyFromSession() {
         do {
-            let session = try self.launchSessionWithAuthMethod(.Password)
+            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
             let hostKey = try SSHKitHostKey.init(fromSession: session)
             
             XCTAssertNotNil(hostKey.base64)

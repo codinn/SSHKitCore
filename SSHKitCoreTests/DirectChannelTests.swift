@@ -28,7 +28,7 @@ class DirectChannelTests: SSHTestsBase {
     
     func testOpenDirectChannel() {
         do {
-            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             self.openDirectChannel(session)
             // FIXME: must disconnect session before dealloc.
             // if session is connected and have unclosed channel will get a error on dealloc
@@ -40,7 +40,7 @@ class DirectChannelTests: SSHTestsBase {
     
     func testTunnel() {
         do {
-            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             let channel = self.openDirectChannel(session)
             expectation = expectationWithDescription("Channel write data")
             let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)

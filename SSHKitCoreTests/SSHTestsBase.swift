@@ -22,7 +22,11 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     let sshHost  = "127.0.0.1"
     let sshPort : UInt16 = 22
     
-    var username = "sshtest"
+    let userForSFA = "sshtest"
+    let userForMFA = "sshtest-m"
+    let userForNoPass = "sshtest-nopass"
+    let invalidUser = "invalid-user"
+    
     let password = "v#.%-dzd"
     let identity = "ssh_rsa_key"
     
@@ -87,15 +91,15 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     // MARK: - Connect Utils
     
-    func launchSessionWithAuthMethod(method: AuthMethod) throws -> SSHKitSession {
-        return try launchSessionWithAuthMethods([method,])
+    func launchSessionWithAuthMethod(method: AuthMethod, user: String) throws -> SSHKitSession {
+        return try launchSessionWithAuthMethods([method,], user: user)
     }
     
-    func launchSessionWithAuthMethods(methods: [AuthMethod]) throws -> SSHKitSession {
+    func launchSessionWithAuthMethods(methods: [AuthMethod], user: String) throws -> SSHKitSession {
         expectation = expectationWithDescription("Launch session with \(methods) auth method")
         authMethods = methods
         
-        let session = SSHKitSession(host: sshHost, port: sshPort, user: username, delegate: self)
+        let session = SSHKitSession(host: sshHost, port: sshPort, user: user, delegate: self)
         session.connectWithTimeout(1)
         
         waitForExpectationsWithTimeout(1) { error in

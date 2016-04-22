@@ -20,7 +20,7 @@ class ShellChannelTests: SSHTestsBase {
     
     func testOpenShellChannel() {
         do {
-            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             self.openShellChannel(session)
             session.disconnect()
         } catch let error as NSError {
@@ -31,7 +31,7 @@ class ShellChannelTests: SSHTestsBase {
     
     func testShellChangePtySizeToColumns() {
         do {
-            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             let channel = self.openShellChannel(session)
             expectation = expectationWithDescription("Shell Change Pty Size To Columns(")
             channel.changePtySizeToColumns(150, rows: 150)

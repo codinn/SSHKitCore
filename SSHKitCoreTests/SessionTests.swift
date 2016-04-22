@@ -22,20 +22,30 @@ class SessionTests: SSHTestsBase {
 
     func testSessionSingleFactorAuth() {
         do {
-            try launchSessionWithAuthMethod(.PublicKey)
-            try launchSessionWithAuthMethod(.Password)
-            try launchSessionWithAuthMethod(.Interactive)
+            try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+            try launchSessionWithAuthMethod(.Password, user: userForSFA)
+            try launchSessionWithAuthMethod(.Interactive, user: userForSFA)
         } catch let error as NSError {
             XCTFail(error.description)
         }
     }
     
     func testSessionMultiFactorAuth() {
-        username = "sshtest-m"
         do {
-            try launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive])
+            try launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive], user: userForMFA)
         } catch let error as NSError {
             XCTFail(error.description)
         }
+    }
+    
+    func testSessionAuthFail() {
+        do {
+            try launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive], user: userForNoPass)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An auth error not raised as expected")
     }
 }
