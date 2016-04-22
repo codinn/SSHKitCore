@@ -163,8 +163,8 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     }
     
     func session(session: SSHKitSession!, didDisconnectWithError error: NSError!) {
-        if (error != nil) {
-            XCTFail("didDisconnectWithError")
+        if error != nil {
+            XCTFail(error.description)
             expectation!.fulfill()
         }
     }
@@ -184,23 +184,15 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
             // self.logInfo("Authentication that can continue: %@", methods.componentsJoinedByString(", "))
         }
         
-        for method in methods {
-            if let _ = AuthMethod(rawValue: method) {
-            } else {
-                XCTFail("No match authentication method found: \(method)")
-                expectation!.fulfill()
-                return nil
-            }
-        }
-        
-        for authMethod in authMethods {
-            switch authMethod {
+        if let firstMethod = methods.first {
+            if let matched = AuthMethod(rawValue: firstMethod) {
+                switch matched {
                 case .Password:
                     session.authenticateWithAskPassword({
                         () in
                         return self.password
                     })
-                
+                    
                 case .PublicKey:
                     let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource(identity, ofType: "");
                     
@@ -216,9 +208,18 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
                     session.authenticateWithAskInteractiveInfo({
                         (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
                         return [self.password];
-                        })
+                    })
+                }
+            } else {
+                XCTFail("No match authentication method found: \(firstMethod)")
+                expectation!.fulfill()
+                return nil
             }
+        } else {
+            XCTFail("authenticateWithAllowedMethods passed in empty auth methods array: \(methods)")
+            expectation!.fulfill()
         }
+        
         return nil
     }
     

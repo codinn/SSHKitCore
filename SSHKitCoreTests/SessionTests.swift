@@ -21,8 +21,13 @@ class SessionTests: SSHTestsBase {
     }
 
     func testSessionSingleFactorAuth() {
-        self.launchSessionWithAuthMethod(.PublicKey)
-        self.launchSessionWithAuthMethod(.Password)
-        self.launchSessionWithAuthMethod(.Interactive)
+        launchSessionWithAuthMethod(.PublicKey)
+        launchSessionWithAuthMethod(.Password)
+        launchSessionWithAuthMethod(.Interactive)
+    }
+    
+    func testSessionMultiFactorAuth() {
+        username = "sshtest-m"
+        launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive])
     }
 }

@@ -37,7 +37,7 @@ Match User sshtest
 
 Match User sshtest-m
 	PasswordAuthentication yes
-	AuthenticationMethods publickey,keyboard-interactive,password,keyboard-interactive,publickey
+	AuthenticationMethods keyboard-interactive,publickey,keyboard-interactive,password
 
 Match User sshtest-nopass
 	PasswordAuthentication no
