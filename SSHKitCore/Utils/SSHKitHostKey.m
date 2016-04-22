@@ -170,3 +170,7 @@
 }
 
 @end
+
+NSInteger SSHKitHostKeyTypeFromName(NSString *name) {
+    return ssh_key_type_from_name(name.UTF8String);
+}

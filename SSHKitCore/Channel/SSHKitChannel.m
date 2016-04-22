@@ -64,7 +64,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
     self.stage = SSHKitChannelStageClosed;
     
     if (error) {
-        self.session.logHandle(SSHKitLogLevelWarn, error.localizedDescription);
+        if (self.session.logHandle) self.session.logHandle(SSHKitLogLevelWarn, error.localizedDescription);
     }
     
     // prevent server receive more then one close message

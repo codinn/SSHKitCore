@@ -9,8 +9,9 @@
 /* Begin PBXBuildFile section */
 		4A10CFFD1BCF55BE005EB7DD /* libssh_threads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725E19FFE2AE009B0CC7 /* libssh_threads.a */; };
 		4A10CFFE1BCF55BE005EB7DD /* libssh.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AEF725A19FFE2AE009B0CC7 /* libssh.a */; };
-		4A281DC11A4A570D00EA1583 /* SSHKitPrivateKeyParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A281DBF1A4A570D00EA1583 /* SSHKitPrivateKeyParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		4A281DC21A4A570D00EA1583 /* SSHKitPrivateKeyParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A281DC01A4A570D00EA1583 /* SSHKitPrivateKeyParser.m */; };
+		4A1346ED1CC6091800A20CCE /* HostKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1346EC1CC6091800A20CCE /* HostKeyTests.swift */; };
+		4A281DC11A4A570D00EA1583 /* SSHKitKeyPair.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A281DBF1A4A570D00EA1583 /* SSHKitKeyPair.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A281DC21A4A570D00EA1583 /* SSHKitKeyPair.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A281DC01A4A570D00EA1583 /* SSHKitKeyPair.m */; };
 		4A2B5B071A4A6F3C007D20DF /* SSHKitHostKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B051A4A6F3C007D20DF /* SSHKitHostKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A2B5B081A4A6F3C007D20DF /* SSHKitHostKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */; };
 		4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -28,22 +29,42 @@
 		4A759CB11BCEBD3900301730 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CAF1BCEBD3900301730 /* libcrypto.a */; };
 		4A759CB21BCEBD3900301730 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CB01BCEBD3900301730 /* libssl.a */; };
 		4A759CB41BCEBD8F00301730 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CB31BCEBD8F00301730 /* libz.tbd */; };
+		4A9FCFA71CC5C1AF00FD4608 /* KeyPairTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A9FCFA61CC5C1AF00FD4608 /* KeyPairTests.swift */; };
+		4A9FCFA81CC5C2C600FD4608 /* echo_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CCE0E5211C858CC400E81427 /* echo_server.py */; };
+		4A9FCFC01CC5DE4300FD4608 /* id_dsa in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAB1CC5DE4300FD4608 /* id_dsa */; };
+		4A9FCFC11CC5DE4300FD4608 /* id_dsa.pkcs8 in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAC1CC5DE4300FD4608 /* id_dsa.pkcs8 */; };
+		4A9FCFC21CC5DE4300FD4608 /* id_dsa.pkcs8.password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAD1CC5DE4300FD4608 /* id_dsa.pkcs8.password */; };
+		4A9FCFC31CC5DE4300FD4608 /* id_dsa.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAE1CC5DE4300FD4608 /* id_dsa.pub */; };
+		4A9FCFC41CC5DE4300FD4608 /* id_ecdsa in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAF1CC5DE4300FD4608 /* id_ecdsa */; };
+		4A9FCFC51CC5DE4300FD4608 /* id_ecdsa.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB01CC5DE4300FD4608 /* id_ecdsa.pub */; };
+		4A9FCFC61CC5DE4300FD4608 /* id_ecdsa_password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB11CC5DE4300FD4608 /* id_ecdsa_password */; };
+		4A9FCFC71CC5DE4300FD4608 /* id_ecdsa_password.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB21CC5DE4300FD4608 /* id_ecdsa_password.pub */; };
+		4A9FCFC81CC5DE4300FD4608 /* id_ed25519 in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB31CC5DE4300FD4608 /* id_ed25519 */; };
+		4A9FCFC91CC5DE4300FD4608 /* id_ed25519.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB41CC5DE4300FD4608 /* id_ed25519.pub */; };
+		4A9FCFCA1CC5DE4300FD4608 /* id_ed25519_password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB51CC5DE4300FD4608 /* id_ed25519_password */; };
+		4A9FCFCB1CC5DE4300FD4608 /* id_ed25519_password.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB61CC5DE4300FD4608 /* id_ed25519_password.pub */; };
+		4A9FCFCC1CC5DE4300FD4608 /* id_rsa in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB71CC5DE4300FD4608 /* id_rsa */; };
+		4A9FCFCD1CC5DE4300FD4608 /* id_rsa.pkcs8 in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB81CC5DE4300FD4608 /* id_rsa.pkcs8 */; };
+		4A9FCFCE1CC5DE4300FD4608 /* id_rsa.pkcs8.password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFB91CC5DE4300FD4608 /* id_rsa.pkcs8.password */; };
+		4A9FCFCF1CC5DE4300FD4608 /* id_rsa.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBA1CC5DE4300FD4608 /* id_rsa.pub */; };
+		4A9FCFD01CC5DE4300FD4608 /* id_rsa_4096 in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBB1CC5DE4300FD4608 /* id_rsa_4096 */; };
+		4A9FCFD11CC5DE4300FD4608 /* id_rsa_4096.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBC1CC5DE4300FD4608 /* id_rsa_4096.pub */; };
+		4A9FCFD21CC5DE4300FD4608 /* id_rsa_password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBD1CC5DE4300FD4608 /* id_rsa_password */; };
+		4A9FCFD31CC5DE4300FD4608 /* id_rsa_password.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBE1CC5DE4300FD4608 /* id_rsa_password.pub */; };
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
-		CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */ = {isa = PBXBuildFile; fileRef = CC2ADE841C57B46C0025CBB7 /* sshd_config */; };
 		CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */; };
 		CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */; };
 		CC7763201C5665F700B584F5 /* SSHTestsBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77631F1C5665F700B584F5 /* SSHTestsBase.swift */; };
 		CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */; };
-		CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_host_rsa_key */; };
-		CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */; };
+		CC7763321C56704B00B584F5 /* ssh_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_rsa_key */; };
+		CC7763331C56704B00B584F5 /* ssh_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */; };
 		CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */; };
 		CCBEE2561C8D5EE0004394A4 /* SSHKitSFTPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */; };
 		CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCBEE2591C8D5EE0004394A4 /* SSHKitSFTPFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */; };
 		CCCDEA561C9DAE9400319B01 /* SFTPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */; };
-		CCE0E5221C858CC400E81427 /* echo_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CCE0E5211C858CC400E81427 /* echo_server.py */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
 		E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */ = {isa = PBXBuildFile; fileRef = E4E96D94158E10FD002E6E0A /* SSHKitCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -55,14 +76,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 08706C3E034C4B888E55C9C2;
+			remoteGlobalIDString = 885B3534361C48CE8968C51D;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 3F01D52FA4E048B79D4AC892;
+			remoteGlobalIDString = E070549D51EE4C8B9D0965F7;
 			remoteInfo = ssh_threads_static;
 		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
@@ -116,8 +137,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4A281DBF1A4A570D00EA1583 /* SSHKitPrivateKeyParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitPrivateKeyParser.h; sourceTree = "<group>"; };
-		4A281DC01A4A570D00EA1583 /* SSHKitPrivateKeyParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitPrivateKeyParser.m; sourceTree = "<group>"; };
+		4A1346EC1CC6091800A20CCE /* HostKeyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostKeyTests.swift; sourceTree = "<group>"; };
+		4A1DC2331CC7178600458E3E /* initTestEnv.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = initTestEnv.sh; sourceTree = "<group>"; };
+		4A1DC2341CC7178600458E3E /* osx-adduser.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "osx-adduser.sh"; sourceTree = "<group>"; };
+		4A281DBF1A4A570D00EA1583 /* SSHKitKeyPair.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitKeyPair.h; sourceTree = "<group>"; };
+		4A281DC01A4A570D00EA1583 /* SSHKitKeyPair.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitKeyPair.m; sourceTree = "<group>"; };
 		4A2B5B051A4A6F3C007D20DF /* SSHKitHostKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitHostKey.h; sourceTree = "<group>"; };
 		4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitHostKey.m; sourceTree = "<group>"; };
 		4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitCoreCommon.h; sourceTree = "<group>"; };
@@ -135,22 +159,41 @@
 		4A759CAF1BCEBD3900301730 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "openssl/openssl-1.0.2d-osx/lib/libcrypto.a"; sourceTree = SOURCE_ROOT; };
 		4A759CB01BCEBD3900301730 /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = "openssl/openssl-1.0.2d-osx/lib/libssl.a"; sourceTree = SOURCE_ROOT; };
 		4A759CB31BCEBD8F00301730 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		4A9FCFA61CC5C1AF00FD4608 /* KeyPairTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyPairTests.swift; sourceTree = "<group>"; };
+		4A9FCFAA1CC5DE4300FD4608 /* generate_keys.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = generate_keys.sh; sourceTree = "<group>"; };
+		4A9FCFAB1CC5DE4300FD4608 /* id_dsa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_dsa; sourceTree = "<group>"; };
+		4A9FCFAC1CC5DE4300FD4608 /* id_dsa.pkcs8 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_dsa.pkcs8; sourceTree = "<group>"; };
+		4A9FCFAD1CC5DE4300FD4608 /* id_dsa.pkcs8.password */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_dsa.pkcs8.password; sourceTree = "<group>"; };
+		4A9FCFAE1CC5DE4300FD4608 /* id_dsa.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_dsa.pub; sourceTree = "<group>"; };
+		4A9FCFAF1CC5DE4300FD4608 /* id_ecdsa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ecdsa; sourceTree = "<group>"; };
+		4A9FCFB01CC5DE4300FD4608 /* id_ecdsa.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ecdsa.pub; sourceTree = "<group>"; };
+		4A9FCFB11CC5DE4300FD4608 /* id_ecdsa_password */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ecdsa_password; sourceTree = "<group>"; };
+		4A9FCFB21CC5DE4300FD4608 /* id_ecdsa_password.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ecdsa_password.pub; sourceTree = "<group>"; };
+		4A9FCFB31CC5DE4300FD4608 /* id_ed25519 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ed25519; sourceTree = "<group>"; };
+		4A9FCFB41CC5DE4300FD4608 /* id_ed25519.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ed25519.pub; sourceTree = "<group>"; };
+		4A9FCFB51CC5DE4300FD4608 /* id_ed25519_password */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ed25519_password; sourceTree = "<group>"; };
+		4A9FCFB61CC5DE4300FD4608 /* id_ed25519_password.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_ed25519_password.pub; sourceTree = "<group>"; };
+		4A9FCFB71CC5DE4300FD4608 /* id_rsa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa; sourceTree = "<group>"; };
+		4A9FCFB81CC5DE4300FD4608 /* id_rsa.pkcs8 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa.pkcs8; sourceTree = "<group>"; };
+		4A9FCFB91CC5DE4300FD4608 /* id_rsa.pkcs8.password */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa.pkcs8.password; sourceTree = "<group>"; };
+		4A9FCFBA1CC5DE4300FD4608 /* id_rsa.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa.pub; sourceTree = "<group>"; };
+		4A9FCFBB1CC5DE4300FD4608 /* id_rsa_4096 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa_4096; sourceTree = "<group>"; };
+		4A9FCFBC1CC5DE4300FD4608 /* id_rsa_4096.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa_4096.pub; sourceTree = "<group>"; };
+		4A9FCFBD1CC5DE4300FD4608 /* id_rsa_password */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa_password; sourceTree = "<group>"; };
+		4A9FCFBE1CC5DE4300FD4608 /* id_rsa_password.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa_password.pub; sourceTree = "<group>"; };
 		4AC052C71B4ACB8F00B555F6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitCoreCommon.m; sourceTree = "<group>"; };
-		4AE647B31CAC09E000F1023A /* osx-adduser.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "osx-adduser.sh"; sourceTree = "<group>"; };
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
-		CC2ADE841C57B46C0025CBB7 /* sshd_config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sshd_config; sourceTree = "<group>"; };
 		CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
 		CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectChannelTests.swift; sourceTree = "<group>"; };
 		CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SSHKitCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC77631F1C5665F700B584F5 /* SSHTestsBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSHTestsBase.swift; sourceTree = "<group>"; };
 		CC7763211C5665F700B584F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CC77632E1C5666D200B584F5 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
-		CC7763301C56704B00B584F5 /* ssh_host_rsa_key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key; sourceTree = "<group>"; };
-		CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_host_rsa_key.pub; sourceTree = "<group>"; };
-		CC8EE9981C647813008817A3 /* initTestEnv.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = initTestEnv.sh; sourceTree = "<group>"; };
+		CC7763301C56704B00B584F5 /* ssh_rsa_key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_rsa_key; sourceTree = "<group>"; };
+		CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_rsa_key.pub; sourceTree = "<group>"; };
 		CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShellChannelTests.swift; sourceTree = "<group>"; };
 		CCB4D4731C7595D900B9A925 /* README.MD */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.MD; sourceTree = "<group>"; };
 		CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPChannel.h; sourceTree = "<group>"; };
@@ -199,8 +242,8 @@
 		4A281DBE1A4A570D00EA1583 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				4A281DBF1A4A570D00EA1583 /* SSHKitPrivateKeyParser.h */,
-				4A281DC01A4A570D00EA1583 /* SSHKitPrivateKeyParser.m */,
+				4A281DBF1A4A570D00EA1583 /* SSHKitKeyPair.h */,
+				4A281DC01A4A570D00EA1583 /* SSHKitKeyPair.m */,
 				4A2B5B051A4A6F3C007D20DF /* SSHKitHostKey.h */,
 				4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */,
 			);
@@ -222,6 +265,34 @@
 			path = Channel;
 			sourceTree = "<group>";
 		};
+		4A9FCFA91CC5DE4300FD4608 /* identities */ = {
+			isa = PBXGroup;
+			children = (
+				4A9FCFAA1CC5DE4300FD4608 /* generate_keys.sh */,
+				4A9FCFAB1CC5DE4300FD4608 /* id_dsa */,
+				4A9FCFAC1CC5DE4300FD4608 /* id_dsa.pkcs8 */,
+				4A9FCFAD1CC5DE4300FD4608 /* id_dsa.pkcs8.password */,
+				4A9FCFAE1CC5DE4300FD4608 /* id_dsa.pub */,
+				4A9FCFAF1CC5DE4300FD4608 /* id_ecdsa */,
+				4A9FCFB01CC5DE4300FD4608 /* id_ecdsa.pub */,
+				4A9FCFB11CC5DE4300FD4608 /* id_ecdsa_password */,
+				4A9FCFB21CC5DE4300FD4608 /* id_ecdsa_password.pub */,
+				4A9FCFB31CC5DE4300FD4608 /* id_ed25519 */,
+				4A9FCFB41CC5DE4300FD4608 /* id_ed25519.pub */,
+				4A9FCFB51CC5DE4300FD4608 /* id_ed25519_password */,
+				4A9FCFB61CC5DE4300FD4608 /* id_ed25519_password.pub */,
+				4A9FCFB71CC5DE4300FD4608 /* id_rsa */,
+				4A9FCFB81CC5DE4300FD4608 /* id_rsa.pkcs8 */,
+				4A9FCFB91CC5DE4300FD4608 /* id_rsa.pkcs8.password */,
+				4A9FCFBA1CC5DE4300FD4608 /* id_rsa.pub */,
+				4A9FCFBB1CC5DE4300FD4608 /* id_rsa_4096 */,
+				4A9FCFBC1CC5DE4300FD4608 /* id_rsa_4096.pub */,
+				4A9FCFBD1CC5DE4300FD4608 /* id_rsa_password */,
+				4A9FCFBE1CC5DE4300FD4608 /* id_rsa_password.pub */,
+			);
+			path = identities;
+			sourceTree = "<group>";
+		};
 		4AEF724119FFE2AC009B0CC7 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -236,17 +307,18 @@
 		CC77631E1C5665F700B584F5 /* SSHKitCoreTests */ = {
 			isa = PBXGroup;
 			children = (
-				4AE647B31CAC09E000F1023A /* osx-adduser.sh */,
-				CC8EE9981C647813008817A3 /* initTestEnv.sh */,
-				CC77632F1C566F0700B584F5 /* ssh */,
-				CC7763211C5665F700B584F5 /* Info.plist */,
-				CC77632E1C5666D200B584F5 /* Bridging-Header.h */,
 				CCB4D4731C7595D900B9A925 /* README.MD */,
+				4A9FCFA91CC5DE4300FD4608 /* identities */,
+				CC77632F1C566F0700B584F5 /* ssh */,
+				4A9FCFA61CC5C1AF00FD4608 /* KeyPairTests.swift */,
+				4A1346EC1CC6091800A20CCE /* HostKeyTests.swift */,
 				CC77631F1C5665F700B584F5 /* SSHTestsBase.swift */,
 				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
 				CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */,
 				CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */,
 				CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */,
+				CC7763211C5665F700B584F5 /* Info.plist */,
+				CC77632E1C5666D200B584F5 /* Bridging-Header.h */,
 			);
 			path = SSHKitCoreTests;
 			sourceTree = "<group>";
@@ -254,10 +326,11 @@
 		CC77632F1C566F0700B584F5 /* ssh */ = {
 			isa = PBXGroup;
 			children = (
+				4A1DC2331CC7178600458E3E /* initTestEnv.sh */,
+				4A1DC2341CC7178600458E3E /* osx-adduser.sh */,
 				CCE0E5211C858CC400E81427 /* echo_server.py */,
-				CC7763301C56704B00B584F5 /* ssh_host_rsa_key */,
-				CC7763311C56704B00B584F5 /* ssh_host_rsa_key.pub */,
-				CC2ADE841C57B46C0025CBB7 /* sshd_config */,
+				CC7763301C56704B00B584F5 /* ssh_rsa_key */,
+				CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */,
 			);
 			path = ssh;
 			sourceTree = "<group>";
@@ -360,7 +433,7 @@
 				CCBEE2561C8D5EE0004394A4 /* SSHKitSFTPChannel.h in Headers */,
 				E42815C21593D95200CF680C /* SSHKitSession.h in Headers */,
 				4A2B5B071A4A6F3C007D20DF /* SSHKitHostKey.h in Headers */,
-				4A281DC11A4A570D00EA1583 /* SSHKitPrivateKeyParser.h in Headers */,
+				4A281DC11A4A570D00EA1583 /* SSHKitKeyPair.h in Headers */,
 				4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */,
 				CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */,
 				4A3D1E431C60934A009F9760 /* SSHKitSession+Channels.h in Headers */,
@@ -486,10 +559,29 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CC7763321C56704B00B584F5 /* ssh_host_rsa_key in Resources */,
-				CC2ADE851C57B46C0025CBB7 /* sshd_config in Resources */,
-				CCE0E5221C858CC400E81427 /* echo_server.py in Resources */,
-				CC7763331C56704B00B584F5 /* ssh_host_rsa_key.pub in Resources */,
+				4A9FCFCB1CC5DE4300FD4608 /* id_ed25519_password.pub in Resources */,
+				4A9FCFD31CC5DE4300FD4608 /* id_rsa_password.pub in Resources */,
+				4A9FCFCD1CC5DE4300FD4608 /* id_rsa.pkcs8 in Resources */,
+				4A9FCFCA1CC5DE4300FD4608 /* id_ed25519_password in Resources */,
+				4A9FCFD21CC5DE4300FD4608 /* id_rsa_password in Resources */,
+				4A9FCFC11CC5DE4300FD4608 /* id_dsa.pkcs8 in Resources */,
+				4A9FCFC21CC5DE4300FD4608 /* id_dsa.pkcs8.password in Resources */,
+				4A9FCFC71CC5DE4300FD4608 /* id_ecdsa_password.pub in Resources */,
+				4A9FCFC51CC5DE4300FD4608 /* id_ecdsa.pub in Resources */,
+				4A9FCFD01CC5DE4300FD4608 /* id_rsa_4096 in Resources */,
+				4A9FCFCE1CC5DE4300FD4608 /* id_rsa.pkcs8.password in Resources */,
+				4A9FCFC61CC5DE4300FD4608 /* id_ecdsa_password in Resources */,
+				4A9FCFCF1CC5DE4300FD4608 /* id_rsa.pub in Resources */,
+				4A9FCFC01CC5DE4300FD4608 /* id_dsa in Resources */,
+				CC7763321C56704B00B584F5 /* ssh_rsa_key in Resources */,
+				4A9FCFCC1CC5DE4300FD4608 /* id_rsa in Resources */,
+				4A9FCFA81CC5C2C600FD4608 /* echo_server.py in Resources */,
+				4A9FCFC41CC5DE4300FD4608 /* id_ecdsa in Resources */,
+				4A9FCFC91CC5DE4300FD4608 /* id_ed25519.pub in Resources */,
+				4A9FCFD11CC5DE4300FD4608 /* id_rsa_4096.pub in Resources */,
+				4A9FCFC31CC5DE4300FD4608 /* id_dsa.pub in Resources */,
+				CC7763331C56704B00B584F5 /* ssh_rsa_key.pub in Resources */,
+				4A9FCFC81CC5DE4300FD4608 /* id_ed25519 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -526,9 +618,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				CCCDEA561C9DAE9400319B01 /* SFTPTests.swift in Sources */,
+				4A9FCFA71CC5C1AF00FD4608 /* KeyPairTests.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
 				CC7763201C5665F700B584F5 /* SSHTestsBase.swift in Sources */,
+				4A1346ED1CC6091800A20CCE /* HostKeyTests.swift in Sources */,
 				CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -546,7 +640,7 @@
 				4A3D1E341C6044A6009F9760 /* SSHKitForwardChannel.m in Sources */,
 				4A3D1E381C6048CD009F9760 /* SSHKitShellChannel.m in Sources */,
 				4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */,
-				4A281DC21A4A570D00EA1583 /* SSHKitPrivateKeyParser.m in Sources */,
+				4A281DC21A4A570D00EA1583 /* SSHKitKeyPair.m in Sources */,
 				E42815C31593D95200CF680C /* SSHKitSession.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -614,6 +708,7 @@
 		E4E96DAC158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -658,6 +753,7 @@
 		E4E96DAD158E10FD002E6E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;

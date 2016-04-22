@@ -8,34 +8,39 @@
 
 import XCTest
 
+enum AuthMethod: String {
+    case Password       = "password"
+    case PublicKey      = "publickey"
+    case Interactive    = "keyboard-interactive"
+}
 
 class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegate {
     // async test http://nshipster.com/xctestcase/
-    var expectation: XCTestExpectation?// = expectationWithDescription("Common expectation")
-    var authMethod: String?
-    let username = "sshtest"
+    var expectation: XCTestExpectation?
+    private var authMethods = [AuthMethod.Password, ]
+    
+    let sshHost  = "127.0.0.1"
+    let sshPort : UInt16 = 22
+    
+    var username = "sshtest"
     let password = "v#.%-dzd"
-    var publicKeyBase64: String?
+    let identity = "ssh_rsa_key"
+    
     let echoTask = NSTask()
-    let task = NSTask()
-    let userDefaults = NSUserDefaults.standardUserDefaults()
     let echoPort : UInt16 = 6007
     
     override func setUp() {
         super.setUp()
-        let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource("ssh_host_rsa_key", ofType: "");
-        do {
-            publicKeyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
-        } catch {
-            XCTFail("read base64 fail")
-        }
-        // startSSHD()
-        // userDefaults.setValue("", forKey: "username")
-        // userDefaults.setValue("", forKey: "password")
     }
     
+    override func tearDown() {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        super.tearDown()
+    }
+    
+    // MARK: - Echo Server
+    
     func startEchoServer() {
-        expectation = expectationWithDescription("Start echo server")
         let echoServer = NSBundle(forClass: self.dynamicType).pathForResource("echo_server.py", ofType: "");
         echoTask.launchPath = echoServer
         echoTask.arguments = ["-p", "\(echoPort)"]
@@ -62,83 +67,46 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         }
         
         echoTask.launch()
-        waitEchoServerStart()
-    }
-    
-    func waitEchoServerStart() {
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-            self.stopEchoServer()
-        }
     }
     
     func stopEchoServer() {
         echoTask.terminate()
     }
     
-    func startSSHD() {
-        let hostKeyPath = NSBundle(forClass: self.dynamicType).pathForResource("ssh_host_rsa_key", ofType: "");
-        let sshConfigPath = NSBundle(forClass: self.dynamicType).pathForResource("sshd_config", ofType: "");
-        task.launchPath = "/usr/sbin/sshd"
-        task.arguments = ["-h", hostKeyPath!, "-f", sshConfigPath!, "-p", "4000"]
-        task.launch()
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-        // task.terminate()
-    }
-    
-    func connectSessionByPublicKeyBase64() -> SSHKitSession {
-        expectation = expectationWithDescription("Connect Session By PublicKey Base64")
-        authMethod = "publickey"
-        let session = SSHKitSession(delegate: self)
-        //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
-        waitForExpectationsWithTimeout(10) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-        }
-        XCTAssert(session.connected)
-        return session
-        // NOTE: if debug(add break point), should extend this time
-    }
-    
-    func connectSessionByPassword() -> SSHKitSession {
-        expectation = expectationWithDescription("Connect Session By Password")
-        authMethod = "password"
-        let session = SSHKitSession(delegate: self)
-        //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
+    func waitEchoServerStart() {
+        expectation = expectationWithDescription("Wait echo server start")
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
-                print("Error: \(error.localizedDescription)")
+                XCTFail(error.localizedDescription)
+                self.stopEchoServer()
             }
         }
-        XCTAssert(session.connected)
-        return session
-        // authenticateByPasswordHandler
     }
     
-    func connectSessionByKeyboardInteractive() -> SSHKitSession {
-        expectation = expectationWithDescription("Connect Session By Keyboard Interactive")
-        authMethod = "keyboard-interactive"
-        let session = SSHKitSession(delegate: self)
-        //session.connectToHost("127.0.0.1", onPort: 22, withUser: username)  // -f
-        session.connectToHost("127.0.0.1", onPort: 22, withUser: username, timeout: 1)
-        waitForExpectationsWithTimeout(5) { error in
+    // MARK: - Connect Utils
+    
+    func launchSessionWithAuthMethod(method: AuthMethod) -> SSHKitSession {
+        return launchSessionWithAuthMethods([method,])
+    }
+    
+    func launchSessionWithAuthMethods(methods: [AuthMethod]) -> SSHKitSession {
+        expectation = expectationWithDescription("Launch session with \(methods) auth method")
+        authMethods = methods
+        
+        let session = SSHKitSession(host: sshHost, port: sshPort, user: username, delegate: self)
+        session.connectWithTimeout(1)
+        
+        waitForExpectationsWithTimeout(1) { error in
             if let error = error {
-                print("Error: \(error.localizedDescription)")
+                XCTFail(error.localizedDescription)
             }
         }
+        
         XCTAssert(session.connected)
         return session
-        // authenticateByPasswordHandler
     }
+    
+    // MARK: - Open Channel
     
     func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
         expectation = expectationWithDescription("Open Direct Channel")
@@ -195,8 +163,8 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     }
     
     func session(session: SSHKitSession!, didDisconnectWithError error: NSError!) {
-        if (error != nil) {
-            XCTFail("didDisconnectWithError")
+        if error != nil {
+            XCTFail(error.description)
             expectation!.fulfill()
         }
     }
@@ -209,41 +177,49 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
         expectation!.fulfill()
     }
     
-    func session(session: SSHKitSession!, authenticateWithAllowedMethods methods: [AnyObject]!, partialSuccess: Bool) -> NSError! {
+    func session(session: SSHKitSession!, authenticateWithAllowedMethods methods: [String]!, partialSuccess: Bool) -> NSError! {
         if partialSuccess {
             // self.logInfo("Partial success. Authentication that can continue: %@", methods.componentsJoinedByString(", "))
         } else {
             // self.logInfo("Authentication that can continue: %@", methods.componentsJoinedByString(", "))
         }
-        if !(methods as! [String]).contains(authMethod!) {
-            XCTFail("No match authentication method found")
+        
+        if let firstMethod = methods.first {
+            if let matched = AuthMethod(rawValue: firstMethod) {
+                switch matched {
+                case .Password:
+                    session.authenticateWithAskPassword({
+                        () in
+                        return self.password
+                    })
+                    
+                case .PublicKey:
+                    let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource(identity, ofType: "");
+                    
+                    do {
+                        let keyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
+                        let keyPair = try SSHKitKeyPair(fromBase64: keyBase64, withAskPass: nil)
+                        session.authenticateWithKeyPair(keyPair)
+                    } catch let error as NSError {
+                        XCTFail(error.description)
+                    }
+                    
+                case .Interactive:
+                    session.authenticateWithAskInteractiveInfo({
+                        (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
+                        return [self.password];
+                    })
+                }
+            } else {
+                XCTFail("No match authentication method found: \(firstMethod)")
+                expectation!.fulfill()
+                return nil
+            }
+        } else {
+            XCTFail("authenticateWithAllowedMethods passed in empty auth methods array: \(methods)")
             expectation!.fulfill()
-            return nil
         }
         
-        switch authMethod! {
-        case "password":
-            session.authenticateByPasswordHandler({
-                () in
-                return self.password
-            })
-            break
-        case "publickey":
-            session.authenticateByPrivateKeyBase64(publicKeyBase64)
-            break
-        case "keyboard-interactive":
-            session.authenticateByInteractiveHandler({
-                (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
-                return [self.password];
-                })
-            break
-        case "hostbased":
-            break
-        case "gssapi-with-mic":
-            break
-        default:
-            break
-        }
         return nil
     }
     

@@ -5,7 +5,7 @@
 #import "SSHKitDirectChannel.h"
 #import "SSHKitForwardChannel.h"
 #import "SSHKitShellChannel.h"
-#import "SSHKitPrivateKeyParser.h"
+#import "SSHKitKeyPair.h"
 #import "SSHKitHostKey.h"
 #import "SSHKitSFTPChannel.h"
 #import "SSHKitSFTPFile.h"

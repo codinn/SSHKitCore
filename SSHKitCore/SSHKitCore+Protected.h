@@ -6,7 +6,7 @@
 #import <libssh/sftp.h>
 #import "SSHKitSession.h"
 #import "SSHKitChannel.h"
-#import "SSHKitPrivateKeyParser.h"
+#import "SSHKitKeyPair.h"
 #import "SSHKitHostKey.h"
 #import "SSHKitSFTPChannel.h"
 #import "SSHKitSFTPFile.h"
@@ -88,9 +88,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @interface SSHKitSFTPChannel()
 @end
 
-@interface SSHKitPrivateKeyParser () {
-    SSHKitAskPassphrasePrivateKeyBlock _passhpraseHandler;
-}
+@interface SSHKitKeyPair ()
 
 @property (nonatomic, readonly) ssh_key privateKey;
 @property (nonatomic, readonly) ssh_key publicKey;

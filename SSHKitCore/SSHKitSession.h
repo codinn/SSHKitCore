@@ -1,7 +1,7 @@
 #import <SSHKitCore/SSHKitCoreCommon.h>
 
 @protocol SSHKitSessionDelegate, SSHKitChannelDelegate, SSHKitShellChannelDelegate;
-@class SSHKitHostKey, SSHKitRemoteForwardRequest, SSHKitPrivateKeyParser;
+@class SSHKitHostKey, SSHKitRemoteForwardRequest, SSHKitKeyPair;
 @class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel, SSHKitSFTPChannel;
 
 typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
@@ -36,9 +36,8 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  * If you choose to provide a session queue, and the session queue has a configured target queue,
  *
  **/
-- (instancetype)init;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate;
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate;
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
 
 // -----------------------------------------------------------------------------
 #pragma mark Configuration
@@ -58,30 +57,17 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 /** Full server hostname in the format `@"{hostname}"`. */
 @property (nonatomic, readonly) NSString *host;
 
-/** The server actual IP address, available after session connected
- *  nil if session is connected over custom file descriptor
-  */
-@property (nonatomic, readonly) NSString *hostIP;
-
 /** The server port to connect to. */
 @property (nonatomic, readonly) uint16_t port;
+
+/** Get the file descriptor of current session connection
+ */
+@property (nonatomic, readonly) int      fd;
 
 /** Username that will authenticate against the server. */
 @property (nonatomic, readonly) NSString *username;
 
-/** Is session connected with IPv6 address. */
-@property (nonatomic, readonly, getter=isIPv6) BOOL IPv6;
-
 @property (strong, readwrite) SSHKitLogHandler logHandle;
-
-/** The client version string */
-@property (nonatomic, readonly)  NSString *clientBanner;
-
-/** Get the software version of the remote server. */
-@property (nonatomic, readonly) NSString  *serverBanner;
-
-/** Get the protocol version of remote host. */
-@property (nonatomic, readonly) NSString  *protocolVersion;
 
 /**
  A Boolean value indicating whether the session connected successfully
@@ -89,12 +75,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  */
 @property (nonatomic, readonly, getter = isConnected) BOOL connected;
 @property (nonatomic, readonly, getter = isDisconnected) BOOL disconnected;
-
-/**
- A Boolean value indicating whether the session is successfully authorized
- (read-only).
- */
-@property (nonatomic, readonly, getter = isAuthorized) BOOL authorized;
 
 /** Last session error. */
 - (NSError *)coreError;
@@ -118,12 +98,12 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  * @param timeout Using 0.0 set default timeout (TCP default timeout)
  *
  **/
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString*)user timeout:(NSTimeInterval)timeout;
+- (void)connectWithTimeout:(NSTimeInterval)timeout;
 /**
  * Connects to the server via an opened socket.
  *
  **/
-- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout;
+- (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd;
 
 // -----------------------------------------------------------------------------
 #pragma mark Disconnecting
@@ -151,25 +131,24 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
  @param passwordHandler Password handler for get password
  */
-- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler;
+- (void)authenticateWithAskPassword:(NSString *(^)(void))passwordHandler;
 
 /**
  Authenticate by private key pair
 
- Use passphraseHandler:nil when the key is unencrypted
+ Use askPass:nil when the key is unencrypted
 
  @param privateKeyPath Filepath to private key
- @param passphraseHandler Password handle for encrypted private key
+ @param askPass Password handle for encrypted private key
  */
-- (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser;
-- (void)authenticateByPrivateKeyBase64:(NSString *)base64;
+- (void)authenticateWithKeyPair:(SSHKitKeyPair *)keyPair;
 
 /**
  Authenticate by keyboard-interactive
  
  @param interactiveHandler Interactive handler for connected user
  */
-- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
+- (void)authenticateWithAskInteractiveInfo:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
 
 @end
 
@@ -207,6 +186,14 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 - (void)session:(SSHKitSession *)session didReceiveIssueBanner:(NSString *)banner;
 
+
+/**
+ @param serverBanner Get the software version of the remote server
+ @param clientBanner The client version string
+ @param protocolVersion Get the protocol version of remote host
+ */
+- (void)session:(SSHKitSession *)session didReceiveServerBanner:(NSString *)serverBanner clientBanner:(NSString *)clientBanner protocolVersion:(int)protocolVersion;
+
 /**
  Called when a session is connecting to a host, the fingerprint is used
  to verify the authenticity of the host.
@@ -216,7 +203,7 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  @returns YES if the session should trust the host, otherwise NO.
  */
 - (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(SSHKitHostKey *)hostKey;
-- (NSError *)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray *)methods partialSuccess:(BOOL)partialSuccess;
+- (NSError *)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray<NSString *> *)methods partialSuccess:(BOOL)partialSuccess;
 - (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 
 /**

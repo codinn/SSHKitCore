@@ -4,7 +4,7 @@
 #import <libssh/callbacks.h>
 #import <libssh/server.h>
 #import "SSHKitSession+Channels.h"
-#import "SSHKitPrivateKeyParser.h"
+#import "SSHKitKeyPair.h"
 #import "SSHKitForwardChannel.h"
 
 #define SOCKET_NULL -1
@@ -26,6 +26,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
         unsigned int didReceiveIssueBanner          : 1;
+        unsigned int didReceiveServerBannerClientBannerProtocolVersion  : 1;
         unsigned int authenticateWithAllowedMethodsPartialSuccess : 1;
         unsigned int didAuthenticateUser            : 1;
         unsigned int didOpenForwardChannel          : 1;
@@ -42,36 +43,30 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
 @property (nonatomic, readwrite)  NSString    *host;
-@property (nonatomic, readwrite)  NSString    *hostIP;
 @property (nonatomic, readwrite)  uint16_t    port;
 @property (nonatomic, readwrite)  NSString    *username;
-@property (nonatomic, readwrite, getter=isIPv6) BOOL IPv6;
-
-@property (nonatomic, readwrite)  NSString    *clientBanner;
-@property (nonatomic, readwrite)  NSString    *serverBanner;
-@property (nonatomic, readwrite)  NSString    *protocolVersion;
 
 @property (nonatomic, readonly) long          timeout;
 
 @property (nonatomic, readonly) dispatch_queue_t sessionQueue;
 
-@property (nonatomic, readwrite)  BOOL      usesCustomFileDescriptor;
+@property (nonatomic, readwrite)  int         fd;
 @end
 
 #pragma mark -
 
 @implementation SSHKitSession
 
-- (instancetype)init {
-	return [self initWithDelegate:nil sessionQueue:NULL];
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate {
+    return [self initWithHost:host port:port user:user delegate:aDelegate sessionQueue:NULL];
 }
 
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate {
-	return [self initWithDelegate:aDelegate sessionQueue:NULL];
-}
-
-- (instancetype)initWithDelegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
     if ((self = [super init])) {
+        self.host = [host copy];
+        self.port = port;
+        self.username = [user copy];
+        
         self.enableCompression = NO;
         
         self.stage = SSHKitSessionStageNotConnected;
@@ -141,6 +136,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
         _delegateFlags.didReceiveIssueBanner = [delegate respondsToSelector:@selector(session:didReceiveIssueBanner:)];
+        _delegateFlags.didReceiveServerBannerClientBannerProtocolVersion = [delegate respondsToSelector:@selector(session:didReceiveServerBanner:clientBanner:protocolVersion:)];
         _delegateFlags.didOpenForwardChannel = [delegate respondsToSelector:@selector(session:didOpenForwardChannel:)];
         _delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
 	}
@@ -157,28 +153,22 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     switch (result) {
         case SSH_OK: {
             // connection established
-            int socket = ssh_get_fd(_rawSession);
-            NSString *ip = GetHostIPFromFD(socket, &_IPv6);
+            self.fd = ssh_get_fd(_rawSession);
             
-            if (!self.usesCustomFileDescriptor) {
-                // connect directly
-                self.hostIP = ip;
-            }
+            NSString *serverBanner = nil;
+            NSString *clientBanner = nil;
+            int protocolVersion = 0;
             
             const char *clientbanner = ssh_get_clientbanner(self.rawSession);
-            if (clientbanner) self.clientBanner = @(clientbanner);
-            
-            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Client banner: %@", self.clientBanner);
+            clientBanner = clientbanner ? @(clientbanner) : @"";
             
             const char *serverbanner = ssh_get_serverbanner(self.rawSession);
-            if (serverbanner) self.serverBanner = @(serverbanner);
+            serverBanner = serverbanner ?  @(serverbanner) : @"";
             
-            if (_logHandle) _logHandle(SSHKitLogLevelInfo, @"Server banner: %@", self.serverBanner);
+            protocolVersion = ssh_get_version(self.rawSession);
             
-            int ver = ssh_get_version(self.rawSession);
-            
-            if (ver>0) {
-                self.protocolVersion = @(ver).stringValue;
+            if (_delegateFlags.didReceiveServerBannerClientBannerProtocolVersion) {
+                [self.delegate session:self didReceiveServerBanner:serverBanner clientBanner:clientBanner protocolVersion:protocolVersion];
             }
             
             if (_delegateFlags.didConnectToHostPort) {
@@ -219,10 +209,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
 }
 
-- (void)connectToHost:(NSString *)host onPort:(uint16_t)port withUser:(NSString *)user timeout:(NSTimeInterval)timeout {
-    self.host = [host copy];
-    self.port = port;
-    self.username = [user copy];
+- (void)connectWithTimeout:(NSTimeInterval)timeout {
     _timeout = (long)timeout;
     
     __weak SSHKitSession *weakSelf = self;
@@ -242,9 +229,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }}];
 }
 
-- (void)connectWithUser:(NSString*)user fileDescriptor:(int)fd timeout:(NSTimeInterval)timeout {
-    self.usesCustomFileDescriptor = YES;
-    self.username = [user copy];
+- (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd {
     _timeout = (long)timeout;
     
     __weak SSHKitSession *weakSelf = self;
@@ -320,7 +305,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if ( self.serverAliveCountMax<=0 ) {
         int on = 1;
         if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Enable TCP keepalive");
-        setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
+        setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
     }
     
 #if DEBUG
@@ -427,44 +412,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark Diagnostics
 
-NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
-    if (fd == SOCKET_NULL) {
-        return nil;
-    }
-    
-    struct sockaddr_storage sock_addr;
-    socklen_t sock_addr_len = sizeof(sock_addr);
-    
-    if (getpeername(fd, (struct sockaddr *)&sock_addr, &sock_addr_len) != 0) {
-        return nil;
-    }
-    
-    if (sock_addr.ss_family == AF_INET) {
-        if (ipv6FlagPtr) *ipv6FlagPtr = NO;
-        
-        const struct sockaddr_in *sockAddr4 = (const struct sockaddr_in *)&sock_addr;
-        char addrBuf[INET_ADDRSTRLEN] = {0};
-        
-        if (inet_ntop(AF_INET, &sockAddr4->sin_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
-            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
-        }
-        
-    }
-    
-    if (sock_addr.ss_family == AF_INET6) {
-        if (ipv6FlagPtr) *ipv6FlagPtr = YES;
-        
-        const struct sockaddr_in6 *sockAddr6 = (const struct sockaddr_in6 *)&sock_addr;
-        char addrBuf[INET6_ADDRSTRLEN];
-        
-        if (inet_ntop(AF_INET6, &sockAddr6->sin6_addr, addrBuf, (socklen_t)sizeof(addrBuf)) != NULL) {
-            return [NSString stringWithCString:addrBuf encoding:NSASCIIStringEncoding];
-        }
-    }
-    
-    return nil;
-}
-
 - (NSError *)coreError {
     if(!_rawSession) {
         return nil;
@@ -505,7 +452,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
 #pragma mark Authentication
 // -----------------------------------------------------------------------------
 
-- (NSArray *)_getUserAuthList {
+- (NSArray<NSString *> *)_getUserAuthList {
     NSMutableArray *authMethods = [@[] mutableCopy];
     int authList = ssh_userauth_list(_rawSession, NULL);
     
@@ -552,7 +499,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
                 if (banner) [self.delegate session:self didReceiveIssueBanner:@(banner)];
             }
             
-            NSArray *authMethods = [self _getUserAuthList];
+            NSArray<NSString *> *authMethods = [self _getUserAuthList];
             
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
                 NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:NO];
@@ -598,7 +545,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
             
         case SSH_AUTH_PARTIAL: {
             // pre auth success
-            NSArray *authMethods = [self _getUserAuthList];
+            NSArray<NSString *> *authMethods = [self _getUserAuthList];
             
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
                 NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:YES];
@@ -622,7 +569,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
 }
 
 
-- (void)authenticateByInteractiveHandler:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler {
+- (void)authenticateWithAskInteractiveInfo:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler {
     self.stage = SSHKitSessionStageAuthenticating;
 
     __block NSInteger index = 0;
@@ -691,7 +638,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
     [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
-- (void)authenticateByPasswordHandler:(NSString *(^)(void))passwordHandler {
+- (void)authenticateWithAskPassword:(NSString *(^)(void))passwordHandler {
     NSString *password = passwordHandler();
     
     self.stage = SSHKitSessionStageAuthenticating;
@@ -717,15 +664,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
     [self dispatchAsyncOnSessionQueue: _authBlock];
 }
 
-- (void)authenticateByPrivateKeyBase64:(NSString *)base64 {
-    SSHKitPrivateKeyParser *parser = [SSHKitPrivateKeyParser parserFromBase64:base64 withPassphraseHandler:NULL error:nil];
-    if (parser) {
-        [self authenticateByPrivateKeyParser:parser];
-    }
-    
-}
-
-- (void)authenticateByPrivateKeyParser:(SSHKitPrivateKeyParser *)parser {
+- (void)authenticateWithKeyPair:(SSHKitKeyPair *)keyPair {
     self.stage = SSHKitSessionStageAuthenticating;
     
     __block BOOL publicKeySuccess = NO;
@@ -739,7 +678,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
         
         if (!publicKeySuccess) {
             // try public key
-            int ret = ssh_userauth_try_publickey(strongSelf->_rawSession, NULL, parser.publicKey);
+            int ret = ssh_userauth_try_publickey(strongSelf->_rawSession, NULL, keyPair.publicKey);
             switch (ret) {
                 case SSH_AUTH_AGAIN:
                     // try again
@@ -758,7 +697,7 @@ NS_INLINE NSString *GetHostIPFromFD(int fd, BOOL* ipv6FlagPtr) {
         publicKeySuccess = YES;
         
         // authenticate using private key
-        int ret = ssh_userauth_publickey(strongSelf->_rawSession, NULL, parser.privateKey);
+        int ret = ssh_userauth_publickey(strongSelf->_rawSession, NULL, keyPair.privateKey);
         switch (ret) {
             case SSH_AUTH_AGAIN:
                 // try again
