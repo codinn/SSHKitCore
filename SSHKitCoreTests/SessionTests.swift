@@ -19,6 +19,17 @@ class SessionTests: BasicSessionDelegate {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
+    
+    func testSessionConnectWithInvalidUser() {
+        do {
+            try launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive], user: invalidUser)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An auth error not raised as expected")
+    }
 
     func testSessionSingleFactorAuth() {
         do {

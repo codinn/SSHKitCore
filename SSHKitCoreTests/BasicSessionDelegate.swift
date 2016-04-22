@@ -88,46 +88,41 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     }
     
     func session(session: SSHKitSession!, authenticateWithAllowedMethods methods: [String]!, partialSuccess: Bool) -> NSError! {
-        if partialSuccess {
-            // self.logInfo("Partial success. Authentication that can continue: %@", methods.componentsJoinedByString(", "))
-        } else {
-            // self.logInfo("Authentication that can continue: %@", methods.componentsJoinedByString(", "))
-        }
-        
-        if let firstMethod = methods.first {
-            if let matched = AuthMethod(rawValue: firstMethod) {
-                switch matched {
-                case .Password:
-                    session.authenticateWithAskPassword({
-                        () in
-                        return self.password
-                    })
-                    
-                case .PublicKey:
-                    let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource(identity, ofType: "");
-                    
-                    do {
-                        let keyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
-                        let keyPair = try SSHKitKeyPair(fromBase64: keyBase64, withAskPass: nil)
-                        session.authenticateWithKeyPair(keyPair)
-                    } catch let error as NSError {
-                        XCTFail(error.description)
-                    }
-                    
-                case .Interactive:
-                    session.authenticateWithAskInteractiveInfo({
-                        (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
-                        return [self.password];
-                    })
-                }
-            } else {
-                XCTFail("No match authentication method found: \(firstMethod)")
-                expectation!.fulfill()
-                return nil
-            }
-        } else {
+        guard let firstMethod = methods.first else {
             XCTFail("authenticateWithAllowedMethods passed in empty auth methods array: \(methods)")
             expectation!.fulfill()
+            return nil
+        }
+        
+        guard let matched = AuthMethod(rawValue: firstMethod) else {
+            let error = NSError(domain: SSHKitCoreErrorDomain, code: SSHKitErrorCode.AuthFailure.rawValue, userInfo: [ NSLocalizedDescriptionKey : "No match authentication method found"])
+            expectation!.fulfill()
+            return error
+        }
+        
+        switch matched {
+        case .Password:
+            session.authenticateWithAskPassword({
+                () in
+                return self.password
+            })
+            
+        case .PublicKey:
+            let publicKeyPath = NSBundle(forClass: self.dynamicType).pathForResource(identity, ofType: "");
+            
+            do {
+                let keyBase64 = try String(contentsOfFile: publicKeyPath!, encoding: NSUTF8StringEncoding)
+                let keyPair = try SSHKitKeyPair(fromBase64: keyBase64, withAskPass: nil)
+                session.authenticateWithKeyPair(keyPair)
+            } catch let error as NSError {
+                return error
+            }
+            
+        case .Interactive:
+            session.authenticateWithAskInteractiveInfo({
+                (index:Int, name:String!, instruction:String!, prompts:[AnyObject]!) -> [AnyObject]! in
+                return [self.password];
+            })
         }
         
         return nil
