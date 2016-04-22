@@ -29,6 +29,8 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     let echoTask = NSTask()
     let echoPort : UInt16 = 6007
     
+    var error : NSError?
+    
     override func setUp() {
         super.setUp()
     }
@@ -85,11 +87,11 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     // MARK: - Connect Utils
     
-    func launchSessionWithAuthMethod(method: AuthMethod) -> SSHKitSession {
-        return launchSessionWithAuthMethods([method,])
+    func launchSessionWithAuthMethod(method: AuthMethod) throws -> SSHKitSession {
+        return try launchSessionWithAuthMethods([method,])
     }
     
-    func launchSessionWithAuthMethods(methods: [AuthMethod]) -> SSHKitSession {
+    func launchSessionWithAuthMethods(methods: [AuthMethod]) throws -> SSHKitSession {
         expectation = expectationWithDescription("Launch session with \(methods) auth method")
         authMethods = methods
         
@@ -102,7 +104,10 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
             }
         }
         
-        XCTAssert(session.connected)
+        if let error = self.error {
+            throw error
+        }
+        
         return session
     }
     
@@ -164,7 +169,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     
     func session(session: SSHKitSession!, didDisconnectWithError error: NSError!) {
         if error != nil {
-            XCTFail(error.description)
+            self.error = error
             expectation!.fulfill()
         }
     }
@@ -234,6 +239,7 @@ class SSHTestsBase: XCTestCase, SSHKitSessionDelegate, SSHKitShellChannelDelegat
     }
     
     func channelDidClose(channel: SSHKitChannel, withError error: NSError) {
+        self.error = error;
     }
     
     func channelDidOpen(channel: SSHKitChannel) {

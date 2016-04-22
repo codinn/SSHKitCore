@@ -27,30 +27,38 @@ class DirectChannelTests: SSHTestsBase {
     }
     
     func testOpenDirectChannel() {
-        let session = self.launchSessionWithAuthMethod(.PublicKey)
-        self.openDirectChannel(session)
-        // FIXME: must disconnect session before dealloc.
-        // if session is connected and have unclosed channel will get a error on dealloc
-        session.disconnect()
+        do {
+            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            self.openDirectChannel(session)
+            // FIXME: must disconnect session before dealloc.
+            // if session is connected and have unclosed channel will get a error on dealloc
+            session.disconnect()
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
     }
     
     func testTunnel() {
-        let session = self.launchSessionWithAuthMethod(.PublicKey)
-        let channel = self.openDirectChannel(session)
-        expectation = expectationWithDescription("Channel write data")
-        let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
-        // NOTE: if 0..999 will fail(too many data?)
-        totoalDataLength = (data?.length)! * 1000
-        for _ in 0...999 {
-            channel.writeData(data)
-        }
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
+        do {
+            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            let channel = self.openDirectChannel(session)
+            expectation = expectationWithDescription("Channel write data")
+            let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
+            // NOTE: if 0..999 will fail(too many data?)
+            totoalDataLength = (data?.length)! * 1000
+            for _ in 0...999 {
+                channel.writeData(data)
             }
+            waitForExpectationsWithTimeout(5) { error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
+            // TODO XCTAssert()
+            session.disconnect()
+        } catch let error as NSError {
+            XCTFail(error.description)
         }
-        // TODO XCTAssert()
-        session.disconnect()
     }
     
     // MARK: SSHKitChannelDelegate

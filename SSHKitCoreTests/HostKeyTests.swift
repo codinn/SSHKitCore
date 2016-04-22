@@ -23,10 +23,10 @@ class HostKeyTests: SSHTestsBase {
     // MARK: from session
     
     func testKeyFromSession() {
-        let session = self.launchSessionWithAuthMethod(.Password)
-        
         do {
+            let session = try self.launchSessionWithAuthMethod(.Password)
             let hostKey = try SSHKitHostKey.init(fromSession: session)
+            
             XCTAssertNotNil(hostKey.base64)
             XCTAssertNotNil(hostKey.fingerprint)
         } catch let error as NSError {

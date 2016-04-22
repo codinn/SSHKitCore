@@ -19,9 +19,13 @@ class SFTPTests: SSHTestsBase {
     }
     
     func testOpenSFTPChannel() {
-        let session = self.launchSessionWithAuthMethod(.PublicKey)
-        self.openSFTPChannel(session)
-        session.disconnect()
+        do {
+            let session = try launchSessionWithAuthMethod(.PublicKey)
+            self.openSFTPChannel(session)
+            session.disconnect()
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
     }
     
     

@@ -19,26 +19,34 @@ class ShellChannelTests: SSHTestsBase {
     }
     
     func testOpenShellChannel() {
-        let session = self.launchSessionWithAuthMethod(.PublicKey)
-        self.openShellChannel(session)
-        session.disconnect()
+        do {
+            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            self.openShellChannel(session)
+            session.disconnect()
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
     }
     
     
     func testShellChangePtySizeToColumns() {
-        let session = self.launchSessionWithAuthMethod(.PublicKey)
-        let channel = self.openShellChannel(session)
-        expectation = expectationWithDescription("Shell Change Pty Size To Columns(")
-        channel.changePtySizeToColumns(150, rows: 150)
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
+        do {
+            let session = try self.launchSessionWithAuthMethod(.PublicKey)
+            let channel = self.openShellChannel(session)
+            expectation = expectationWithDescription("Shell Change Pty Size To Columns(")
+            channel.changePtySizeToColumns(150, rows: 150)
+            waitForExpectationsWithTimeout(5) { error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                }
             }
+            // TODO XCTAssert()
+            XCTAssertEqual(channel.rows, 150)
+            XCTAssertEqual(channel.columns, 150)
+            session.disconnect()
+        } catch let error as NSError {
+            XCTFail(error.description)
         }
-        // TODO XCTAssert()
-        XCTAssertEqual(channel.rows, 150)
-        XCTAssertEqual(channel.columns, 150)
-        session.disconnect()
     }
     
     // MARK: SSHKitChannelDelegate

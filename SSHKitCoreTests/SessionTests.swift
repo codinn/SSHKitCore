@@ -21,13 +21,21 @@ class SessionTests: SSHTestsBase {
     }
 
     func testSessionSingleFactorAuth() {
-        launchSessionWithAuthMethod(.PublicKey)
-        launchSessionWithAuthMethod(.Password)
-        launchSessionWithAuthMethod(.Interactive)
+        do {
+            try launchSessionWithAuthMethod(.PublicKey)
+            try launchSessionWithAuthMethod(.Password)
+            try launchSessionWithAuthMethod(.Interactive)
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
     }
     
     func testSessionMultiFactorAuth() {
         username = "sshtest-m"
-        launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive])
+        do {
+            try launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive])
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
     }
 }
