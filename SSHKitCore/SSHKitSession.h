@@ -76,9 +76,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 @property (nonatomic, readonly, getter = isConnected) BOOL connected;
 @property (nonatomic, readonly, getter = isDisconnected) BOOL disconnected;
 
-/** Last session error. */
-- (NSError *)coreError;
-
 // -----------------------------------------------------------------------------
 #pragma mark Advanced Options, setting before connection
 // -----------------------------------------------------------------------------

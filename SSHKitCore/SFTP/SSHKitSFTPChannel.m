@@ -65,7 +65,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
             
         default:
             // open failed
-            [self doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.libsshError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -90,13 +90,13 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
                 }
                 // NSLog(@"sftp session opened");
             } else {
-            		[self doCloseWithError:self.session.coreError];
+            		[self doCloseWithError:self.session.libsshError];
                 [self.session disconnectIfNeeded];
             }
             break;
         default:
             // open failed
-            [self doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.libsshError];
             [self.session disconnectIfNeeded];
             break;
     }

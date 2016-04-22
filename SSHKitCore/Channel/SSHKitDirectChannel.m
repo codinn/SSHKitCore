@@ -43,8 +43,8 @@
             NSError *error = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                  code:SSHKitErrorConnectFailure
                                              userInfo:@{ NSLocalizedDescriptionKey : @"Open Direct Failed" }];
-            if (self.session.coreError) {
-                error = self.session.coreError;
+            if (self.session.libsshError) {
+                error = self.session.libsshError;
             }
             [self doCloseWithError:error];
             [self.session disconnectIfNeeded];

@@ -34,6 +34,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 /** Raw libssh session instance. */
 @property (nonatomic, readonly) ssh_session rawSession;
 
+- (NSError *)libsshError;
+
 - (BOOL)isOnSessionQueue;
 - (void)disconnectIfNeeded;
 

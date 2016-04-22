@@ -202,7 +202,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             break;
             
         default: {
-            [self _doDisconnectWithError:self.coreError];
+            [self _doDisconnectWithError:self.libsshError];
         }
             break;
             
@@ -412,7 +412,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 #pragma mark Diagnostics
 
-- (NSError *)coreError {
+- (NSError *)libsshError {
     if(!_rawSession) {
         return nil;
     }
@@ -443,7 +443,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         if (!ssh_is_connected(self->_rawSession)) {
-            [self _doDisconnectWithError:self.coreError];
+            [self _doDisconnectWithError:self.libsshError];
         }
     }}];
 }
@@ -532,11 +532,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (void)_checkAuthenticateResult:(NSInteger)result {
     switch (result) {
         case SSH_AUTH_DENIED:
-            [self _doDisconnectWithError:self.coreError];
+            [self _doDisconnectWithError:self.libsshError];
             return;
             
         case SSH_AUTH_ERROR:
-            [self _doDisconnectWithError:self.coreError];
+            [self _doDisconnectWithError:self.libsshError];
             return;
             
         case SSH_AUTH_SUCCESS:
@@ -867,7 +867,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         int result = ssh_send_keepalive(strongSelf->_rawSession);
         if (result!=SSH_OK) {
-            [strongSelf _doDisconnectWithError:strongSelf.coreError];
+            [strongSelf _doDisconnectWithError:strongSelf.libsshError];
             return;
         }
         

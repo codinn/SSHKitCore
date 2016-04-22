@@ -146,7 +146,7 @@
             [_forwardRequests removeAllObjects];
             
             if (request.completionHandler) {
-                NSError *error = self.coreError;
+                NSError *error = self.libsshError;
                 error = [NSError errorWithDomain:error.domain code:SSHKitErrorChannelFailure userInfo:error.userInfo];
                 request.completionHandler(NO, request.listenPort, error);
             }

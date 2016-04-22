@@ -189,7 +189,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
     int wrote = ssh_channel_write(_rawChannel, _pendingWriteData.bytes, datalen);
     
     if ( (wrote < 0) || (wrote>datalen) ) {
-        [self doCloseWithError:self.session.coreError];
+        [self doCloseWithError:self.session.libsshError];
         [self.session disconnectIfNeeded];
         return;
     }

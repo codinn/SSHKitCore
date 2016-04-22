@@ -74,7 +74,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
             
         default:
             // open failed
-            [self doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.libsshError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -97,7 +97,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
             
         default:
             // open failed
-            [self doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.libsshError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -122,7 +122,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
             
         default:
             // open failed
-            [self doCloseWithError:self.session.coreError];
+            [self doCloseWithError:self.session.libsshError];
             [self.session disconnectIfNeeded];
             break;
     }
@@ -148,7 +148,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
         
         // According to "6.7.  Window Dimension Change Message", "window-change" request won't receive a response, `ssh_channel_change_pty_size` will never return SSH_AGAIN
         if (rc != SSH_OK) {
-            error = strongSelf.session.coreError;
+            error = strongSelf.session.libsshError;
             if (!error) {
                 error = [NSError errorWithDomain:SSHKitLibsshErrorDomain
                                             code:rc
