@@ -143,6 +143,10 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
+- (void)cancelAsyncReadFile {
+    _stage = SSHKitFileStageNone;
+}
+
 - (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
     // [self dispatchAsyncOnSessionQueue:
     // `sftp_async_read

@@ -68,6 +68,7 @@
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
         fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
 fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock;
+- (void)cancelAsyncReadFile;
 - (long)write:(const void *)buffer size:(long)size;
 
 @end
