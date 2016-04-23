@@ -210,23 +210,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)connectWithTimeout:(NSTimeInterval)timeout {
-    _timeout = (long)timeout;
-    
-    __weak SSHKitSession *weakSelf = self;
-    [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
-        __strong SSHKitSession *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return_from_block;
-        }
-        
-        BOOL prepared = [strongSelf _doPrepareWithFileDescriptor:SSH_INVALID_SOCKET];
-        if (!prepared) {
-            return_from_block;
-        }
-        
-        strongSelf.stage = SSHKitSessionStageConnecting;
-        [strongSelf _doConnect];
-    }}];
+    [self connectWithTimeout:timeout viaFileDescriptor:SSH_INVALID_SOCKET];
 }
 
 - (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd {
