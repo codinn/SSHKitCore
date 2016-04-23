@@ -20,9 +20,56 @@ class SessionTests: BasicSessionDelegate {
         super.tearDown()
     }
     
+    // MARK: - Connect
+    
+    func testSessionConnectWithNonRoutableIP() {
+        do {
+            let session = try launchSessionWithNonRoutableHost()
+            XCTAssertNotNil(session)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An connect error not raised as expected")
+    }
+    
+    func testSessionConnectWithRefusePort() {
+        do {
+            let session = try launchSessionWithRefusePort()
+            XCTAssertNotNil(session)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.Fatal.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An connect error not raised as expected")
+    }
+    
+    // MARK: - Authentication
+    
     func testSessionConnectWithInvalidUser() {
         do {
             try launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive], user: invalidUser)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An auth error not raised as expected")
+    }
+    
+    func testSessionConnectWithInvalidPass() {
+        let correctPassword = password
+        password = "invalid-password"
+        
+        defer {
+            // recover changed password for other tests
+            password = correctPassword
+        }
+        
+        do {
+            try launchSessionWithAuthMethods([.PublicKey, .Password, .Interactive], user: userForSFA)
         } catch let error as NSError {
             XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
             return

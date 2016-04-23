@@ -21,13 +21,18 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     
     let sshHost  = "127.0.0.1"
     let sshPort : UInt16 = 22
+    let refusePort : UInt16 = 6009
+    
+    // for artificially create a connection timeout error
+    let nonRoutableIP = "10.255.255.1"
     
     let userForSFA = "sshtest"
     let userForMFA = "sshtest-m"
     let userForNoPass = "sshtest-nopass"
     let invalidUser = "invalid-user"
     
-    let password = "v#.%-dzd"
+    var password = "v#.%-dzd"
+    let invalidPass = "invalid-pass"
     let identity = "ssh_rsa_key"
     
     var error : NSError?
@@ -43,18 +48,14 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     
     // MARK: - Connect Utils
     
-    func launchSessionWithAuthMethod(method: AuthMethod, user: String) throws -> SSHKitSession {
-        return try launchSessionWithAuthMethods([method,], user: user)
-    }
-    
-    func launchSessionWithAuthMethods(methods: [AuthMethod], user: String) throws -> SSHKitSession {
+    private func connectAndReturnSessionWithAuthMethods(methods: [AuthMethod], host: String, port: UInt16, user: String, timeout: NSTimeInterval) throws -> SSHKitSession {
         expectation = expectationWithDescription("Launch session with \(methods) auth method")
         authMethods = methods
         
-        let session = SSHKitSession(host: sshHost, port: sshPort, user: user, delegate: self)
-        session.connectWithTimeout(1)
+        let session = SSHKitSession(host: host, port: port, user: user, delegate: self)
+        session.connectWithTimeout(timeout)
         
-        waitForExpectationsWithTimeout(1) { error in
+        waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 XCTFail(error.localizedDescription)
             }
@@ -65,6 +66,22 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
         }
         
         return session
+    }
+    
+    func launchSessionWithNonRoutableHost() throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods([.Password,], host: nonRoutableIP, port: sshPort, user: userForSFA, timeout: 1)
+    }
+    
+    func launchSessionWithRefusePort() throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods([.Password,], host: sshHost, port: refusePort, user: userForSFA, timeout: 1)
+    }
+    
+    func launchSessionWithAuthMethod(method: AuthMethod, user: String) throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods([method,], host: sshHost, port: sshPort, user: user, timeout: 1)
+    }
+    
+    func launchSessionWithAuthMethods(methods: [AuthMethod], user: String) throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods(methods, host: sshHost, port: sshPort, user: user, timeout: 1)
     }
     
     //MARK: - SSHKitSessionDelegate
@@ -102,8 +119,7 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
         
         switch matched {
         case .Password:
-            session.authenticateWithAskPassword({
-                () in
+            session.authenticateWithAskPassword({ () in
                 return self.password
             })
             
