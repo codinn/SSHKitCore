@@ -33,7 +33,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 	} _delegateFlags;
     
     dispatch_source_t   _socketReadSource;
-    dispatch_source_t   _keepAliveTimer;
+    dispatch_source_t   _heartbeatTimer;
     NSInteger           _keepAliveCounter;
     
     dispatch_block_t    _authBlock;
@@ -387,7 +387,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _stage = SSHKitSessionStageDisconnected;
     
-    [self _cancelKeepAliveTimer];
+    [self _cancelHeartbeatTimer];
     
     NSArray *channels = [_channels copy];
     for (SSHKitChannel* channel in channels) {
@@ -522,7 +522,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     self.stage = SSHKitSessionStageAuthenticated;
     
     // start diagnoses timer
-    [self _setupKeepAliveTimer];
+    [self _setupHeartbeatTimer];
     
     if (_delegateFlags.didAuthenticateUser) {
         [self.delegate session:self didAuthenticateUser:nil];
@@ -823,17 +823,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #pragma mark - Extra Options
 // -----------------------------------------------------------------------------
 
-#pragma mark - Keep-alive Heartbeat
+#pragma mark - Connection Heartbeat
 
-- (void)_setupKeepAliveTimer {
+- (void)_setupHeartbeatTimer {
     if (self.serverAliveCountMax<=0) {
         return;
     }
     
-    [self _cancelKeepAliveTimer];
+    [self _cancelHeartbeatTimer];
     
-    _keepAliveTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
-    if (!_keepAliveTimer) {
+    _heartbeatTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
+    if (!_heartbeatTimer) {
         if (_logHandle) _logHandle(SSHKitLogLevelWarn, @"Failed to create keep-alive timer");
         return;
     }
@@ -846,10 +846,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         interval = _timeout;
     }
     
-    dispatch_source_set_timer(_keepAliveTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
+    dispatch_source_set_timer(_heartbeatTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
     
     __weak SSHKitSession *weakSelf = self;
-    dispatch_source_set_event_handler(_keepAliveTimer, ^{
+    dispatch_source_set_event_handler(_heartbeatTimer, ^{
         __strong SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf) {
             return_from_block;
@@ -876,13 +876,13 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         [strongSelf disconnectIfNeeded];
     });
     
-    dispatch_resume(_keepAliveTimer);
+    dispatch_resume(_heartbeatTimer);
 }
 
-- (void)_cancelKeepAliveTimer {
-    if (_keepAliveTimer) {
-        dispatch_source_cancel(_keepAliveTimer);
-        _keepAliveTimer = nil;
+- (void)_cancelHeartbeatTimer {
+    if (_heartbeatTimer) {
+        dispatch_source_cancel(_heartbeatTimer);
+        _heartbeatTimer = nil;
     }
 }
 
