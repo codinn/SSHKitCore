@@ -41,12 +41,12 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     
     override func setUp() {
         super.setUp()
-        authExpectation = nil
-        disconnectExpectation = nil
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        authExpectation = nil
+        disconnectExpectation = nil
+        
         super.tearDown()
     }
     
