@@ -14,7 +14,7 @@ enum AuthMethod: String {
     case Interactive    = "keyboard-interactive"
 }
 
-class SessionTestCaseBase: XCTestCase, SSHKitSessionDelegate {
+class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     // async test http://nshipster.com/xctestcase/
     private var authExpectation: XCTestExpectation?
     private var disconnectExpectation: XCTestExpectation?

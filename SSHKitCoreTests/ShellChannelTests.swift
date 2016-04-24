@@ -8,7 +8,7 @@
 
 import XCTest
 
-class ShellChannelTests: ChannelTestCaseBase {
+class ShellChannelTests: ChannelTestCase {
     override func setUp() {
         super.setUp()
     }

@@ -8,7 +8,7 @@
 
 import XCTest
 
-class SessionTests: SessionTestCaseBase {
+class SessionTests: SessionTestCase {
 
     override func setUp() {
         super.setUp()
