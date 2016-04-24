@@ -33,8 +33,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 	} _delegateFlags;
     
     dispatch_source_t   _socketReadSource;
+    
     dispatch_source_t   _heartbeatTimer;
-    NSInteger           _keepAliveCounter;
+    NSInteger           _heartbeatCounter;
     
     dispatch_block_t    _authBlock;
     
@@ -729,7 +730,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         [strongSelf _registerLogCallback];
         
         // reset keepalive counter
-        strongSelf->_keepAliveCounter = strongSelf.serverAliveCountMax;
+        strongSelf->_heartbeatCounter = strongSelf.serverAliveCountMax;
         
         switch (strongSelf->_stage) {
             case SSHKitSessionStageNotConnected:
@@ -822,7 +823,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         return;
     }
     
-    _keepAliveCounter = self.serverAliveCountMax;
+    _heartbeatCounter = self.serverAliveCountMax;
     
     dispatch_source_set_timer(_heartbeatTimer, dispatch_time(DISPATCH_TIME_NOW, _timeout * NSEC_PER_SEC), _timeout * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
     
@@ -835,7 +836,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         [strongSelf _registerLogCallback];
         
-        if (strongSelf->_keepAliveCounter<=0) {
+        if (strongSelf->_heartbeatCounter<=0) {
             NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
             [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
                                                                 code:SSHKitErrorTimeout
@@ -849,7 +850,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return;
         }
         
-        strongSelf->_keepAliveCounter--;
+        strongSelf->_heartbeatCounter--;
         
         [strongSelf disconnectIfNeeded];
     });
