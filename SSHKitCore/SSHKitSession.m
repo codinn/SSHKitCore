@@ -214,7 +214,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd {
-    _timeout = (long)timeout;
+    _timeout = timeout > 0 ? timeout : SSHKIT_SESSION_DEFAULT_TIMEOUT;
     
     __weak SSHKitSession *weakSelf = self;
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
@@ -824,13 +824,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _keepAliveCounter = self.serverAliveCountMax;
     
-    uint64_t interval = SSHKIT_SESSION_DEFAULT_TIMEOUT;
-    
-    if (_timeout > 0) {
-        interval = _timeout;
-    }
-    
-    dispatch_source_set_timer(_heartbeatTimer, dispatch_time(DISPATCH_TIME_NOW, interval * NSEC_PER_SEC), interval * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
+    dispatch_source_set_timer(_heartbeatTimer, dispatch_time(DISPATCH_TIME_NOW, _timeout * NSEC_PER_SEC), _timeout * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
     
     __weak SSHKitSession *weakSelf = self;
     dispatch_source_set_event_handler(_heartbeatTimer, ^{
