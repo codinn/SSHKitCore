@@ -110,7 +110,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  Close the session
  */
 - (void)disconnect;
-- (void)disconnectWithError:(NSError *)error;
 
 // -----------------------------------------------------------------------------
 #pragma mark GCD

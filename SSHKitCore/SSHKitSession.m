@@ -351,10 +351,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)disconnect {
-    [self disconnectWithError:nil];
-}
-
-- (void)disconnectWithError:(NSError *)error {
     __weak SSHKitSession *weakSelf = self;
     
     // Asynchronous disconnection, as documented in the header file
@@ -364,7 +360,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        [strongSelf _doDisconnectWithError:error];
+        [strongSelf _doDisconnectWithError:nil];
     }}];
 }
 
@@ -721,7 +717,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         NSError *error = [[NSError alloc] initWithDomain:SSHKitCoreErrorDomain
                                                     code:SSHKitErrorFatal
                                                 userInfo:@{NSLocalizedDescriptionKey : @"Could not create dispatch source to monitor socket" }];
-        [self disconnectWithError:error];
+        [self _doDisconnectWithError:error];
         return;
     }
     
