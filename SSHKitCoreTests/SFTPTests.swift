@@ -8,7 +8,7 @@
 
 import XCTest
 
-class SFTPTests: BasicSessionChannelDelegate {
+class SFTPTests: ChannelTestCaseBase {
 
     override func setUp() {
         super.setUp()

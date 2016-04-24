@@ -1,5 +1,5 @@
 //
-//  BasicSessionChannelDelegate.swift
+//  ChannelTestCaseBase.swift
 //  SSHKitCore
 //
 //  Created by Yang Yubo on 4/22/16.
@@ -8,7 +8,7 @@
 
 import XCTest
 
-class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDelegate {
+class ChannelTestCaseBase: SessionTestCaseBase, SSHKitShellChannelDelegate {
     var channelExpectation: XCTestExpectation?
     let echoTask = NSTask()
     let echoPort : UInt16 = 6007

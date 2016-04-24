@@ -8,7 +8,7 @@
 
 import XCTest
 
-class HostKeyTests: BasicSessionDelegate {
+class HostKeyTests: SessionTestCaseBase {
 
     override func setUp() {
         super.setUp()

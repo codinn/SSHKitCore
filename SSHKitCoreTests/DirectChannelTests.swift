@@ -8,7 +8,7 @@
 
 import XCTest
 
-class DirectChannelTests: BasicSessionChannelDelegate {
+class DirectChannelTests: ChannelTestCaseBase {
     var writeDataCount: Int = 0
     var totoalDataLength: Int = -1
     var totoalReadLength: Int = -1

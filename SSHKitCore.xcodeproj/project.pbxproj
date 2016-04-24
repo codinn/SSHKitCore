@@ -52,11 +52,11 @@
 		4A9FCFD21CC5DE4300FD4608 /* id_rsa_password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBD1CC5DE4300FD4608 /* id_rsa_password */; };
 		4A9FCFD31CC5DE4300FD4608 /* id_rsa_password.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBE1CC5DE4300FD4608 /* id_rsa_password.pub */; };
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
-		4AEF88861CCA1758003F2CBF /* BasicSessionChannelDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AEF88851CCA1758003F2CBF /* BasicSessionChannelDelegate.swift */; };
+		4AEF88861CCA1758003F2CBF /* ChannelTestCaseBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AEF88851CCA1758003F2CBF /* ChannelTestCaseBase.swift */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */; };
 		CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */; };
-		CC7763201C5665F700B584F5 /* BasicSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77631F1C5665F700B584F5 /* BasicSessionDelegate.swift */; };
+		CC7763201C5665F700B584F5 /* SessionTestCaseBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77631F1C5665F700B584F5 /* SessionTestCaseBase.swift */; };
 		CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */; };
 		CC7763321C56704B00B584F5 /* ssh_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_rsa_key */; };
 		CC7763331C56704B00B584F5 /* ssh_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */; };
@@ -185,13 +185,13 @@
 		4AC052C71B4ACB8F00B555F6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitCoreCommon.m; sourceTree = "<group>"; };
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
-		4AEF88851CCA1758003F2CBF /* BasicSessionChannelDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicSessionChannelDelegate.swift; sourceTree = "<group>"; };
+		4AEF88851CCA1758003F2CBF /* ChannelTestCaseBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChannelTestCaseBase.swift; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
 		CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
 		CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectChannelTests.swift; sourceTree = "<group>"; };
 		CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SSHKitCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		CC77631F1C5665F700B584F5 /* BasicSessionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicSessionDelegate.swift; sourceTree = "<group>"; };
+		CC77631F1C5665F700B584F5 /* SessionTestCaseBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTestCaseBase.swift; sourceTree = "<group>"; };
 		CC7763211C5665F700B584F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CC77632E1C5666D200B584F5 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		CC7763301C56704B00B584F5 /* ssh_rsa_key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_rsa_key; sourceTree = "<group>"; };
@@ -314,8 +314,8 @@
 				CC77632F1C566F0700B584F5 /* ssh */,
 				4A9FCFA61CC5C1AF00FD4608 /* KeyPairTests.swift */,
 				4A1346EC1CC6091800A20CCE /* HostKeyTests.swift */,
-				CC77631F1C5665F700B584F5 /* BasicSessionDelegate.swift */,
-				4AEF88851CCA1758003F2CBF /* BasicSessionChannelDelegate.swift */,
+				CC77631F1C5665F700B584F5 /* SessionTestCaseBase.swift */,
+				4AEF88851CCA1758003F2CBF /* ChannelTestCaseBase.swift */,
 				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
 				CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */,
 				CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */,
@@ -622,10 +622,10 @@
 			files = (
 				CCCDEA561C9DAE9400319B01 /* SFTPTests.swift in Sources */,
 				4A9FCFA71CC5C1AF00FD4608 /* KeyPairTests.swift in Sources */,
-				4AEF88861CCA1758003F2CBF /* BasicSessionChannelDelegate.swift in Sources */,
+				4AEF88861CCA1758003F2CBF /* ChannelTestCaseBase.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
-				CC7763201C5665F700B584F5 /* BasicSessionDelegate.swift in Sources */,
+				CC7763201C5665F700B584F5 /* SessionTestCaseBase.swift in Sources */,
 				4A1346ED1CC6091800A20CCE /* HostKeyTests.swift in Sources */,
 				CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */,
 			);
