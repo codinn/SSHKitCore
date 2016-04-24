@@ -37,6 +37,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_source_t   _heartbeatTimer;
     NSInteger           _heartbeatCounter;
     
+    dispatch_source_t   _connectTimer;
+    
     dispatch_block_t    _authBlock;
     
     void *_isOnSessionQueueKey;
@@ -231,6 +233,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         
         strongSelf.stage = SSHKitSessionStageConnecting;
         [strongSelf _doConnect];
+        [strongSelf _setupConnectTimer];
     }}];
 }
 
@@ -373,6 +376,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     _stage = SSHKitSessionStageDisconnected;
     
     [self _cancelHeartbeatTimer];
+    [self _cancelConnectTimer];
     
     NSArray *channels = [_channels copy];
     for (SSHKitChannel* channel in channels) {
@@ -506,7 +510,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 - (void)_didAuthenticate {
     self.stage = SSHKitSessionStageAuthenticated;
     
-    // start diagnoses timer
+    // stop connect timer and throw to heartbeat timer
+    [self _cancelConnectTimer];
     [self _setupHeartbeatTimer];
     
     if (_delegateFlags.didAuthenticateUser) {
@@ -809,6 +814,43 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 // -----------------------------------------------------------------------------
 
 #pragma mark - Connection Heartbeat
+
+- (void)_setupConnectTimer {
+    [self _cancelConnectTimer];
+    
+    _connectTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
+    if (!_connectTimer) {
+        if (_logHandle) _logHandle(SSHKitLogLevelWarn, @"Failed to create connect timer");
+        return;
+    }
+    
+    dispatch_source_set_timer(_connectTimer, dispatch_time(DISPATCH_TIME_NOW, _timeout * NSEC_PER_SEC), _timeout * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
+    
+    __weak SSHKitSession *weakSelf = self;
+    dispatch_source_set_event_handler(_connectTimer, ^{
+        __strong SSHKitSession *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return_from_block;
+        }
+        
+        [strongSelf _registerLogCallback];
+        
+        NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
+        [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
+                                                               code:SSHKitErrorTimeout
+                                                           userInfo:@{ NSLocalizedDescriptionKey : errorDesc } ]];
+        return_from_block;
+    });
+    
+    dispatch_resume(_connectTimer);
+}
+
+- (void)_cancelConnectTimer {
+    if (_connectTimer) {
+        dispatch_source_cancel(_connectTimer);
+        _connectTimer = nil;
+    }
+}
 
 - (void)_setupHeartbeatTimer {
     if (self.serverAliveCountMax<=0) {

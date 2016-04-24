@@ -69,7 +69,7 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     }
     
     func launchSessionWithNonRoutableHost() throws -> SSHKitSession {
-        return try connectAndReturnSessionWithAuthMethods([.Password,], host: nonRoutableIP, port: sshPort, user: userForSFA, timeout: 1)
+        return try connectAndReturnSessionWithAuthMethods([.Password,], host: nonRoutableIP, port: sshPort, user: userForSFA, timeout: 1.5)
     }
     
     func launchSessionWithRefusePort() throws -> SSHKitSession {

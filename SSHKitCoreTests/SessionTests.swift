@@ -27,7 +27,7 @@ class SessionTests: BasicSessionDelegate {
             let session = try launchSessionWithNonRoutableHost()
             XCTAssertNotNil(session)
         } catch let error as NSError {
-            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            XCTAssertEqual(SSHKitErrorCode.Timeout.rawValue, error.code, error.description)
             return
         }
         
