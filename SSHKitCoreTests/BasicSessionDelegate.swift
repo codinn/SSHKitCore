@@ -16,7 +16,9 @@ enum AuthMethod: String {
 
 class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     // async test http://nshipster.com/xctestcase/
-    var expectation: XCTestExpectation?
+    private var authExpectation: XCTestExpectation?
+    private var disconnectExpectation: XCTestExpectation?
+    
     private var authMethods = [AuthMethod.Password, ]
     
     let sshHost  = "127.0.0.1"
@@ -39,6 +41,8 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     
     override func setUp() {
         super.setUp()
+        authExpectation = nil
+        disconnectExpectation = nil
     }
     
     override func tearDown() {
@@ -49,7 +53,7 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     // MARK: - Connect Utils
     
     private func connectAndReturnSessionWithAuthMethods(methods: [AuthMethod], host: String, port: UInt16, user: String, timeout: NSTimeInterval) throws -> SSHKitSession {
-        expectation = expectationWithDescription("Launch session with \(methods) auth method")
+        authExpectation = expectationWithDescription("Launch session with \(methods) auth method")
         authMethods = methods
         
         let session = SSHKitSession(host: host, port: port, user: user, delegate: self)
@@ -57,7 +61,7 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
         
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
-                XCTFail(error.localizedDescription)
+                self.error = error
             }
         }
         
@@ -84,6 +88,21 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
         return try connectAndReturnSessionWithAuthMethods(methods, host: sshHost, port: sshPort, user: user, timeout: 1)
     }
     
+    func disconnectSessionAndWait(session: SSHKitSession) throws {
+        disconnectExpectation = expectationWithDescription("Disconnect session")
+        session.disconnect()
+        
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                self.error = error
+            }
+        }
+        
+        if let error = self.error {
+            throw error
+        }
+    }
+    
     //MARK: - SSHKitSessionDelegate
     
     func session(session: SSHKitSession!, didConnectToHost host: String!, port: UInt16) {
@@ -92,7 +111,16 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     func session(session: SSHKitSession!, didDisconnectWithError error: NSError!) {
         if error != nil {
             self.error = error
-            expectation!.fulfill()
+        }
+        
+        if let expectation = disconnectExpectation {
+            expectation.fulfill()
+            disconnectExpectation = nil
+        }
+        
+        if let expectation = authExpectation {
+            expectation.fulfill()
+            authExpectation = nil
         }
     }
     
@@ -101,19 +129,20 @@ class BasicSessionDelegate: XCTestCase, SSHKitSessionDelegate {
     }
     
     func session(session: SSHKitSession!, didAuthenticateUser username: String!) {
-        expectation!.fulfill()
+        if let expectation = authExpectation {
+            expectation.fulfill()
+            authExpectation = nil
+        }
     }
     
     func session(session: SSHKitSession!, authenticateWithAllowedMethods methods: [String]!, partialSuccess: Bool) -> NSError! {
         guard let firstMethod = methods.first else {
             XCTFail("authenticateWithAllowedMethods passed in empty auth methods array: \(methods)")
-            expectation!.fulfill()
             return nil
         }
         
         guard let matched = AuthMethod(rawValue: firstMethod) else {
             let error = NSError(domain: SSHKitCoreErrorDomain, code: SSHKitErrorCode.AuthFailure.rawValue, userInfo: [ NSLocalizedDescriptionKey : "No match authentication method found"])
-            expectation!.fulfill()
             return error
         }
         

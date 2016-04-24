@@ -46,6 +46,22 @@ class SessionTests: BasicSessionDelegate {
         XCTFail("An connect error not raised as expected")
     }
     
+    // MARK: - Disconnect
+    
+    func testSessionDisconnect() {
+        do {
+            let session = try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+            XCTAssert(session.connected)
+            XCTAssertFalse(session.disconnected)
+            
+            try disconnectSessionAndWait(session)
+            XCTAssertFalse(session.connected)
+            XCTAssert(session.disconnected)
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
     // MARK: - Authentication
     
     func testSessionConnectWithInvalidUser() {

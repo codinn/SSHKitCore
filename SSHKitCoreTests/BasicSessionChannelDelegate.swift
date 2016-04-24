@@ -9,6 +9,7 @@
 import XCTest
 
 class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDelegate {
+    var channelExpectation: XCTestExpectation?
     let echoTask = NSTask()
     let echoPort : UInt16 = 6007
 
@@ -40,7 +41,7 @@ class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDeleg
                 }
             }
             
-            self.expectation?.fulfill()
+            self.channelExpectation?.fulfill()
             // stop catch output
             pipe.fileHandleForReading.readabilityHandler = nil;
         }
@@ -58,7 +59,7 @@ class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDeleg
     }
     
     func waitEchoServerStart() {
-        expectation = expectationWithDescription("Wait echo server start")
+        channelExpectation = expectationWithDescription("Wait echo server start")
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 XCTFail(error.localizedDescription)
@@ -70,7 +71,7 @@ class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDeleg
     // MARK: - Open Channel
     
     func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
-        expectation = expectationWithDescription("Open Direct Channel")
+        channelExpectation = expectationWithDescription("Open Direct Channel")
         let channel = session.openDirectChannelWithTargetHost("127.0.0.1", port: UInt(echoPort), delegate: self)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
@@ -83,7 +84,7 @@ class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDeleg
     
     
     func openShellChannel(session: SSHKitSession) -> SSHKitShellChannel {
-        expectation = expectationWithDescription("Open Shell Channel")
+        channelExpectation = expectationWithDescription("Open Shell Channel")
         let channel = session.openShellChannelWithTerminalType("xterm", columns: 20, rows: 50, delegate: self)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
@@ -95,7 +96,7 @@ class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDeleg
     }
     
     func openSFTPChannel(session: SSHKitSession) -> SSHKitSFTPChannel {
-        expectation = expectationWithDescription("Open SFTP Channel")
+        channelExpectation = expectationWithDescription("Open SFTP Channel")
         let channel = session.openSFTPChannel(self)
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
@@ -107,7 +108,7 @@ class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDeleg
     }
     
     func openForwardChannel(session: SSHKitSession) -> SSHKitChannel {
-        expectation = expectationWithDescription("Open Forward Channel")
+        channelExpectation = expectationWithDescription("Open Forward Channel")
         let channel = session.openForwardChannel()
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
@@ -134,7 +135,7 @@ class BasicSessionChannelDelegate: BasicSessionDelegate, SSHKitShellChannelDeleg
     }
     
     func channelDidOpen(channel: SSHKitChannel) {
-        expectation!.fulfill()
+        channelExpectation!.fulfill()
     }
     
     // MARK: - SSHKitShellChannelDelegate

@@ -9,7 +9,6 @@
 import XCTest
 
 class ShellChannelTests: BasicSessionChannelDelegate {
-
     override func setUp() {
         super.setUp()
     }
@@ -33,7 +32,7 @@ class ShellChannelTests: BasicSessionChannelDelegate {
         do {
             let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             let channel = self.openShellChannel(session)
-            expectation = expectationWithDescription("Shell Change Pty Size To Columns(")
+            channelExpectation = expectationWithDescription("Shell Change Pty Size To Columns(")
             channel.changePtySizeToColumns(150, rows: 150)
             waitForExpectationsWithTimeout(5) { error in
                 if let error = error {
@@ -63,7 +62,7 @@ class ShellChannelTests: BasicSessionChannelDelegate {
     
     //MARK: SSHKitShellChannelDelegate
     override func channel(channel: SSHKitShellChannel, didChangePtySizeToColumns columns: Int, rows: Int, withError error: NSError) {
-        expectation!.fulfill()
+        channelExpectation!.fulfill()
     }
 
 }
