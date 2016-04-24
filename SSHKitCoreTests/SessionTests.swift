@@ -62,6 +62,20 @@ class SessionTests: SessionTestCase {
         }
     }
     
+    // MARK: - Trivial Properties
+    
+    func testTrivialProperties() {
+        do {
+            let session = try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+            XCTAssertEqual(session.host, sshHost)
+            XCTAssertEqual(session.port, sshPort)
+            XCTAssertEqual(session.username, userForSFA)
+            XCTAssertGreaterThan(session.fd, -1)
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
     // MARK: - Authentication
     
     func testSessionConnectWithInvalidUser() {

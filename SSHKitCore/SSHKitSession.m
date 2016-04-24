@@ -69,6 +69,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.host = [host copy];
         self.port = port;
         self.username = [user copy];
+        self.fd = SOCKET_NULL;
         
         self.enableCompression = NO;
         

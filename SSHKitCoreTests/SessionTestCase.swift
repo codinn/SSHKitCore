@@ -103,7 +103,7 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
         }
     }
     
-    //MARK: - SSHKitSessionDelegate
+    // MARK: - SSHKitSessionDelegate
     
     func session(session: SSHKitSession!, didConnectToHost host: String!, port: UInt16) {
     }
