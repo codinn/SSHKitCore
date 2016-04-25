@@ -230,16 +230,45 @@ class SessionTests: SessionTestCase {
     
     func testInvalidHostKeyAlgorithms() {
         do {
-            // will fall back to default preferred host key algorithms
             self.hostKeyAlgorithms = "invalid-hostkey-algorithms"
             let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An settings fatal error not raised as expected")
+    }
+    
+    // MARK: - Compress
+    
+    func testCompressEnabled() {
+        do {
+            self.enableCompression = true
+            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
             
-            if let hostKey = self.hostKey {
-                XCTAssertNotNil(hostKey.base64)
-                XCTAssertNotNil(hostKey.fingerprint)
-            } else {
-                XCTFail("Could not get host key")
-            }
+            XCTAssert(session.connected)
+            XCTAssertFalse(session.disconnected)
+            
+            try disconnectSessionAndWait(session)
+            XCTAssertFalse(session.connected)
+            XCTAssert(session.disconnected)
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testCompressDisabledExplicitly() {
+        do {
+            self.enableCompression = false
+            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            XCTAssert(session.connected)
+            XCTAssertFalse(session.disconnected)
+            
+            try disconnectSessionAndWait(session)
+            XCTAssertFalse(session.connected)
+            XCTAssert(session.disconnected)
         } catch let error as NSError {
             XCTFail(error.description)
         }

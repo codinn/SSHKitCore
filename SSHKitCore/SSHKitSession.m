@@ -227,16 +227,25 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
+        strongSelf.stage = SSHKitSessionStageConnecting;
+        
         BOOL prepared = [strongSelf _doPrepareWithFileDescriptor:fd];
         if (!prepared) {
             return_from_block;
         }
         
-        strongSelf.stage = SSHKitSessionStageConnecting;
         [strongSelf _doConnect];
         [strongSelf _setupConnectTimer];
     }}];
 }
+
+#define SET_SSH_OPTIONS(opt,value) ({\
+    int rc = ssh_options_set(_rawSession, (opt), (value)); \
+    if (rc < 0) { \
+        [self _doDisconnectWithError:[self libsshError]]; \
+        return NO; \
+    } \
+})
 
 - (BOOL)_doPrepareWithFileDescriptor:(int)fd {
     // disconnect if connected
@@ -252,7 +261,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
     
     if (fd != SSH_INVALID_SOCKET) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_FD, &fd);
+        SET_SSH_OPTIONS(SSH_OPTIONS_FD, &fd);
     } else {
         // connect directly
         if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Connect directly");
@@ -260,37 +269,37 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     // host, port and user name
     if (self.host.length) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_HOST, self.host.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_HOST, self.host.UTF8String);
     }
     if (self.port > 0) {
         int port = self.port;
-        ssh_options_set(_rawSession, SSH_OPTIONS_PORT, &port);
+        SET_SSH_OPTIONS(SSH_OPTIONS_PORT, &port);
     }
     if (self.username.length) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_USER, self.username.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_USER, self.username.UTF8String);
     }
     
     // compression
     if (self.enableCompression) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "yes");
+        SET_SSH_OPTIONS(SSH_OPTIONS_COMPRESSION, "yes");
     } else {
-        ssh_options_set(_rawSession, SSH_OPTIONS_COMPRESSION, "no");
+        SET_SSH_OPTIONS(SSH_OPTIONS_COMPRESSION, "no");
     }
     
     // ciphers
     if (self.ciphers.length) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_CIPHERS_C_S, self.ciphers.UTF8String);
-        ssh_options_set(_rawSession, SSH_OPTIONS_CIPHERS_S_C, self.ciphers.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_C_S, self.ciphers.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_S_C, self.ciphers.UTF8String);
     }
     
-    // host key algorithms
+    // key exchange algorithms
     if (self.keyExchangeAlgorithms.length) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_KEY_EXCHANGE, self.keyExchangeAlgorithms.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_KEY_EXCHANGE, self.keyExchangeAlgorithms.UTF8String);
     }
     
     // host key algorithms
     if (self.hostKeyAlgorithms.length) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_HOSTKEYS, self.hostKeyAlgorithms.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_HOSTKEYS, self.hostKeyAlgorithms.UTF8String);
     }
     
     // tcp keepalive
@@ -305,10 +314,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 #else
     int verbosity = SSH_LOG_NOLOG;
 #endif
-    ssh_options_set(_rawSession, SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
+    SET_SSH_OPTIONS(SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
     
     if (_timeout > 0) {
-        ssh_options_set(_rawSession, SSH_OPTIONS_TIMEOUT, &_timeout);
+        SET_SSH_OPTIONS(SSH_OPTIONS_TIMEOUT, &_timeout);
     }
     
     // set to non-blocking mode

@@ -40,6 +40,8 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     var hostKey: SSHKitHostKey?
     var hostKeyAlgorithms: String?
     
+    var enableCompression: Bool?
+    
     var error : NSError?
     
     override func setUp() {
@@ -60,6 +62,9 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
         
         if let algorithms = hostKeyAlgorithms {
             session.hostKeyAlgorithms = algorithms
+        }
+        if let compress = enableCompression {
+            session.enableCompression = compress
         }
         
         session.connectWithTimeout(timeout)
