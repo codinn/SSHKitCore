@@ -56,3 +56,10 @@ NSString * const kVTKitDefaultMACAlgorithms = @"hmac-sha2-256,hmac-sha2-512,hmac
 
 // KEY_EXCHANGE
 NSString * const kVTKitDefaultKeyExchangeAlgorithms = @"curve25519-sha256@libssh.org,ecdh-sha2-nistp256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1";
+
+NSString * const kVTKitEnableCompressionKey = @"VTKitEnableCompressionKey";
+NSString * const kVTKitEncryptionCiphersKey = @"VTKitEncryptionCiphersKey";
+NSString * const kVTKitHostKeyAlgorithmsKey = @"VTKitHostKeyAlgorithmsKey";
+NSString * const kVTKitMACAlgorithmsKey     = @"VTKitMACAlgorithmsKey";
+NSString * const kVTKitKeyExchangeAlgorithmsKey = @"VTKitKeyExchangeAlgorithmsKey";
+NSString * const kVTKitServerAliveCountMaxKey   = @"VTKitServerAliveCountMaxKey";

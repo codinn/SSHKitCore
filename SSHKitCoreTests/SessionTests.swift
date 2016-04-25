@@ -158,8 +158,7 @@ class SessionTests: SessionTestCase {
     
     func testDefaultHostKeyAlgorithms() {
         do {
-            self.hostKeyAlgorithms = "ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1"
-            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitHostKeyAlgorithmsKey:"ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1"])
             
             if let hostKey = self.hostKey {
                 let keyType = SSHKitHostKeyTypeFromName("ssh-ed25519")
@@ -176,8 +175,7 @@ class SessionTests: SessionTestCase {
     
     func testECDSAHostKeyAlgorithms() {
         do {
-            self.hostKeyAlgorithms = "ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1,ssh-ed25519"
-            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitHostKeyAlgorithmsKey:"ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1,ssh-ed25519"])
             
             if let hostKey = self.hostKey {
                 let keyType = SSHKitHostKeyTypeFromName("ecdsa-sha2-nistp521")
@@ -194,8 +192,7 @@ class SessionTests: SessionTestCase {
     
     func testRSAHostKeyAlgorithms() {
         do {
-            self.hostKeyAlgorithms = "ssh-rsa,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-dss,ssh-rsa1,ssh-ed25519"
-            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitHostKeyAlgorithmsKey:"ssh-rsa,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-dss,ssh-rsa1,ssh-ed25519"])
             
             if let hostKey = self.hostKey {
                 let keyType = SSHKitHostKeyTypeFromName("ssh-rsa")
@@ -212,8 +209,7 @@ class SessionTests: SessionTestCase {
     
     func testDSAHostKeyAlgorithms() {
         do {
-            self.hostKeyAlgorithms = "ssh-dss,ssh-rsa,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa1,ssh-ed25519"
-            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitHostKeyAlgorithmsKey:"ssh-dss,ssh-rsa,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa1,ssh-ed25519"])
             
             if let hostKey = self.hostKey {
                 let keyType = SSHKitHostKeyTypeFromName("ssh-dss")
@@ -230,8 +226,7 @@ class SessionTests: SessionTestCase {
     
     func testInvalidHostKeyAlgorithms() {
         do {
-            self.hostKeyAlgorithms = "invalid-hostkey-algorithms"
-            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitHostKeyAlgorithmsKey:"invalid-hostkey-algorithms"])
         } catch let error as NSError {
             XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
             return
@@ -244,8 +239,7 @@ class SessionTests: SessionTestCase {
     
     func testCompressEnabled() {
         do {
-            self.enableCompression = true
-            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitEnableCompressionKey:true])
             
             XCTAssert(session.connected)
             XCTAssertFalse(session.disconnected)
@@ -260,8 +254,7 @@ class SessionTests: SessionTestCase {
     
     func testCompressDisabledExplicitly() {
         do {
-            self.enableCompression = false
-            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitEnableCompressionKey:false])
             
             XCTAssert(session.connected)
             XCTAssertFalse(session.disconnected)

@@ -45,9 +45,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
-@property (nonatomic, readwrite)  NSString    *host;
-@property (nonatomic, readwrite)  uint16_t    port;
-@property (nonatomic, readwrite)  NSString    *username;
+@property (nonatomic, readwrite)  NSString      *host;
+@property (nonatomic, readwrite)  uint16_t      port;
+@property (nonatomic, readwrite)  NSString      *username;
+@property (nonatomic, readwrite) NSDictionary   *options;
 
 @property (nonatomic, readonly) long          timeout;
 
@@ -60,18 +61,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @implementation SSHKitSession
 
-- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate {
-    return [self initWithHost:host port:port user:user delegate:aDelegate sessionQueue:NULL];
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user options:(NSDictionary *)options delegate:(id<SSHKitSessionDelegate>)aDelegate {
+    return [self initWithHost:host port:port user:user options:options delegate:aDelegate sessionQueue:NULL];
 }
 
-- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user options:(NSDictionary *)options delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq {
     if ((self = [super init])) {
         self.host = [host copy];
         self.port = port;
         self.username = [user copy];
+        self.options = options;
         self.fd = SOCKET_NULL;
-        
-        self.enableCompression = NO;
         
         self.stage = SSHKitSessionStageNotConnected;
         _channels = [@[] mutableCopy];
@@ -280,32 +280,37 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
     
     // compression
-    if (self.enableCompression) {
+    NSNumber *compression = self.options[kVTKitEnableCompressionKey];
+    if ([compression boolValue]) {
         SET_SSH_OPTIONS(SSH_OPTIONS_COMPRESSION, "yes");
     } else {
         SET_SSH_OPTIONS(SSH_OPTIONS_COMPRESSION, "no");
     }
     
-    // ciphers
-    if (self.ciphers.length) {
-        SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_C_S, self.ciphers.UTF8String);
-        SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_S_C, self.ciphers.UTF8String);
+    // encryption ciphers
+    NSString *ciphers = self.options[kVTKitEncryptionCiphersKey];
+    if (ciphers.length) {
+        SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_C_S, ciphers.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_S_C, ciphers.UTF8String);
     }
     
-    // MAC algorithms
-    if (self.MACAlgorithms.length) {
-        SET_SSH_OPTIONS(SSH_OPTIONS_HMAC_C_S, self.MACAlgorithms.UTF8String);
-        SET_SSH_OPTIONS(SSH_OPTIONS_HMAC_S_C, self.MACAlgorithms.UTF8String);
+    // HMAC algorithms
+    NSString *hmac = self.options[kVTKitMACAlgorithmsKey];
+    if (hmac.length) {
+        SET_SSH_OPTIONS(SSH_OPTIONS_HMAC_C_S, hmac.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_HMAC_S_C, hmac.UTF8String);
     }
     
     // key exchange algorithms
-    if (self.keyExchangeAlgorithms.length) {
-        SET_SSH_OPTIONS(SSH_OPTIONS_KEY_EXCHANGE, self.keyExchangeAlgorithms.UTF8String);
+    NSString *kex = self.options[kVTKitKeyExchangeAlgorithmsKey];
+    if (kex.length) {
+        SET_SSH_OPTIONS(SSH_OPTIONS_KEY_EXCHANGE, kex.UTF8String);
     }
     
     // host key algorithms
-    if (self.hostKeyAlgorithms.length) {
-        SET_SSH_OPTIONS(SSH_OPTIONS_HOSTKEYS, self.hostKeyAlgorithms.UTF8String);
+    NSString *hostKeys = self.options[kVTKitHostKeyAlgorithmsKey];
+    if (hostKeys.length) {
+        SET_SSH_OPTIONS(SSH_OPTIONS_HOSTKEYS, hostKeys.UTF8String);
     }
     
 #if DEBUG
@@ -743,7 +748,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         [strongSelf _registerLogCallback];
         
         // reset keepalive counter
-        strongSelf->_heartbeatCounter = strongSelf.serverAliveCountMax;
+        NSNumber *serverAliveMax = strongSelf.options[kVTKitServerAliveCountMaxKey];
+        strongSelf->_heartbeatCounter = serverAliveMax.integerValue;
         
         switch (strongSelf->_stage) {
             case SSHKitSessionStageNotConnected:
@@ -861,7 +867,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)_setupHeartbeatTimer {
-    if (self.serverAliveCountMax<=0) {
+    NSNumber *serverAliveMax = self.options[kVTKitServerAliveCountMaxKey];
+    if (serverAliveMax.integerValue<=0) {
         return;
     }
     
@@ -873,7 +880,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         return;
     }
     
-    _heartbeatCounter = self.serverAliveCountMax;
+    _heartbeatCounter = serverAliveMax.integerValue;
     
     dispatch_source_set_timer(_heartbeatTimer, dispatch_time(DISPATCH_TIME_NOW, _timeout * NSEC_PER_SEC), _timeout * NSEC_PER_SEC, (1ull * NSEC_PER_SEC) / 10);
     

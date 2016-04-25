@@ -36,8 +36,8 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  * If you choose to provide a session queue, and the session queue has a configured target queue,
  *
  **/
-- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate;
-- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString*)user delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString *)user options:(NSDictionary *)options delegate:(id<SSHKitSessionDelegate>)aDelegate;
+- (instancetype)initWithHost:(NSString *)host port:(uint16_t)port user:(NSString *)user options:(NSDictionary *)options delegate:(id<SSHKitSessionDelegate>)aDelegate sessionQueue:(dispatch_queue_t)sq;
 
 // -----------------------------------------------------------------------------
 #pragma mark Configuration
@@ -55,17 +55,20 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 // -----------------------------------------------------------------------------
 
 /** Full server hostname in the format `@"{hostname}"`. */
-@property (nonatomic, readonly) NSString *host;
+@property (nonatomic, readonly) NSString        *host;
 
 /** The server port to connect to. */
-@property (nonatomic, readonly) uint16_t port;
+@property (nonatomic, readonly) uint16_t        port;
 
 /** Get the file descriptor of current session connection
  */
-@property (nonatomic, readonly) int      fd;
+@property (nonatomic, readonly) int             fd;
 
 /** Username that will authenticate against the server. */
-@property (nonatomic, readonly) NSString *username;
+@property (nonatomic, readonly) NSString        *username;
+
+/** Advanced options */
+@property (nonatomic, readonly) NSDictionary    *options;
 
 @property (strong, readwrite) SSHKitLogHandler logHandle;
 
@@ -75,18 +78,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  */
 @property (nonatomic, readonly, getter = isConnected) BOOL connected;
 @property (nonatomic, readonly, getter = isDisconnected) BOOL disconnected;
-
-// -----------------------------------------------------------------------------
-#pragma mark Advanced Options, setting before connection
-// -----------------------------------------------------------------------------
-
-@property BOOL       enableCompression;
-@property            NSString   *ciphers;
-@property            NSString   *hostKeyAlgorithms;
-@property            NSString   *MACAlgorithms;
-@property            NSString   *keyExchangeAlgorithms;
-
-@property NSInteger serverAliveCountMax;
 
 // -----------------------------------------------------------------------------
 #pragma mark Connecting

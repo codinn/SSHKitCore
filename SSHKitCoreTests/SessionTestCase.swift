@@ -38,9 +38,6 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     private var authMethods = [AuthMethod.Password, ]
     
     var hostKey: SSHKitHostKey?
-    var hostKeyAlgorithms: String?
-    
-    var enableCompression: Bool?
     
     var error : NSError?
     
@@ -54,18 +51,11 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     
     // MARK: - Connect Utils
     
-    private func connectAndReturnSessionWithAuthMethods(methods: [AuthMethod], host: String, port: UInt16, user: String, timeout: NSTimeInterval) throws -> SSHKitSession {
+    private func connectAndReturnSessionWithAuthMethods(methods: [AuthMethod], host: String, port: UInt16, user: String, timeout: NSTimeInterval, options:[String:AnyObject]) throws -> SSHKitSession {
         authExpectation = expectationWithDescription("Launch session with \(methods) auth method")
         authMethods = methods
         
-        let session = SSHKitSession(host: host, port: port, user: user, delegate: self)
-        
-        if let algorithms = hostKeyAlgorithms {
-            session.hostKeyAlgorithms = algorithms
-        }
-        if let compress = enableCompression {
-            session.enableCompression = compress
-        }
+        let session = SSHKitSession(host: host, port: port, user: user, options:options, delegate: self)
         
         session.connectWithTimeout(timeout)
         
@@ -82,20 +72,20 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
         return session
     }
     
-    func launchSessionWithTimeoutHost() throws -> SSHKitSession {
-        return try connectAndReturnSessionWithAuthMethods([.Password,], host: nonRoutableIP, port: sshPort, user: userForSFA, timeout: 1.5)
+    func launchSessionWithTimeoutHost(options:[String:AnyObject]=[:]) throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods([.Password,], host: nonRoutableIP, port: sshPort, user: userForSFA, timeout: 1.5, options: options)
     }
     
-    func launchSessionWithRefusePort() throws -> SSHKitSession {
-        return try connectAndReturnSessionWithAuthMethods([.Password,], host: sshHost, port: refusePort, user: userForSFA, timeout: 1)
+    func launchSessionWithRefusePort(options:[String:AnyObject]=[:]) throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods([.Password,], host: sshHost, port: refusePort, user: userForSFA, timeout: 1, options: options)
     }
     
-    func launchSessionWithAuthMethod(method: AuthMethod, user: String) throws -> SSHKitSession {
-        return try connectAndReturnSessionWithAuthMethods([method,], host: sshHost, port: sshPort, user: user, timeout: 1)
+    func launchSessionWithAuthMethod(method: AuthMethod, user: String, options:[String:AnyObject]=[:]) throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods([method,], host: sshHost, port: sshPort, user: user, timeout: 1, options: options)
     }
     
-    func launchSessionWithAuthMethods(methods: [AuthMethod], user: String) throws -> SSHKitSession {
-        return try connectAndReturnSessionWithAuthMethods(methods, host: sshHost, port: sshPort, user: user, timeout: 1)
+    func launchSessionWithAuthMethods(methods: [AuthMethod], user: String, options:[String:AnyObject]=[:]) throws -> SSHKitSession {
+        return try connectAndReturnSessionWithAuthMethods(methods, host: sshHost, port: sshPort, user: user, timeout: 1, options: options)
     }
     
     func disconnectSessionAndWait(session: SSHKitSession) throws {

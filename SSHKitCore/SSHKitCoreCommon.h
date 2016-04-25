@@ -27,18 +27,6 @@
 #define SSHKit_SSH_AGAIN -2 /* The nonblocking call must be repeated */
 #define SSHKit_SSH_EOF -127 /* We have already a eof */
 
-// default preferred ciphers order
-extern NSString * const kVTKitDefaultCiphers;
-
-// default preferred host key algorithms order
-extern NSString * const kVTKitDefaultHostKeyAlgorithms;
-
-// default preferred MAC (message authentication code) algorithms
-extern NSString * const kVTKitDefaultMACAlgorithms;
-
-// default preferred key exchange algorithms order
-extern NSString * const kVTKitDefaultKeyExchangeAlgorithms;
-
 @class SSHKitSFTPFile;
 
 typedef NS_ENUM(NSInteger, SSHKitLogLevel) {
@@ -155,3 +143,26 @@ typedef void(^SSHKitSFTPClientFolderProgressBlock) (unsigned long long filesRece
 typedef void(^SSHKitSFTPClientReadFileBlock) (char *buffer, int bufferLength);
 typedef void(^SSHKitSFTPClientFileTransferSuccessBlock)(SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime);
 typedef void(^SSHKitSFTPClientFileMetadataSuccessBlock)(SSHKitSFTPFile *fileOrDirectory);
+
+// -----------------------------------------------------------------------------
+#pragma mark Advanced SSH Options
+// -----------------------------------------------------------------------------
+
+extern NSString * const kVTKitEnableCompressionKey;     // @YES or @NO
+extern NSString * const kVTKitEncryptionCiphersKey;
+extern NSString * const kVTKitHostKeyAlgorithmsKey;
+extern NSString * const kVTKitMACAlgorithmsKey;
+extern NSString * const kVTKitKeyExchangeAlgorithmsKey;
+extern NSString * const kVTKitServerAliveCountMaxKey;   // <=0 will disable keepalive mech.
+
+// default preferred ciphers order
+extern NSString * const kVTKitDefaultCiphers;
+
+// default preferred host key algorithms order
+extern NSString * const kVTKitDefaultHostKeyAlgorithms;
+
+// default preferred MAC (message authentication code) algorithms
+extern NSString * const kVTKitDefaultMACAlgorithms;
+
+// default preferred key exchange algorithms order
+extern NSString * const kVTKitDefaultKeyExchangeAlgorithms;
