@@ -74,6 +74,20 @@ class HostKeyTests: XCTestCase {
             return
         }
         
-        XCTFail("Host key initializing shoud fail")
+        XCTFail("Host key initializing should fail")
+    }
+    
+    // MARK: - Invalid key type
+    
+    func testInvalidKeyType() {
+        let type = SSHKitHostKeyTypeFromName("ssh-invalid")
+        do {
+            let _ = try SSHKitHostKey.init(fromBase64: "AAAAB3NzaC1yc2EAAAADAQABAAABAQDI/8zzp1P6FtQoJkdTwtKZ86/QAqQSiT8Og/Tl8cNfi3UudwgTRdgLAwjc3Cei64Y0btHhRdGS91QLHllCk9Ssq3YEdUBCCv8fdEzFB3KRDv22ODSsguB67LxyqLV9twKVrjlBgmTzW3akogeR61NjEbKGsI3Z0eYUDNhX7NQ4d+mwKX6ZzcRAgGaye3fb34b/GgJZZyxW5t2w2n7UXdyOceNsA+yzqjQwi5UK25NWn6sINNxEt09p4zq8vNi2bhGDzSp71zpZu+st+eGwMBOdeKmnguXn96U978m4x76pFdnOY4bjBILDQHeouwYfEmw/sV85r6JngsNsQpeVCjpN", withType: type)
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.HostKeyMismatch.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("Host key initializing should fail")
     }
 }
