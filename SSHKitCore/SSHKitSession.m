@@ -258,14 +258,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Connect directly");
     }
     
-    // host and user name
+    // host, port and user name
     if (self.host.length) {
         ssh_options_set(_rawSession, SSH_OPTIONS_HOST, self.host.UTF8String);
+    }
+    if (self.port > 0) {
+        int port = self.port;
+        ssh_options_set(_rawSession, SSH_OPTIONS_PORT, &port);
     }
     if (self.username.length) {
         ssh_options_set(_rawSession, SSH_OPTIONS_USER, self.username.UTF8String);
     }
-    ssh_options_set(_rawSession, SSH_OPTIONS_PORT, &_port);
     
     // compression
     if (self.enableCompression) {
