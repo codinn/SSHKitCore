@@ -45,3 +45,14 @@ static void SSHKitCoreFinalize() {
         }
     });
 }
+
+// AES BLOWFISH DES
+NSString * const kVTKitDefaultCiphers = @"aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc,3des-cbc";
+
+// HOSTKEYS
+NSString * const kVTKitDefaultHostKeyAlgorithms = @"ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1";
+
+NSString * const kVTKitDefaultMACAlgorithms = @"hmac-sha2-256,hmac-sha2-512,hmac-sha1";
+
+// KEY_EXCHANGE
+NSString * const kVTKitDefaultKeyExchangeAlgorithms = @"curve25519-sha256@libssh.org,ecdh-sha2-nistp256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1";

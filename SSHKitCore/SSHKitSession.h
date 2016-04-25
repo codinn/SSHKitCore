@@ -80,22 +80,10 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 #pragma mark Advanced Options, setting before connection
 // -----------------------------------------------------------------------------
 
-@property BOOL      enableCompression;
-
-// default preferred ciphers order
-@property (readonly) NSString   *defaultCiphers;
+@property BOOL       enableCompression;
 @property            NSString   *ciphers;
-
-// default preferred host key algorithms order
-@property (readonly) NSString   *defaultHostKeyAlgorithms;
 @property            NSString   *hostKeyAlgorithms;
-
-// default preferred MAC (message authentication code) algorithms
-@property (readonly) NSString   *defaultMACAlgorithms;
 @property            NSString   *MACAlgorithms;
-
-// default preferred key exchange algorithms order
-@property (readonly) NSString   *defaultKeyExchangeAlgorithms;
 @property            NSString   *keyExchangeAlgorithms;
 
 @property NSInteger serverAliveCountMax;

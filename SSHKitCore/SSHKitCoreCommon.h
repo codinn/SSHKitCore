@@ -27,6 +27,18 @@
 #define SSHKit_SSH_AGAIN -2 /* The nonblocking call must be repeated */
 #define SSHKit_SSH_EOF -127 /* We have already a eof */
 
+// default preferred ciphers order
+extern NSString * const kVTKitDefaultCiphers;
+
+// default preferred host key algorithms order
+extern NSString * const kVTKitDefaultHostKeyAlgorithms;
+
+// default preferred MAC (message authentication code) algorithms
+extern NSString * const kVTKitDefaultMACAlgorithms;
+
+// default preferred key exchange algorithms order
+extern NSString * const kVTKitDefaultKeyExchangeAlgorithms;
+
 @class SSHKitSFTPFile;
 
 typedef NS_ENUM(NSInteger, SSHKitLogLevel) {
