@@ -227,4 +227,21 @@ class SessionTests: SessionTestCase {
             XCTFail(error.description)
         }
     }
+    
+    func testInvalidHostKeyAlgorithms() {
+        do {
+            // will fall back to default preferred host key algorithms
+            self.hostKeyAlgorithms = "invalid-hostkey-algorithms"
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            if let hostKey = self.hostKey {
+                XCTAssertNotNil(hostKey.base64)
+                XCTAssertNotNil(hostKey.fingerprint)
+            } else {
+                XCTFail("Could not get host key")
+            }
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
 }
