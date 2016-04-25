@@ -319,13 +319,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         SET_SSH_OPTIONS(SSH_OPTIONS_HOSTKEYS, self.hostKeyAlgorithms.UTF8String);
     }
     
-    // tcp keepalive
-    if ( self.serverAliveCountMax<=0 ) {
-        int on = 1;
-        if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Enable TCP keepalive");
-        setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&on, sizeof(on));
-    }
-    
 #if DEBUG
     int verbosity = SSH_LOG_FUNCTIONS;
 #else
