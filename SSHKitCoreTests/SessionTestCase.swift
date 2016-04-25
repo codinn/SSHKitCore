@@ -15,12 +15,6 @@ enum AuthMethod: String {
 }
 
 class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
-    // async test http://nshipster.com/xctestcase/
-    private var authExpectation: XCTestExpectation?
-    private var disconnectExpectation: XCTestExpectation?
-    
-    private var authMethods = [AuthMethod.Password, ]
-    
     let sshHost  = "127.0.0.1"
     let sshPort : UInt16 = 22
     let refusePort : UInt16 = 6009
@@ -37,6 +31,15 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     let invalidPass = "invalid-pass"
     let identity = "ssh_rsa_key"
     
+    // async test http://nshipster.com/xctestcase/
+    private var authExpectation: XCTestExpectation?
+    private var disconnectExpectation: XCTestExpectation?
+    
+    private var authMethods = [AuthMethod.Password, ]
+    
+    var hostKey: SSHKitHostKey?
+    var hostKeyAlgorithms: String?
+    
     var error : NSError?
     
     override func setUp() {
@@ -44,9 +47,6 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     }
     
     override func tearDown() {
-        authExpectation = nil
-        disconnectExpectation = nil
-        
         super.tearDown()
     }
     
@@ -57,6 +57,11 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
         authMethods = methods
         
         let session = SSHKitSession(host: host, port: port, user: user, delegate: self)
+        
+        if let algorithms = hostKeyAlgorithms {
+            session.hostKeyAlgorithms = algorithms
+        }
+        
         session.connectWithTimeout(timeout)
         
         waitForExpectationsWithTimeout(5) { error in
@@ -72,7 +77,7 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
         return session
     }
     
-    func launchSessionWithNonRoutableHost() throws -> SSHKitSession {
+    func launchSessionWithTimeoutHost() throws -> SSHKitSession {
         return try connectAndReturnSessionWithAuthMethods([.Password,], host: nonRoutableIP, port: sshPort, user: userForSFA, timeout: 1.5)
     }
     
@@ -125,6 +130,7 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     }
     
     func session(session: SSHKitSession!, shouldConnectWithHostKey hostKey: SSHKitHostKey!) -> Bool {
+        self.hostKey = hostKey
         return true
     }
     

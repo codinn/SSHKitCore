@@ -82,7 +82,11 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 @property BOOL      enableCompression;
 @property NSString  *ciphers;
+
+// default perferred host key algorithms order:
+// ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1
 @property NSString  *hostKeyAlgorithms;
+
 @property NSString  *keyExchangeAlgorithms;
 @property NSInteger serverAliveCountMax;
 

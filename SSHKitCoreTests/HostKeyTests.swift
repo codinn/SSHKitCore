@@ -19,32 +19,6 @@ class HostKeyTests: SessionTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-
-    // MARK: from session
-    
-    func testKeyFromSession() {
-        do {
-            let session = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
-            let hostKey = try SSHKitHostKey.init(fromSession: session)
-            
-            XCTAssertNotNil(hostKey.base64)
-            XCTAssertNotNil(hostKey.fingerprint)
-        } catch let error as NSError {
-            XCTFail(error.description)
-        }
-    }
-    
-    func testKeyWithNilSession() {
-        do {
-            let _ = try SSHKitHostKey.init(fromSession: nil)
-        } catch let error as NSError {
-            XCTAssertEqual(SSHKitErrorCode.HostKeyMismatch.rawValue, error.code, error.description)
-            return
-        }
-        
-        XCTFail("Host key initializing shoud fail")
-    }
-    
     
     // MARK: - Valid base64
     // Use command "ssh-keygen -l -E md5 -f ssh_host_dsa_key.pub" to calculate fingerprint

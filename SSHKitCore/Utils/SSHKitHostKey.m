@@ -11,7 +11,7 @@
 
 @implementation SSHKitHostKey
 
-+ (instancetype)hostKeyFromSession:(SSHKitSession *)session error:(NSError **)errPtr
++ (instancetype)hostKeyFromRawSession:(ssh_session)rawSession error:(NSError **)errPtr
 {
     // --------------------------------------------------
     // get host key from session
@@ -21,7 +21,7 @@
         return nil;
     }
     
-    int rc = ssh_get_publickey(session.rawSession, &parser->_hostKey);
+    int rc = ssh_get_publickey(rawSession, &parser->_hostKey);
     if (rc < 0 ) {
         if (errPtr) *errPtr = [NSError errorWithDomain:SSHKitCoreErrorDomain
                                                   code:SSHKitErrorHostKeyMismatch

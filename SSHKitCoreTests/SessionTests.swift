@@ -24,7 +24,7 @@ class SessionTests: SessionTestCase {
     
     func testSessionConnectWithNonRoutableIP() {
         do {
-            let session = try launchSessionWithNonRoutableHost()
+            let session = try launchSessionWithTimeoutHost()
             XCTAssertNotNil(session)
         } catch let error as NSError {
             XCTAssertEqual(SSHKitErrorCode.Timeout.rawValue, error.code, error.description)
@@ -135,5 +135,96 @@ class SessionTests: SessionTestCase {
         }
         
         XCTFail("An auth error not raised as expected")
+    }
+    
+    // MARK: - Host Key Algorithms
+    
+    func testNoHostKeyAlgorithms() {
+        do {
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            if let hostKey = self.hostKey {
+                // we don't test key type here, since XCTest is not run under sanbox, so the preferred
+                // host key order will be affected by ~/.ssh/known_hosts as described in libssh source code
+                XCTAssertNotNil(hostKey.base64)
+                XCTAssertNotNil(hostKey.fingerprint)
+            } else {
+                XCTFail("Could not get host key")
+            }
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testDefaultHostKeyAlgorithms() {
+        do {
+            self.hostKeyAlgorithms = "ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1"
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            if let hostKey = self.hostKey {
+                let keyType = SSHKitHostKeyTypeFromName("ssh-ed25519")
+                XCTAssertEqual(hostKey.keyType, keyType)
+                XCTAssertNotNil(hostKey.base64)
+                XCTAssertNotNil(hostKey.fingerprint)
+            } else {
+                XCTFail("Could not get host key")
+            }
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testECDSAHostKeyAlgorithms() {
+        do {
+            self.hostKeyAlgorithms = "ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1,ssh-ed25519"
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            if let hostKey = self.hostKey {
+                let keyType = SSHKitHostKeyTypeFromName("ecdsa-sha2-nistp521")
+                XCTAssertEqual(hostKey.keyType, keyType)
+                XCTAssertNotNil(hostKey.base64)
+                XCTAssertNotNil(hostKey.fingerprint)
+            } else {
+                XCTFail("Could not get host key")
+            }
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testRSAHostKeyAlgorithms() {
+        do {
+            self.hostKeyAlgorithms = "ssh-rsa,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-dss,ssh-rsa1,ssh-ed25519"
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            if let hostKey = self.hostKey {
+                let keyType = SSHKitHostKeyTypeFromName("ssh-rsa")
+                XCTAssertEqual(hostKey.keyType, keyType)
+                XCTAssertNotNil(hostKey.base64)
+                XCTAssertNotNil(hostKey.fingerprint)
+            } else {
+                XCTFail("Could not get host key")
+            }
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testDSAHostKeyAlgorithms() {
+        do {
+            self.hostKeyAlgorithms = "ssh-dss,ssh-rsa,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa1,ssh-ed25519"
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            if let hostKey = self.hostKey {
+                let keyType = SSHKitHostKeyTypeFromName("ssh-dss")
+                XCTAssertEqual(hostKey.keyType, keyType)
+                XCTAssertNotNil(hostKey.base64)
+                XCTAssertNotNil(hostKey.fingerprint)
+            } else {
+                XCTFail("Could not get host key")
+            }
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
     }
 }

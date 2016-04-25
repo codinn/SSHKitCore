@@ -101,6 +101,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 
 @property (nonatomic, readonly) ssh_key hostKey;
 
++ (instancetype)hostKeyFromRawSession:(ssh_session)rawSession error:(NSError **)errPtr;
+
 @end
 
 @interface SSHKitSFTPFile ()
