@@ -70,7 +70,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         _defaultHostKeyAlgorithms = @"ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1";
         
         // AES BLOWFISH DES
-        _defaultEncryptionCiphers = @"aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc,3des-cbc";
+        _defaultCiphers = @"aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc,3des-cbc";
         
         _defaultMACAlgorithms = @"hmac-sha2-256,hmac-sha2-512,hmac-sha1";
         
@@ -301,6 +301,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if (self.ciphers.length) {
         SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_C_S, self.ciphers.UTF8String);
         SET_SSH_OPTIONS(SSH_OPTIONS_CIPHERS_S_C, self.ciphers.UTF8String);
+    }
+    
+    // MAC algorithms
+    if (self.MACAlgorithms.length) {
+        SET_SSH_OPTIONS(SSH_OPTIONS_HMAC_C_S, self.MACAlgorithms.UTF8String);
+        SET_SSH_OPTIONS(SSH_OPTIONS_HMAC_S_C, self.MACAlgorithms.UTF8String);
     }
     
     // key exchange algorithms

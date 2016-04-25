@@ -83,7 +83,7 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 @property BOOL      enableCompression;
 
 // default preferred ciphers order
-@property (readonly) NSString   *defaultEncryptionCiphers;
+@property (readonly) NSString   *defaultCiphers;
 @property            NSString   *ciphers;
 
 // default preferred host key algorithms order
@@ -94,6 +94,7 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 @property (readonly) NSString   *defaultMACAlgorithms;
 @property            NSString   *MACAlgorithms;
 
+// default preferred key exchange algorithms order
 @property (readonly) NSString   *defaultKeyExchangeAlgorithms;
 @property            NSString   *keyExchangeAlgorithms;
 
