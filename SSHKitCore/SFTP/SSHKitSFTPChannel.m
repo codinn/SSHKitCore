@@ -33,7 +33,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     return self;
 }
 
-- (int)_didReadData:(NSData *)readData isSTDError:(int)isSTDError {
+- (int)_didReceiveData:(NSData *)readData isSTDError:(int)isSTDError {
     if (!self.isOpen) {
         return 0;
     }
