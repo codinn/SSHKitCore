@@ -579,7 +579,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 
-- (void)authenticateWithAskInteractiveInfo:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler {
+- (void)authenticateWithAskInteractiveInfo:(SSHKitAskInteractiveInfoBlock)askInteractiveInfo {
     self.stage = SSHKitSessionStageAuthenticating;
 
     __block NSInteger index = 0;
@@ -621,7 +621,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                         [prompts addObject:@[promptString, @(echo)]];
                     }
                     
-                    NSArray *information = interactiveHandler(index, nameString, instructionString, prompts);
+                    NSArray *information = askInteractiveInfo(index, nameString, instructionString, prompts);
                     
                     for (int i = 0; i < information.count; i++) {
                         if (ssh_userauth_kbdint_setanswer(strongSelf->_rawSession, i, [information[i] UTF8String]) < 0)
@@ -648,8 +648,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     [self dispatchAsyncOnSessionQueue:_authBlock];
 }
 
-- (void)authenticateWithAskPassword:(NSString *(^)(void))passwordHandler {
-    NSString *password = passwordHandler();
+- (void)authenticateWithAskPassword:(SSHKitAskPassBlock)askPassword {
+    NSString *password = askPassword();
     
     self.stage = SSHKitSessionStageAuthenticating;
     

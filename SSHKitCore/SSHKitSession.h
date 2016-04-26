@@ -118,9 +118,9 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 /**
  Authenticate by password
 
- @param passwordHandler Password handler for get password
+ @param askPassword Password handler for get password
  */
-- (void)authenticateWithAskPassword:(NSString *(^)(void))passwordHandler;
+- (void)authenticateWithAskPassword:(SSHKitAskPassBlock)askPassword;
 
 /**
  Authenticate by private key pair
@@ -135,9 +135,9 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 /**
  Authenticate by keyboard-interactive
  
- @param interactiveHandler Interactive handler for connected user
+ @param askInteractiveInfo Interactive handler for connected user
  */
-- (void)authenticateWithAskInteractiveInfo:(NSArray *(^)(NSInteger, NSString *, NSString *, NSArray *))interactiveHandler;
+- (void)authenticateWithAskInteractiveInfo:(SSHKitAskInteractiveInfoBlock)askInteractiveInfo;
 
 @end
 
@@ -164,7 +164,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 - (void)session:(SSHKitSession *)session didReceiveIssueBanner:(NSString *)banner;
 
-
 /**
  @param serverBanner Get the software version of the remote server
  @param clientBanner The client version string
@@ -181,6 +180,7 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  @returns YES if the session should trust the host, otherwise NO.
  */
 - (BOOL)session:(SSHKitSession *)session shouldTrustHostKey:(SSHKitHostKey *)hostKey;
+
 - (NSError *)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray<NSString *> *)methods partialSuccess:(BOOL)partialSuccess;
 
 - (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
