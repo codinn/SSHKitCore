@@ -143,15 +143,15 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
         }
     }
     
-    func session(session: SSHKitSession!, authenticateWithAllowedMethods methods: [String]!, partialSuccess: Bool) -> NSError! {
+    func session(session: SSHKitSession!, authenticateWithAllowedMethods methods: [String]!, partialSuccess: Bool) {
         guard let firstMethod = methods.first else {
             XCTFail("authenticateWithAllowedMethods passed in empty auth methods array: \(methods)")
-            return nil
+            return
         }
         
         guard let matched = AuthMethod(rawValue: firstMethod) else {
-            let error = NSError(domain: SSHKitCoreErrorDomain, code: SSHKitErrorCode.AuthFailure.rawValue, userInfo: [ NSLocalizedDescriptionKey : "No match authentication method found"])
-            return error
+            self.error = NSError(domain: SSHKitCoreErrorDomain, code: SSHKitErrorCode.AuthFailure.rawValue, userInfo: [ NSLocalizedDescriptionKey : "No match authentication method found"])
+            return
         }
         
         switch matched {
@@ -168,7 +168,8 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
                 let keyPair = try SSHKitKeyPair(fromBase64: keyBase64, withAskPass: nil)
                 session.authenticateWithKeyPair(keyPair)
             } catch let error as NSError {
-                return error
+                self.error = error
+                return
             }
             
         case .Interactive:
@@ -177,7 +178,5 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
                 return [self.password];
             })
         }
-        
-        return nil
     }
 }

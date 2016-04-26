@@ -157,7 +157,7 @@ extern NSString * const kVTKitKeyExchangeAlgorithmsKey;
 extern NSString * const kVTKitServerAliveCountMaxKey;   // <=0 will disable keepalive mech.
 
 // default preferred ciphers order
-extern NSString * const kVTKitDefaultCiphers;
+extern NSString * const kVTKitDefaultEncryptionCiphers;
 
 // default preferred host key algorithms order
 extern NSString * const kVTKitDefaultHostKeyAlgorithms;

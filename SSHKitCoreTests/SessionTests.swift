@@ -266,4 +266,69 @@ class SessionTests: SessionTestCase {
             XCTFail(error.description)
         }
     }
+    
+    // MARK: - Negotiation Algorithms
+    
+    func testDefaultNegotiationAlgorithms() {
+        do {
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA)
+            
+            XCTAssertNotNil(currentHMAC)
+            XCTAssertNotNil(currentCipher)
+            XCTAssertNotNil(currentKEXAlgo)
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testModifiedNegotiationAlgorithms() {
+        do {
+            let options = [
+                kVTKitMACAlgorithmsKey      : "hmac-sha2-512,hmac-sha2-256,hmac-sha1",
+                kVTKitEncryptionCiphersKey  : "aes128-ctr,blowfish-cbc,aes256-ctr,aes192-ctr,aes256-cbc,aes192-cbc,aes128-cbc,3des-cbc",
+                kVTKitKeyExchangeAlgorithmsKey: "ecdh-sha2-nistp256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1"
+            ]
+            
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: options)
+            
+            XCTAssertEqual(currentHMAC, "hmac-sha2-512")
+            XCTAssertEqual(currentCipher, "aes128-ctr")
+            XCTAssertEqual(currentKEXAlgo, "ecdh-sha2-nistp256")
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testInvalidMACAlgorithms() {
+        do {
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitMACAlgorithmsKey:"invalid-hmac-algorithms"])
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An settings fatal error not raised as expected")
+    }
+    
+    func testInvalidCipherAlgorithms() {
+        do {
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitEncryptionCiphersKey:"invalid-cipher-algorithms"])
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An settings fatal error not raised as expected")
+    }
+    
+    func testInvalidKEXAlgorithms() {
+        do {
+            let _ = try self.launchSessionWithAuthMethod(.Password, user: userForSFA, options: [kVTKitKeyExchangeAlgorithmsKey:"invalid-kex-algorithms"])
+        } catch let error as NSError {
+            XCTAssertEqual(SSHKitErrorCode.RequestDenied.rawValue, error.code, error.description)
+            return
+        }
+        
+        XCTFail("An settings fatal error not raised as expected")
+    }
 }
