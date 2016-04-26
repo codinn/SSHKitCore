@@ -21,7 +21,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 @interface SSHKitSession () {
 	struct {
-		unsigned int keyboardInteractiveRequest     : 1;
 		unsigned int didNegotiateWithHMACCipherKEXAlgo : 1;
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
@@ -137,7 +136,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         _delegateFlags.authenticateWithAllowedMethodsPartialSuccess = [delegate respondsToSelector:@selector(session:authenticateWithAllowedMethods:partialSuccess:)];
 		_delegateFlags.didNegotiateWithHMACCipherKEXAlgo = [delegate respondsToSelector:@selector(session:didNegotiateWithHMAC:cipher:kexAlgorithm:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
-		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
         _delegateFlags.didReceiveIssueBanner = [delegate respondsToSelector:@selector(session:didReceiveIssueBanner:)];
         _delegateFlags.didReceiveServerBannerClientBannerProtocolVersion = [delegate respondsToSelector:@selector(session:didReceiveServerBanner:clientBanner:protocolVersion:)];

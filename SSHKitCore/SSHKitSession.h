@@ -150,17 +150,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 @optional
 
 /**
- Called when the session is setup to use keyboard interactive authentication,
- and the server is sending back a question (e.g. a password request).
- 
- @param session The session that is asking
- @param request Question from server
- @returns A valid response to the given question
- */
-- (NSString *)session:(SSHKitSession *)session keyboardInteractiveRequest:(NSString *)request;
-
-
-/**
  * Called when a session negotiated.
  **/
 - (void)session:(SSHKitSession *)session didNegotiateWithHMAC:(NSString *)hmac cipher:(NSString *)cipher kexAlgorithm:(NSString *)kexAlgorithm;
