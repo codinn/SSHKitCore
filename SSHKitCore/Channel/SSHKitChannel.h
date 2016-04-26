@@ -26,12 +26,6 @@
  */
 @property (nonatomic, weak) id<SSHKitChannelDelegate> delegate;
 
-/// ----------------------------------------------------------------------------
-/// @name Initializer
-/// ----------------------------------------------------------------------------
-
-@property (nonatomic, readonly) SSHKitChannelStage stage;
-
 /**
  A Boolean value indicating whether the channel is opened successfully
  (read-only).

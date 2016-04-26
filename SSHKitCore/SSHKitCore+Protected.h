@@ -26,6 +26,13 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     SSHKitChannelStderrData,
 };
 
+typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
+    SSHKitChannelStageInitial = 0,  // channel has not been initiated correctly
+    SSHKitChannelStageOpening,      // channel is opening
+    SSHKitChannelStageReady,        // channel has been opened, we can read / write from the channel
+    SSHKitChannelStageClosed,       // channel has been closed
+};
+
 @interface SSHKitSession () {
     NSMutableArray      *_forwardRequests;
     NSMutableArray      *_channels;
@@ -53,6 +60,12 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
     } _delegateFlags;
 }
 
+/// ----------------------------------------------------------------------------
+/// @name Initializer
+/// ----------------------------------------------------------------------------
+
+- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
+
 - (BOOL)doInitiateWithRawChannel:(ssh_channel)rawChannel;
 
 /** Raw libssh session instance. */
@@ -60,8 +73,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelDataType) {
 @property (nonatomic, readonly) sftp_session rawSFTPSession;
 
 @property (nonatomic, readwrite) SSHKitChannelStage stage;
-
-- (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
 - (void)doOpen;
 - (void)doWrite;

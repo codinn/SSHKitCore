@@ -65,13 +65,6 @@ typedef NS_ENUM(NSInteger, SSHKitProxyType) {
     SSHKitProxyTypeHTTPS, // just alias of SSHKitProxyTypeHTTP
 };
 
-typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
-    SSHKitChannelStageInitial = 0,  // channel has not been initiated correctly
-    SSHKitChannelStageOpening,      // channel is opening
-    SSHKitChannelStageReady,        // channel has been opened, we can read / write from the channel
-    SSHKitChannelStageClosed,       // channel has been closed
-};
-
 typedef NS_ENUM(NSInteger, SSHKitSFTPClientErrorCode) {
     SSHKitSFTPClientErrorUnknown = 1,
     SSHKitSFTPClientErrorNotImplemented,
