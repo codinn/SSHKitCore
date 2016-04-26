@@ -70,7 +70,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.host = [host copy];
         self.port = port;
         self.username = [user copy];
-        self.options = options;
+        self.options = [options copy];
         self.fd = SOCKET_NULL;
         
         self.stage = SSHKitSessionStageNotConnected;
