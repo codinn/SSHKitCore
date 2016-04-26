@@ -105,7 +105,7 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     
     // MARK: - SSHKitSessionDelegate
     
-    func session(session: SSHKitSession!, didConnectToHost host: String!, port: UInt16) {
+    func session(session: SSHKitSession!, didNegotiateWithHMAC hmac: String!, cipher: String!, kexAlgorithm: String!) {
     }
     
     func session(session: SSHKitSession!, didDisconnectWithError error: NSError!) {

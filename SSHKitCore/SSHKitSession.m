@@ -22,7 +22,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 @interface SSHKitSession () {
 	struct {
 		unsigned int keyboardInteractiveRequest     : 1;
-		unsigned int didConnectToHostPort           : 1;
+		unsigned int didNegotiateWithHMACCipherKEXAlgo : 1;
 		unsigned int didDisconnectWithError         : 1;
 		unsigned int shouldConnectWithHostKey       : 1;
         unsigned int didReceiveIssueBanner          : 1;
@@ -135,7 +135,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 	if (_delegate != delegate) {
 		_delegate = delegate;
         _delegateFlags.authenticateWithAllowedMethodsPartialSuccess = [delegate respondsToSelector:@selector(session:authenticateWithAllowedMethods:partialSuccess:)];
-		_delegateFlags.didConnectToHostPort = [delegate respondsToSelector:@selector(session:didConnectToHost:port:)];
+		_delegateFlags.didNegotiateWithHMACCipherKEXAlgo = [delegate respondsToSelector:@selector(session:didNegotiateWithHMAC:cipher:kexAlgorithm:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
 		_delegateFlags.keyboardInteractiveRequest = [delegate respondsToSelector:@selector(session:keyboardInteractiveRequest:)];
         _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
@@ -175,8 +175,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 [self.delegate session:self didReceiveServerBanner:serverBanner clientBanner:clientBanner protocolVersion:protocolVersion];
             }
             
-            if (_delegateFlags.didConnectToHostPort) {
-                [self.delegate session:self didConnectToHost:self.host port:self.port];
+            if (_delegateFlags.didNegotiateWithHMACCipherKEXAlgo) {
+                [self.delegate session:self didNegotiateWithHMAC:nil cipher:nil kexAlgorithm:nil];
             }
             
             // check host key

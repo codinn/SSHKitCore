@@ -161,9 +161,9 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 
 /**
- * Called when a session connects and is ready for reading and writing.
+ * Called when a session negotiated.
  **/
-- (void)session:(SSHKitSession *)session didConnectToHost:(NSString *)host port:(uint16_t)port;
+- (void)session:(SSHKitSession *)session didNegotiateWithHMAC:(NSString *)hmac cipher:(NSString *)cipher kexAlgorithm:(NSString *)kexAlgorithm;
 
 /**
  Called when a session has failed and disconnected.
