@@ -163,10 +163,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             NSString *clientBanner = nil;
             int protocolVersion = 0;
             
-            const char *clientbanner = ssh_get_clientbanner(self.rawSession);
+            const char *clientbanner = ssh_get_clientbanner(_rawSession);
             clientBanner = clientbanner ? @(clientbanner) : @"";
             
-            const char *serverbanner = ssh_get_serverbanner(self.rawSession);
+            const char *serverbanner = ssh_get_serverbanner(_rawSession);
             serverBanner = serverbanner ?  @(serverbanner) : @"";
             
             protocolVersion = ssh_get_version(self.rawSession);
@@ -175,8 +175,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 [self.delegate session:self didReceiveServerBanner:serverBanner clientBanner:clientBanner protocolVersion:protocolVersion];
             }
             
+            const char *hmac = ssh_get_hmac_out(_rawSession);
+            const char *cipher = ssh_get_cipher_out(_rawSession);
+            const char *kexAlgo = ssh_get_kex_algo(_rawSession);
+            
+            NSString *currentHMAC = hmac ? @(hmac) : nil;
+            NSString *currentCipher = cipher ? @(cipher) : nil;
+            NSString *currentKEX = kexAlgo ? @(kexAlgo) : nil;
+            
             if (_delegateFlags.didNegotiateWithHMACCipherKEXAlgo) {
-                [self.delegate session:self didNegotiateWithHMAC:nil cipher:nil kexAlgorithm:nil];
+                // TODO: change params to Swift tuple to include input MAC and cipher algorithms
+                [self.delegate session:self didNegotiateWithHMAC:currentHMAC cipher:currentCipher kexAlgorithm:currentKEX];
             }
             
             // check host key

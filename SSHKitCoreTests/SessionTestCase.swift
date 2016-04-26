@@ -39,6 +39,10 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     
     var hostKey: SSHKitHostKey?
     
+    var currentHMAC: String?
+    var currentCipher: String?
+    var currentKEXAlgo: String?
+    
     var error : NSError?
     
     override func setUp() {
@@ -106,6 +110,9 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
     // MARK: - SSHKitSessionDelegate
     
     func session(session: SSHKitSession!, didNegotiateWithHMAC hmac: String!, cipher: String!, kexAlgorithm: String!) {
+        currentHMAC = hmac;
+        currentCipher = cipher;
+        currentKEXAlgo = kexAlgorithm;
     }
     
     func session(session: SSHKitSession!, didDisconnectWithError error: NSError!) {
