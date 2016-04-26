@@ -101,7 +101,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
                                  userInfo:nil];
 }
 
-- (int)doReadData:(NSData *)readData isSTDError:(int)isSTDError {
+- (int)_didReadData:(NSData *)readData isSTDError:(int)isSTDError {
     if (isSTDError) {
     } else {
     }
@@ -116,8 +116,7 @@ static int channel_data_available(ssh_session session,
                                   void *data,
                                   uint32_t len,
                                   int is_stderr,
-                                  void *userdata)
-{
+                                  void *userdata) {
     SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
     NSData *readData = [NSData dataWithBytes:data length:len];
     
@@ -130,7 +129,7 @@ static int channel_data_available(ssh_session session,
             [selfChannel.delegate channel:selfChannel didReadStdoutData:readData];
         }
     }
-    return [selfChannel doReadData:readData isSTDError:is_stderr];
+    return [selfChannel _didReadData:readData isSTDError:is_stderr];
 }
 
 static void channel_close_received(ssh_session session,

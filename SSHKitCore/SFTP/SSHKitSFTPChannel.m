@@ -17,7 +17,6 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 @interface SSHKitSFTPChannel()
 
 @property (nonatomic, readwrite) sftp_session rawSFTPSession;
-@property (nonatomic, readwrite) BOOL passDataToChannelRead;
 @property (nonatomic) SessionChannelReqState   reqState;
 
 @end
@@ -25,15 +24,27 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 @implementation SSHKitSFTPChannel
 
 @synthesize rawSFTPSession;
-@synthesize passDataToChannelRead;
 
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate {
     if (self = [super initWithSession:session delegate:aDelegate]) {
         _reqState = SessionChannelReqNone;
-        self.passDataToChannelRead = YES;
     }
     
     return self;
+}
+
+- (int)_didReadData:(NSData *)readData isSTDError:(int)isSTDError {
+    if (!self.isOpen) {
+        return 0;
+    }
+    if (isSTDError) {
+    } else {
+        for (SSHKitSFTPFile *file in _remoteFiles) {
+            [file channel:self didReadStdoutData:readData];
+        }
+    }
+    // pass data to ssh_channel_read
+    return 0;
 }
 
 - (void)doOpen {
@@ -127,15 +138,6 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 
 - (int)getLastSFTPError {
     return sftp_get_error(self.rawSFTPSession);
-}
-
-- (void)didReadStdoutData:(NSData *)data {
-    if (!self.isOpen) {
-        return;
-    }
-    for (SSHKitSFTPFile *file in _remoteFiles) {
-        [file channel:self didReadStdoutData:data];
-    }
 }
 
 - (BOOL)isFileExist:(NSString *)path {
