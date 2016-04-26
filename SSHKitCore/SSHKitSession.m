@@ -23,7 +23,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 	struct {
 		unsigned int didNegotiateWithHMACCipherKEXAlgo : 1;
 		unsigned int didDisconnectWithError         : 1;
-		unsigned int shouldConnectWithHostKey       : 1;
+		unsigned int shouldTrustHostKey             : 1;
         unsigned int didReceiveIssueBanner          : 1;
         unsigned int didReceiveServerBannerClientBannerProtocolVersion  : 1;
         unsigned int authenticateWithAllowedMethodsPartialSuccess : 1;
@@ -136,7 +136,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         _delegateFlags.authenticateWithAllowedMethodsPartialSuccess = [delegate respondsToSelector:@selector(session:authenticateWithAllowedMethods:partialSuccess:)];
 		_delegateFlags.didNegotiateWithHMACCipherKEXAlgo = [delegate respondsToSelector:@selector(session:didNegotiateWithHMAC:cipher:kexAlgorithm:)];
 		_delegateFlags.didDisconnectWithError = [delegate respondsToSelector:@selector(session:didDisconnectWithError:)];
-        _delegateFlags.shouldConnectWithHostKey = [delegate respondsToSelector:@selector(session:shouldConnectWithHostKey:)];
+        _delegateFlags.shouldTrustHostKey = [delegate respondsToSelector:@selector(session:shouldTrustHostKey:)];
         _delegateFlags.didReceiveIssueBanner = [delegate respondsToSelector:@selector(session:didReceiveIssueBanner:)];
         _delegateFlags.didReceiveServerBannerClientBannerProtocolVersion = [delegate respondsToSelector:@selector(session:didReceiveServerBanner:clientBanner:protocolVersion:)];
         _delegateFlags.didOpenForwardChannel = [delegate respondsToSelector:@selector(session:didOpenForwardChannel:)];
@@ -190,7 +190,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             NSError *error = nil;
             SSHKitHostKey *hostKey = [SSHKitHostKey hostKeyFromRawSession:self.rawSession error:&error];
             
-            if ( !error && ! (_delegateFlags.shouldConnectWithHostKey && [self.delegate session:self shouldConnectWithHostKey:hostKey]) )
+            if ( !error && ! (_delegateFlags.shouldTrustHostKey && [self.delegate session:self shouldTrustHostKey:hostKey]) )
             {
                 // failed
                 error = [NSError errorWithDomain:SSHKitCoreErrorDomain

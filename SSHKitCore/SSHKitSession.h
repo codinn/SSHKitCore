@@ -180,8 +180,9 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  @param fingerprint The host's fingerprint
  @returns YES if the session should trust the host, otherwise NO.
  */
-- (BOOL)session:(SSHKitSession *)session shouldConnectWithHostKey:(SSHKitHostKey *)hostKey;
+- (BOOL)session:(SSHKitSession *)session shouldTrustHostKey:(SSHKitHostKey *)hostKey;
 - (NSError *)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray<NSString *> *)methods partialSuccess:(BOOL)partialSuccess;
+
 - (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 
 /**

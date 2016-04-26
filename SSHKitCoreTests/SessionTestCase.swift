@@ -131,7 +131,7 @@ class SessionTestCase: XCTestCase, SSHKitSessionDelegate {
         }
     }
     
-    func session(session: SSHKitSession!, shouldConnectWithHostKey hostKey: SSHKitHostKey!) -> Bool {
+    func session(session: SSHKitSession!, shouldTrustHostKey hostKey: SSHKitHostKey!) -> Bool {
         self.hostKey = hostKey
         return true
     }
