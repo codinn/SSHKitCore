@@ -93,16 +93,19 @@ static channel_callbacks s_null_channel_callbacks = {0};
     }
 }
 
-- (void)didReadStdoutData:(NSData *)data {
-    // implement is subclass
-}
-
 #pragma mark - Read / Write
 
 - (void)doOpen {
     @throw [NSException exceptionWithName:NSInternalInconsistencyException
                                    reason:[NSString stringWithFormat:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)]
                                  userInfo:nil];
+}
+
+- (int)doReadData:(NSData *)readData isSTDError:(int)isSTDError {
+    if (isSTDError) {
+    } else {
+    }
+    return readData.length;
 }
 
 /**
@@ -127,12 +130,7 @@ static int channel_data_available(ssh_session session,
             [selfChannel.delegate channel:selfChannel didReadStdoutData:readData];
         }
     }
-    [selfChannel didReadStdoutData:readData];
-    if (selfChannel.passDataToChannelRead) {  // pass data to sshchannel_read
-        return 0;
-    }
-    
-    return len;
+    return [selfChannel doReadData:readData isSTDError:is_stderr];
 }
 
 static void channel_close_received(ssh_session session,

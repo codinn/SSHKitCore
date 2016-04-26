@@ -32,9 +32,6 @@
  */
 @property (nonatomic, readonly) BOOL isOpen;
 
-/* if YES return 0 in channel_data_available */
-@property (nonatomic, readonly) BOOL passDataToChannelRead;
-
 - (void)close;
 - (void)closeWithError:(NSError *)error;
 
