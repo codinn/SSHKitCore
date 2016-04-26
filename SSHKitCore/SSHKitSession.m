@@ -511,11 +511,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             NSArray<NSString *> *authMethods = [self _getUserAuthList];
             
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
-                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:NO];
-                if (error) {
-                    [self _doDisconnectWithError:error];
-                }
-                
+                [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:NO];
                 // Handoff to next auth method
                 return;
             }
@@ -558,11 +554,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             NSArray<NSString *> *authMethods = [self _getUserAuthList];
             
             if (_delegateFlags.authenticateWithAllowedMethodsPartialSuccess) {
-                NSError *error = [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:YES];
-                if (error) {
-                    [self _doDisconnectWithError:error];
-                }
-                
+                [self.delegate session:self authenticateWithAllowedMethods:authMethods partialSuccess:YES];
                 // Handoff to next auth method
                 return;
             }

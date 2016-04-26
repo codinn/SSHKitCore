@@ -181,7 +181,7 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  */
 - (BOOL)session:(SSHKitSession *)session shouldTrustHostKey:(SSHKitHostKey *)hostKey;
 
-- (NSError *)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray<NSString *> *)methods partialSuccess:(BOOL)partialSuccess;
+- (void)session:(SSHKitSession *)session authenticateWithAllowedMethods:(NSArray<NSString *> *)methods partialSuccess:(BOOL)partialSuccess;
 
 - (void)session:(SSHKitSession *)session didAuthenticateUser:(NSString *)username;
 
