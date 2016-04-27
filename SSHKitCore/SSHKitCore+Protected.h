@@ -46,6 +46,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 - (BOOL)isOnSessionQueue;
 - (void)disconnectIfNeeded;
 
+- (void)channel:(SSHKitChannel *)channel hasRaisedError:(NSError *)error;
+
 @end
 
 @interface SSHKitChannel () {

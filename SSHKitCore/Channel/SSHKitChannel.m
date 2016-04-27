@@ -57,6 +57,10 @@ static channel_callbacks s_null_channel_callbacks = {0};
         return;
     }
     
+    if (error) {
+        [self.session channel:self hasRaisedError:error];
+    }
+    
     self.stage = SSHKitChannelStageClosed;
     
     // prevent server receive more then one close message

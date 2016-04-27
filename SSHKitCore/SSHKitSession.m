@@ -29,6 +29,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         unsigned int authenticateWithAllowedMethodsPartialSuccess : 1;
         unsigned int didAuthenticateUser            : 1;
         unsigned int didOpenForwardChannel          : 1;
+        unsigned int channelHasRaisedError          : 1;
 	} _delegateFlags;
     
     dispatch_source_t   _socketReadSource;
@@ -141,6 +142,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         _delegateFlags.didReceiveServerBannerClientBannerProtocolVersion = [delegate respondsToSelector:@selector(session:didReceiveServerBanner:clientBanner:protocolVersion:)];
         _delegateFlags.didOpenForwardChannel = [delegate respondsToSelector:@selector(session:didOpenForwardChannel:)];
         _delegateFlags.didAuthenticateUser = [delegate respondsToSelector:@selector(session:didAuthenticateUser:)];
+        _delegateFlags.channelHasRaisedError = [delegate respondsToSelector:@selector(session:channel:hasRaisedError:)];
 	}
 }
 
@@ -819,6 +821,12 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 // -----------------------------------------------------------------------------
 #pragma mark - Extra Options
 // -----------------------------------------------------------------------------
+
+- (void)channel:(SSHKitChannel *)channel hasRaisedError:(NSError *)error {
+    if (_delegateFlags.channelHasRaisedError) {
+        [self.delegate session:self channel:channel hasRaisedError:error];
+    }
+}
 
 #pragma mark - Connection Heartbeat
 

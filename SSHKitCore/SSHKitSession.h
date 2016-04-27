@@ -186,4 +186,6 @@
  **/
 - (void)session:(SSHKitSession *)session didOpenForwardChannel:(SSHKitForwardChannel *)channel;
 
+- (void)session:(SSHKitSession *)session channel:(SSHKitChannel *)channel hasRaisedError:(NSError *)error;
+
 @end
