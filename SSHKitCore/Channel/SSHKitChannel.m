@@ -114,37 +114,6 @@ static channel_callbacks s_null_channel_callbacks = {0};
     return (int)readData.length;
 }
 
-/**
- * Reads the first available bytes that become available on the channel.
- **/
-static int channel_data_available(ssh_session session,
-                                  ssh_channel channel,
-                                  void *data,
-                                  uint32_t len,
-                                  int is_stderr,
-                                  void *userdata) {
-    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
-    NSData *readData = [NSData dataWithBytes:data length:len];
-    
-    return [selfChannel _didReceiveData:readData isSTDError:is_stderr != 0];
-}
-
-static void channel_close_received(ssh_session session,
-                                   ssh_channel channel,
-                                   void *userdata)
-{
-    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
-    [selfChannel doCloseWithError:nil];
-}
-
-static void channel_eof_received(ssh_session session,
-                                 ssh_channel channel,
-                                 void *userdata)
-{
-    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
-    [selfChannel doCloseWithError:nil];
-}
-
 - (void)writeData:(NSData *)data {
     if (!data.length) {
         return;
@@ -245,7 +214,12 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
 #pragma mark - Properties
 
 - (BOOL)isOpen {
-    return self.stage == SSHKitChannelStageReady;
+    __block BOOL flag = NO;
+    [self.session dispatchSyncOnSessionQueue:^{
+        flag = (self.stage == SSHKitChannelStageReady);
+    }];
+    
+    return flag;
 }
 
 - (void)setDelegate:(id<SSHKitChannelDelegate>)delegate {
@@ -258,6 +232,38 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
         _delegateFlags.didCloseWithError = [delegate respondsToSelector:@selector(channelDidClose:withError:)];
         _delegateFlags.didChangePtySizeToColumnsRows = [delegate respondsToSelector:@selector(channel:didChangePtySizeToColumns:rows:withError:)];
     }
+}
+
+#pragma mark - libssh callbacks
+
+
+/**
+ * Reads the first available bytes that become available on the channel.
+ **/
+static int channel_data_available(ssh_session session,
+                                  ssh_channel channel,
+                                  void *data,
+                                  uint32_t len,
+                                  int is_stderr,
+                                  void *userdata) {
+    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
+    NSData *readData = [NSData dataWithBytes:data length:len];
+    
+    return [selfChannel _didReceiveData:readData isSTDError:is_stderr];
+}
+
+static void channel_close_received(ssh_session session,
+                                   ssh_channel channel,
+                                   void *userdata) {
+    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
+    [selfChannel doCloseWithError:nil];
+}
+
+static void channel_eof_received(ssh_session session,
+                                 ssh_channel channel,
+                                 void *userdata) {
+    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
+    [selfChannel doCloseWithError:nil];
 }
 
 @end

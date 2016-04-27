@@ -367,11 +367,21 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 // -----------------------------------------------------------------------------
 
 - (BOOL)isDisconnected {
-    return (_stage == SSHKitSessionStageNotConnected) || (_stage == SSHKitSessionStageUnknown) || (_stage ==SSHKitSessionStageDisconnected);
+    __block BOOL flag = NO;
+    [self dispatchSyncOnSessionQueue:^{
+        flag = (self->_stage == SSHKitSessionStageNotConnected) || (self->_stage == SSHKitSessionStageUnknown) || (self->_stage ==SSHKitSessionStageDisconnected);
+    }];
+    
+    return flag;
 }
 
 - (BOOL)isConnected {
-    return _stage == SSHKitSessionStageAuthenticated;
+    __block BOOL flag = NO;
+    [self dispatchSyncOnSessionQueue:^{
+        flag = (self->_stage == SSHKitSessionStageAuthenticated);
+    }];
+    
+    return flag;
 }
 
 - (void)disconnect {
