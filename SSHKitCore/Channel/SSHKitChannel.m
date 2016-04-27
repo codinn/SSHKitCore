@@ -245,7 +245,12 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
 #pragma mark - Properties
 
 - (BOOL)isOpen {
-    return self.stage == SSHKitChannelStageReady;
+    __block BOOL flag = NO;
+    [self.session dispatchSyncOnSessionQueue:^{
+        flag = (self.stage == SSHKitChannelStageReady);
+    }];
+    
+    return flag;
 }
 
 - (void)setDelegate:(id<SSHKitChannelDelegate>)delegate {
