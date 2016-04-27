@@ -29,16 +29,6 @@
 
 @class SSHKitSFTPFile;
 
-typedef NS_ENUM(NSInteger, SSHKitLogLevel) {
-    SSHKitLogLevelNone,
-    
-    SSHKitLogLevelDebug,
-    SSHKitLogLevelInfo,
-    SSHKitLogLevelWarn,
-    SSHKitLogLevelError,
-    SSHKitLogLevelFatal
-};
-
 typedef NS_ENUM(NSInteger, SSHKitErrorCode) {
     // error code from libssh
     SSHKitErrorNoError        = 0,
