@@ -187,6 +187,10 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
             ];
 }
 
+- (int)rename:(NSString *)original mode:(NSString *)newName {
+    return sftp_rename(self.rawSFTPSession, [original UTF8String], [newName UTF8String]);
+}
+
 - (int)chmod:(NSString *)filePath mode:(unsigned long)mode {
     return sftp_chmod(self.rawSFTPSession, [filePath UTF8String], mode);
 }
@@ -200,6 +204,14 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
         _remoteFiles = [@[]mutableCopy];
     }
     return _remoteFiles;
+}
+
+- (int)rmdir:(NSString *)directoryPath {
+    return sftp_rmdir(self.rawSFTPSession, [directoryPath UTF8String]);
+}
+
+- (int)unlink:(NSString *)filePath {
+    return sftp_unlink(self.rawSFTPSession, [filePath UTF8String]);
 }
 
 @end
