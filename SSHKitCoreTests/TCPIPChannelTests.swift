@@ -19,11 +19,12 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     var writeDataCount: Int = 0
     let writeDataMaxTimes = 100
     var totoalWroteDataLength: Int = -1
-    var totoalReadLength: Int = 0
+    
+    let dataWrote = NSMutableData()
+    let dataRead = NSMutableData()
 
     override func setUp() {
         super.setUp()
-        totoalReadLength = 0
         startEchoServer()
     }
     
@@ -132,7 +133,7 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
 //        XCTFail("Channel open operation should timed out")
 //    }
     
-    func testReadWrite() {
+    func testReadWriteDirectChannel() {
         do {
             let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
             XCTAssert(channel.isOpen)
@@ -143,12 +144,16 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
             totoalWroteDataLength = (data?.length)! * writeDataMaxTimes
             for _ in 0..<writeDataMaxTimes {
                 channel.writeData(data)
+                dataWrote.appendData(data!)
             }
+            
             waitForExpectationsWithTimeout(5) { error in
                 if let error = error {
-                    print("Error: \(error.localizedDescription)")
+                    XCTFail(error.description)
                 }
             }
+            
+            XCTAssertEqual(dataRead, dataWrote)
         } catch let error as NSError {
             XCTFail(error.description)
         }
@@ -165,9 +170,9 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     }
     
     func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
-        totoalReadLength += data.length
+        dataRead.appendData(data)
         
-        if writeDataCount == writeDataMaxTimes && totoalReadLength == totoalWroteDataLength {
+        if writeDataCount == writeDataMaxTimes && dataRead.length == totoalWroteDataLength {
             writeExpectation!.fulfill()
         }
     }
