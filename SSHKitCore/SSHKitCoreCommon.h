@@ -160,3 +160,37 @@ extern NSString * const kVTKitDefaultMACAlgorithms;
 
 // default preferred key exchange algorithms order
 extern NSString * const kVTKitDefaultKeyExchangeAlgorithms;
+
+#pragma mark - Logging
+
+/* WARN: GCD is thread-blind execution of threaded code, where you submit blocks of code to be run on any available system-owned thread.
+ *
+ * The drawback of this behavior is __thread keyword used by libssh DOES NOT work!
+ *
+ * Problem: instead of use a ssh_session struct member variable, libssh presupposes ssh_ssesion and execution thread are one-to-one map, so it uses __thread keyword to store log function and userdata for a session.
+ *
+ * Even worse, some libssh functions which are supposed can be run simultaneously in different threads (such as `ssh_pki_export_privkey_to_pubkey`) also print log through log callback.
+ *
+ * This problem leads you MUST register log callback in every possible threads to make sure logging functional, otherwise you are at risk of crash.
+ *
+ * This make libssh logging worthless, so actually VTKitRegisterLogCallback is not used in SSHKitCore.
+ */
+typedef NSArray *(^ SSHKitLogHandler)(NSInteger priority, NSString *function, NSString *message);
+
+/** Level
+ No logging at all
+    NONE 0
+ 
+ Show only warnings
+    WARN 1
+ 
+ Get some information what's going on
+    INFO 2
+ 
+ Get detailed debuging information
+    DEBUG 3
+ 
+ Get trace output, packet information
+    SSH_LOG_TRACE 4
+*/
+void VTKitRegisterLogCallback(NSInteger level, SSHKitLogHandler block);

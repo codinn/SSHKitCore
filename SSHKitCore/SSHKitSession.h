@@ -4,8 +4,6 @@
 @class SSHKitHostKey, SSHKitRemoteForwardRequest, SSHKitKeyPair;
 @class SSHKitChannel, SSHKitDirectChannel, SSHKitForwardChannel, SSHKitShellChannel, SSHKitSFTPChannel;
 
-typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
-
 // -----------------------------------------------------------------------------
 #pragma mark -
 // -----------------------------------------------------------------------------
@@ -69,8 +67,6 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
 
 /** Advanced options */
 @property (nonatomic, readonly) NSDictionary    *options;
-
-@property (strong, readwrite) SSHKitLogHandler logHandle;
 
 /**
  A Boolean value indicating whether the session connected successfully
@@ -189,4 +185,5 @@ typedef void (^ SSHKitLogHandler)(SSHKitLogLevel level, NSString *fmt, ...);
  * Called when ssh server has forward a connection.
  **/
 - (void)session:(SSHKitSession *)session didOpenForwardChannel:(SSHKitForwardChannel *)channel;
+
 @end

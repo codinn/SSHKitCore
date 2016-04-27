@@ -63,10 +63,6 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     self.stage = SSHKitChannelStageClosed;
     
-    if (error) {
-        if (self.session.logHandle) self.session.logHandle(SSHKitLogLevelWarn, error.localizedDescription);
-    }
-    
     // prevent server receive more then one close message
     if (ssh_channel_is_open(_rawChannel)) {
         ssh_channel_send_eof(_rawChannel);

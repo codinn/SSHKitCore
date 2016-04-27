@@ -63,3 +63,22 @@ NSString * const kVTKitHostKeyAlgorithmsKey = @"VTKitHostKeyAlgorithmsKey";
 NSString * const kVTKitMACAlgorithmsKey     = @"VTKitMACAlgorithmsKey";
 NSString * const kVTKitKeyExchangeAlgorithmsKey = @"VTKitKeyExchangeAlgorithmsKey";
 NSString * const kVTKitServerAliveCountMaxKey   = @"VTKitServerAliveCountMaxKey";
+
+
+#pragma mark - Libssh logging
+
+static void raw_session_log_callback(int priority, const char *function, const char *message, void *userdata) {
+    if (!userdata) return;
+    
+    NSString *functionName = function ? @(function) : nil;
+    NSString *messageString = message ? @(message) : nil;
+    
+    SSHKitLogHandler block = (__bridge SSHKitLogHandler)userdata;
+    block(priority, functionName, messageString);
+}
+
+void VTKitRegisterLogCallback(NSInteger level, SSHKitLogHandler block) {
+    ssh_set_log_callback(raw_session_log_callback);
+    ssh_set_log_userdata((__bridge void *)(block));
+    ssh_set_log_level((int)level);
+}

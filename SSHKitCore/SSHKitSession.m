@@ -269,10 +269,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     if (fd != SSH_INVALID_SOCKET) {
         SET_SSH_OPTIONS(SSH_OPTIONS_FD, &fd);
-    } else {
-        // connect directly
-        if (_logHandle) _logHandle(SSHKitLogLevelDebug, @"Connect directly");
-    }
+    } // else connect directly
     
     // host, port and user name
     if (self.host.length) {
@@ -338,24 +335,13 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)dispatchSyncOnSessionQueue:(dispatch_block_t)block {
-    dispatch_block_t _logSafeBlock = ^ {
-        [self _registerLogCallback];
-        block();
-    };
-    
     if (dispatch_get_specific(_isOnSessionQueueKey))
-        _logSafeBlock();
-    else
-        dispatch_sync(_sessionQueue, _logSafeBlock);
-}
-- (void)dispatchAsyncOnSessionQueue:(dispatch_block_t)block
-{
-    dispatch_block_t _logSafeBlock = ^ {
-        [self _registerLogCallback];
         block();
-    };
-    
-    dispatch_async(_sessionQueue, _logSafeBlock);
+    else
+        dispatch_sync(_sessionQueue, block);
+}
+- (void)dispatchAsyncOnSessionQueue:(dispatch_block_t)block {
+    dispatch_async(_sessionQueue, block);
 }
 
 - (BOOL)isOnSessionQueue {
@@ -754,8 +740,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
             return_from_block;
         }
         
-        [strongSelf _registerLogCallback];
-        
         // reset keepalive counter
         NSNumber *serverAliveMax = strongSelf.options[kVTKitServerAliveCountMaxKey];
         strongSelf->_heartbeatCounter = serverAliveMax.integerValue;
@@ -843,7 +827,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _connectTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
     if (!_connectTimer) {
-        if (_logHandle) _logHandle(SSHKitLogLevelWarn, @"Failed to create connect timer");
+        // TODO: Throw error after migrate to swift
         return;
     }
     
@@ -855,8 +839,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         if (!strongSelf) {
             return_from_block;
         }
-        
-        [strongSelf _registerLogCallback];
         
         NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
         [strongSelf _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain
@@ -885,7 +867,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _heartbeatTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, _sessionQueue);
     if (!_heartbeatTimer) {
-        if (_logHandle) _logHandle(SSHKitLogLevelWarn, @"Failed to create keep-alive timer");
+        // TODO: Throw error after migrate to swift
         return;
     }
     
@@ -899,8 +881,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         if (!strongSelf) {
             return_from_block;
         }
-        
-        [strongSelf _registerLogCallback];
         
         if (strongSelf->_heartbeatCounter<=0) {
             NSString *errorDesc = [NSString stringWithFormat:@"Timeout, server %@ not responding", strongSelf.host];
@@ -929,53 +909,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         dispatch_source_cancel(_heartbeatTimer);
         _heartbeatTimer = nil;
     }
-}
-
-#pragma mark - Libssh logging
-
-static void raw_session_log_callback(int priority, const char *function, const char *message, void *userdata) {
-#ifdef DEBUG
-    SSHKitSession *aSelf = (__bridge SSHKitSession *)userdata;
-    
-    if (aSelf && aSelf->_logHandle) {
-        switch (priority) {
-            case SSH_LOG_TRACE:
-            case SSH_LOG_DEBUG:
-                aSelf->_logHandle(SSHKitLogLevelDebug, @"%s", message);
-                break;
-                
-            case SSH_LOG_INFO:
-                aSelf->_logHandle(SSHKitLogLevelInfo, @"%s", message);
-                break;
-                
-            case SSH_LOG_WARN:
-                aSelf->_logHandle(SSHKitLogLevelWarn, @"%s", message);
-                break;
-                
-            default:
-                aSelf->_logHandle(SSHKitLogLevelError, @"%s", message);
-                break;
-        }
-    }
-#endif
-}
-
-/* WARN: GCD is thread-blind execution of threaded code, where you submit blocks of code to be run on any available system-owned thread.
- *
- * The drawback of this behavior is __thread keyword used by libssh DOES NOT work!
- * 
- * Problem: instead of use a ssh_session struct member variable, libssh presupposes ssh_ssesion and execution thread are one-to-one map, so it uses __thread keyword to store log function and userdata for a session.
- *
- * Howto fix: at the very beginning of _sessionQueue execution block of code, call [strongSelf _registerLogCallback] to make sure libssh __thread storage reinitialized properly.
- *
- * Performance affected: although call _registerLogCallback again and again might lead to performance issue, but since libssh log callback only effective on DEBUG scheme, the performance effect should be trivial while on RELEASE scheme.
- */
-- (void)_registerLogCallback {
-#ifdef DEBUG
-    ssh_set_log_callback(raw_session_log_callback);
-    ssh_set_log_userdata((__bridge void *)(self));
-    ssh_set_log_level(SSH_LOG_TRACE);
-#endif
 }
 
 @end
