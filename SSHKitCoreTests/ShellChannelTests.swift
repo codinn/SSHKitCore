@@ -8,8 +8,9 @@
 
 import XCTest
 
-class ShellChannelTests: ChannelTestCase {
+class ShellChannelTests: SessionTestCase, SSHKitShellChannelDelegate {
     private var resizeExpectation: XCTestExpectation?
+    private var openChannelExpectation: XCTestExpectation?
     
     override func setUp() {
         super.setUp()
@@ -17,6 +18,18 @@ class ShellChannelTests: ChannelTestCase {
     
     override func tearDown() {
         super.tearDown()
+    }
+    
+    func openShellChannel(session: SSHKitSession) -> SSHKitShellChannel {
+        openChannelExpectation = expectationWithDescription("Open Shell Channel")
+        let channel = session.openShellChannelWithTerminalType("xterm", columns: 20, rows: 50, delegate: self)
+        waitForExpectationsWithTimeout(5) { error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            }
+        }
+        XCTAssert(channel.isOpen)
+        return channel
     }
     
     func testOpenShellChannel() {
@@ -50,20 +63,29 @@ class ShellChannelTests: ChannelTestCase {
         }
     }
     
-    // MARK: SSHKitChannelDelegate
-    override func channelDidWriteData(channel: SSHKitChannel) {
-        // print("channelDidWriteData:\(writeDataCount)")
+    
+    // MARK: - SSHKitChannelDelegate
+    
+    func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
     }
     
-    override func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
+    func channel(channel: SSHKitChannel, didReadStderrData data: NSData) {
     }
     
-    override func channel(channel: SSHKitChannel, didReadStderrData data: NSData) {
-        print("didReadStderrData")
+    func channelDidWriteData(channel: SSHKitChannel) {
     }
     
-    //MARK: SSHKitShellChannelDelegate
-    override func channel(channel: SSHKitShellChannel, didChangePtySizeToColumns columns: Int, rows: Int, withError error: NSError) {
+    func channelDidClose(channel: SSHKitChannel, withError error: NSError) {
+        self.error = error;
+    }
+    
+    func channelDidOpen(channel: SSHKitChannel) {
+        openChannelExpectation!.fulfill()
+    }
+    
+    // MARK: - SSHKitShellChannelDelegate
+    
+    func channel(channel: SSHKitShellChannel, didChangePtySizeToColumns columns: Int, rows: Int, withError error: NSError) {
         resizeExpectation!.fulfill()
     }
 
