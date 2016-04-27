@@ -10,10 +10,6 @@ import XCTest
 
 class ChannelTestCase: SessionTestCase, SSHKitShellChannelDelegate {
     private var openChannelExpectation: XCTestExpectation?
-    private var echoServerExpectation: XCTestExpectation?
-    
-    let echoTask = NSTask()
-    let echoPort : UInt16 = 6007
 
     override func setUp() {
         super.setUp()
@@ -24,64 +20,6 @@ class ChannelTestCase: SessionTestCase, SSHKitShellChannelDelegate {
         super.tearDown()
     }
     
-    // MARK: - Echo Server
-    
-    func startEchoServer() {
-        let echoServer = NSBundle(forClass: self.dynamicType).pathForResource("echo_server.py", ofType: "");
-        echoTask.launchPath = echoServer
-        echoTask.arguments = ["-p", "\(echoPort)"]
-        
-        let pipe = NSPipe()
-        echoTask.standardOutput = pipe
-        echoTask.standardError = pipe
-        echoTask.standardInput = NSFileHandle.fileHandleWithNullDevice()
-        pipe.fileHandleForReading.readabilityHandler = { (handler: NSFileHandle?) in
-            if let data = handler?.availableData {
-                if let output = String(data: data, encoding: NSUTF8StringEncoding) {
-                    print(output)
-                }
-            }
-            
-            self.echoServerExpectation?.fulfill()
-            // stop catch output
-            pipe.fileHandleForReading.readabilityHandler = nil;
-        }
-        
-        echoTask.terminationHandler = { (task: NSTask) in
-            // set readabilityHandler block to nil; otherwise, you'll encounter high CPU usage
-            pipe.fileHandleForReading.readabilityHandler = nil;
-        }
-        
-        echoTask.launch()
-    }
-    
-    func stopEchoServer() {
-        echoTask.terminate()
-    }
-    
-    func waitEchoServerStart() {
-        echoServerExpectation = expectationWithDescription("Wait echo server start")
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                XCTFail(error.localizedDescription)
-                self.stopEchoServer()
-            }
-        }
-    }
-    
-    // MARK: - Open Channel
-    
-    func openDirectChannel(session: SSHKitSession) -> SSHKitChannel {
-        openChannelExpectation = expectationWithDescription("Open Direct Channel")
-        let channel = session.openDirectChannelWithTargetHost("127.0.0.1", port: UInt(echoPort), delegate: self)
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-        }
-        XCTAssert(channel.isOpen)
-        return channel
-    }
     
     
     func openShellChannel(session: SSHKitSession) -> SSHKitShellChannel {
@@ -99,18 +37,6 @@ class ChannelTestCase: SessionTestCase, SSHKitShellChannelDelegate {
     func openSFTPChannel(session: SSHKitSession) -> SSHKitSFTPChannel {
         openChannelExpectation = expectationWithDescription("Open SFTP Channel")
         let channel = session.openSFTPChannel(self)
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-        }
-        XCTAssert(channel.isOpen)
-        return channel
-    }
-    
-    func openForwardChannel(session: SSHKitSession) -> SSHKitChannel {
-        openChannelExpectation = expectationWithDescription("Open Forward Channel")
-        let channel = session.openForwardChannel()
         waitForExpectationsWithTimeout(5) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
