@@ -9,6 +9,8 @@
 import XCTest
 
 class DirectChannelTests: ChannelTestCase {
+    private var writeExpectation: XCTestExpectation?
+    
     var writeDataCount: Int = 0
     var totoalDataLength: Int = -1
     var totoalReadLength: Int = -1
@@ -41,7 +43,7 @@ class DirectChannelTests: ChannelTestCase {
         do {
             let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             let channel = self.openDirectChannel(session)
-            channelExpectation = expectationWithDescription("Channel write data")
+            writeExpectation = expectationWithDescription("Channel write data")
             let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
             // NOTE: if 0..999 will fail(too many data?)
             totoalDataLength = (data?.length)! * 1000
@@ -69,7 +71,7 @@ class DirectChannelTests: ChannelTestCase {
     override func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
         totoalReadLength += data.length
         if writeDataCount == 1000 && totoalReadLength == totoalDataLength {
-            channelExpectation!.fulfill()
+            writeExpectation!.fulfill()
         }
     }
     
