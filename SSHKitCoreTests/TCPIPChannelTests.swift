@@ -17,8 +17,9 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     let echoPort : UInt16 = 6007
     
     var writeDataCount: Int = 0
-    var totoalDataLength: Int = -1
-    var totoalReadLength: Int = -1
+    let writeDataMaxTimes = 100
+    var totoalWroteDataLength: Int = -1
+    var totoalReadLength: Int = 0
 
     override func setUp() {
         super.setUp()
@@ -77,22 +78,29 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     
     // MARK: - Open Channel
     
-    func openDirectChannelFromSession(session: SSHKitSession) -> SSHKitChannel {
+    func openDirectChannelWithTargetHost(host: String, port: UInt16) throws -> SSHKitChannel {
+        let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+        
         openExpectation = expectationWithDescription("Open Direct Channel")
-        let channel = session.openDirectChannelWithTargetHost(targetHost, port: UInt(echoPort), delegate: self)
-        waitForExpectationsWithTimeout(5) { error in
+        let channel = session.openDirectChannelWithTargetHost(host, port: UInt(port), delegate: self)
+        
+        waitForExpectationsWithTimeout(1) { error in
             if let error = error {
-                print("Error: \(error.localizedDescription)")
+                self.error = error
             }
         }
-        XCTAssert(channel.isOpen)
+        
+        if let error = self.error {
+            throw error
+        }
+        
         return channel
     }
     
-    func openForwardChannelFromSession(session: SSHKitSession) -> SSHKitChannel {
+    func openForwardChannelWithSession(session: SSHKitSession) -> SSHKitChannel {
         openExpectation = expectationWithDescription("Open Forward Channel")
         let channel = session.openForwardChannel()
-        waitForExpectationsWithTimeout(5) { error in
+        waitForExpectationsWithTimeout(1) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }
@@ -105,22 +113,35 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     
     func testOpenDirectChannel() {
         do {
-            let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
-            self.openDirectChannelFromSession(session)
+            let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
+            XCTAssert(channel.isOpen)
         } catch let error as NSError {
-            XCTFail(error.description)
+            XCTFail(error.localizedDescription)
         }
     }
+
+    // TODO: add test cases for connection to target is timed out or refused
+//    func testOpenDirectChannelTimedOut() {
+//        do {
+//            let channel = try self.openDirectChannelWithTargetHost(nonRoutableIP, port: echoPort)
+//            XCTAssertFalse(channel.isOpen)
+//        } catch _ as NSError {
+//            return
+//        }
+//        
+//        XCTFail("Channel open operation should timed out")
+//    }
     
-    func testTunnel() {
+    func testReadWrite() {
         do {
-            let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
-            let channel = self.openDirectChannelFromSession(session)
+            let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
+            XCTAssert(channel.isOpen)
+            
             writeExpectation = expectationWithDescription("Channel write data")
             let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
-            // NOTE: if 0..999 will fail(too many data?)
-            totoalDataLength = (data?.length)! * 1000
-            for _ in 0...999 {
+            
+            totoalWroteDataLength = (data?.length)! * writeDataMaxTimes
+            for _ in 0..<writeDataMaxTimes {
                 channel.writeData(data)
             }
             waitForExpectationsWithTimeout(5) { error in
@@ -128,8 +149,6 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
                     print("Error: \(error.localizedDescription)")
                 }
             }
-            // TODO XCTAssert()
-            session.disconnect()
         } catch let error as NSError {
             XCTFail(error.description)
         }
@@ -143,12 +162,12 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     
     func channelDidWriteData(channel: SSHKitChannel) {
         writeDataCount += 1
-        // print("channelDidWriteData:\(writeDataCount)")
     }
     
     func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
         totoalReadLength += data.length
-        if writeDataCount == 1000 && totoalReadLength == totoalDataLength {
+        
+        if writeDataCount == writeDataMaxTimes && totoalReadLength == totoalWroteDataLength {
             writeExpectation!.fulfill()
         }
     }
