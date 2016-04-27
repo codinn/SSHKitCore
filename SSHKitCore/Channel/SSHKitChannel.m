@@ -39,10 +39,6 @@ static channel_callbacks s_null_channel_callbacks = {0};
 #pragma mark - Close Channel
 
 - (void)close {
-    [self closeWithError:nil];
-}
-
-- (void)closeWithError:(NSError *)error {
     __weak SSHKitChannel *weakSelf = self;
     [self.session dispatchAsyncOnSessionQueue:^ {
         __strong SSHKitChannel *strongSelf = weakSelf;
@@ -50,7 +46,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
             return_from_block;
         }
         
-        [strongSelf doCloseWithError:error];
+        [strongSelf doCloseWithError:nil];
     }];
 }
 

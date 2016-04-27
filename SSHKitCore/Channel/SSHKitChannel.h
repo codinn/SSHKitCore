@@ -33,7 +33,6 @@
 @property (nonatomic, readonly) BOOL isOpen;
 
 - (void)close;
-- (void)closeWithError:(NSError *)error;
 
 - (void)writeData:(NSData *)data;
 

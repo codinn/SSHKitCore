@@ -31,7 +31,7 @@
     [self dispatchAsyncOnSessionQueue: ^{ {
         SSHKitSession *strongSelf = weakSelf;
         if (!strongSelf.isConnected) {
-            [channel closeWithError:nil];
+            [channel close];
             return_from_block;
         }
         
@@ -42,7 +42,7 @@
             channel.stage = SSHKitChannelStageOpening;
             [channel doOpen];
         } else {
-            [channel closeWithError:nil];
+            [channel close];
         }
     }}];
 }
