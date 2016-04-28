@@ -1,3 +1,6 @@
 [submodule "libssh"]
 	path = libssh
 url=https://github.com/codinn/libssh.git
+[submodule "SwiftSockets"]
+	path = SwiftSockets
+	url = https://github.com/AlwaysRightInstitute/SwiftSockets

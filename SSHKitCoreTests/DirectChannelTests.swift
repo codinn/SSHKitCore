@@ -13,69 +13,25 @@ class DirectChannelTests: SessionTestCase, SSHKitChannelDelegate {
     private var closeExpectation: XCTestExpectation?
     private var writeExpectation: XCTestExpectation?
     
-    private let echoTask = NSTask()
-    private let echoHost = "127.0.0.1"
-    private let echoPort = 6007
-    
     private var writeDataCount: Int = 0
     private let writeDataMaxTimes = 100
     private var totoalWroteDataLength: Int = -1
     
     private let dataWrote = NSMutableData()
     private let dataRead = NSMutableData()
+    
+    private let echoHost = "127.0.0.1"
+    private let echoPort = 6007
+    let echoServer = EchoServer(port: 6007)
 
     override func setUp() {
         super.setUp()
-        startEchoServer()
+        echoServer.start()
     }
     
     override func tearDown() {
-        stopEchoServer()
+        echoServer.stop()
         super.tearDown()
-    }
-    
-    // MARK: - Echo Server
-    
-    func startEchoServer() {
-        let echoServer = NSBundle(forClass: self.dynamicType).pathForResource("echo_server.py", ofType: "");
-        echoTask.launchPath = echoServer
-        echoTask.arguments = ["-p", "\(echoPort)"]
-        
-        let pipe = NSPipe()
-        echoTask.standardOutput = pipe
-        echoTask.standardError = pipe
-        echoTask.standardInput = NSFileHandle.fileHandleWithNullDevice()
-        
-        let echoServerExpectation = expectationWithDescription("Wait echo server start")
-        pipe.fileHandleForReading.readabilityHandler = { (handler: NSFileHandle?) in
-            if let data = handler?.availableData {
-                if let output = String(data: data, encoding: NSUTF8StringEncoding) {
-                    print(output)
-                }
-            }
-            
-            echoServerExpectation.fulfill()
-            // stop catch output
-            pipe.fileHandleForReading.readabilityHandler = nil;
-        }
-        
-        echoTask.terminationHandler = { (task: NSTask) in
-            // set readabilityHandler block to nil; otherwise, you'll encounter high CPU usage
-            pipe.fileHandleForReading.readabilityHandler = nil;
-        }
-        
-        echoTask.launch()
-        
-        waitForExpectationsWithTimeout(5) { error in
-            if let error = error {
-                XCTFail(error.localizedDescription)
-                self.stopEchoServer()
-            }
-        }
-    }
-    
-    func stopEchoServer() {
-        echoTask.terminate()
     }
     
     // MARK: - Direct-TCPIP Channel
@@ -181,7 +137,7 @@ class DirectChannelTests: SessionTestCase, SSHKitChannelDelegate {
     func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
         dataRead.appendData(data)
         
-        if writeDataCount == writeDataMaxTimes && dataRead.length == totoalWroteDataLength {
+        if writeDataCount == writeDataMaxTimes && dataRead.length >= totoalWroteDataLength {
             writeExpectation!.fulfill()
         }
     }

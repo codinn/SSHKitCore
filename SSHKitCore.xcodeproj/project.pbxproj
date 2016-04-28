@@ -16,6 +16,7 @@
 		4A2B5B081A4A6F3C007D20DF /* SSHKitHostKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */; };
 		4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A360D7F1CD1F02900BBD10E /* ForwardChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A360D7E1CD1F02900BBD10E /* ForwardChannelTests.swift */; };
+		4A360D911CD1FFC400BBD10E /* SwiftSockets.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A360D8C1CD1FF5800BBD10E /* SwiftSockets.framework */; };
 		4A3D1E2B1C603F21009F9760 /* SSHKitChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E291C603F21009F9760 /* SSHKitChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A3D1E2C1C603F22009F9760 /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E2A1C603F21009F9760 /* SSHKitChannel.m */; };
 		4A3D1E2F1C604405009F9760 /* SSHKitDirectChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E2D1C604405009F9760 /* SSHKitDirectChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -31,7 +32,6 @@
 		4A759CB21BCEBD3900301730 /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CB01BCEBD3900301730 /* libssl.a */; };
 		4A759CB41BCEBD8F00301730 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A759CB31BCEBD8F00301730 /* libz.tbd */; };
 		4A9FCFA71CC5C1AF00FD4608 /* KeyPairTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A9FCFA61CC5C1AF00FD4608 /* KeyPairTests.swift */; };
-		4A9FCFA81CC5C2C600FD4608 /* echo_server.py in Resources */ = {isa = PBXBuildFile; fileRef = CCE0E5211C858CC400E81427 /* echo_server.py */; };
 		4A9FCFC01CC5DE4300FD4608 /* id_dsa in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAB1CC5DE4300FD4608 /* id_dsa */; };
 		4A9FCFC11CC5DE4300FD4608 /* id_dsa.pkcs8 in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAC1CC5DE4300FD4608 /* id_dsa.pkcs8 */; };
 		4A9FCFC21CC5DE4300FD4608 /* id_dsa.pkcs8.password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFAD1CC5DE4300FD4608 /* id_dsa.pkcs8.password */; };
@@ -53,6 +53,7 @@
 		4A9FCFD21CC5DE4300FD4608 /* id_rsa_password in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBD1CC5DE4300FD4608 /* id_rsa_password */; };
 		4A9FCFD31CC5DE4300FD4608 /* id_rsa_password.pub in Resources */ = {isa = PBXBuildFile; fileRef = 4A9FCFBE1CC5DE4300FD4608 /* id_rsa_password.pub */; };
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
+		4AEB8F711CD2079A00028BBE /* EchoServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AEB8F701CD2079A00028BBE /* EchoServer.swift */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */; };
 		CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */; };
@@ -86,6 +87,41 @@
 			proxyType = 1;
 			remoteGlobalIDString = E070549D51EE4C8B9D0965F7;
 			remoteInfo = ssh_threads_static;
+		};
+		4A360D871CD1FF5800BBD10E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E88984E8194A760300A831A3;
+			remoteInfo = ARIEchoServer;
+		};
+		4A360D891CD1FF5800BBD10E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E85D5FE4194B917900ECC32A;
+			remoteInfo = ARIFetch;
+		};
+		4A360D8B1CD1FF5800BBD10E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3710E9F11BF548480002A4DB;
+			remoteInfo = "SwiftSockets-OSX";
+		};
+		4A360D8D1CD1FF5800BBD10E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 3710EA071BF548C80002A4DB;
+			remoteInfo = "SwiftSockets-iOS";
+		};
+		4A360D8F1CD1FFB300BBD10E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 3710E9F01BF548480002A4DB;
+			remoteInfo = "SwiftSockets-OSX";
 		};
 		4AEF725719FFE2AE009B0CC7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -147,6 +183,7 @@
 		4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitHostKey.m; sourceTree = "<group>"; };
 		4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitCoreCommon.h; sourceTree = "<group>"; };
 		4A360D7E1CD1F02900BBD10E /* ForwardChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ForwardChannelTests.swift; sourceTree = "<group>"; };
+		4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SwiftSockets.xcodeproj; path = SwiftSockets/SwiftSockets.xcodeproj; sourceTree = "<group>"; };
 		4A3D1E291C603F21009F9760 /* SSHKitChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitChannel.h; sourceTree = "<group>"; };
 		4A3D1E2A1C603F21009F9760 /* SSHKitChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitChannel.m; sourceTree = "<group>"; };
 		4A3D1E2D1C604405009F9760 /* SSHKitDirectChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitDirectChannel.h; sourceTree = "<group>"; };
@@ -185,6 +222,7 @@
 		4A9FCFBE1CC5DE4300FD4608 /* id_rsa_password.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = id_rsa_password.pub; sourceTree = "<group>"; };
 		4AC052C71B4ACB8F00B555F6 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitCoreCommon.m; sourceTree = "<group>"; };
+		4AEB8F701CD2079A00028BBE /* EchoServer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EchoServer.swift; sourceTree = "<group>"; };
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
@@ -203,7 +241,6 @@
 		CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPFile.h; sourceTree = "<group>"; };
 		CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPFile.m; sourceTree = "<group>"; };
 		CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SFTPTests.swift; sourceTree = "<group>"; };
-		CCE0E5211C858CC400E81427 /* echo_server.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = echo_server.py; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
 		E42815C11593D95200CF680C /* SSHKitSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSession.m; sourceTree = "<group>"; };
 		E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SSHKitCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -220,6 +257,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A360D911CD1FFC400BBD10E /* SwiftSockets.framework in Frameworks */,
 				CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -250,6 +288,17 @@
 				4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		4A360D811CD1FF5800BBD10E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4A360D881CD1FF5800BBD10E /* ARIEchoServer.app */,
+				4A360D8A1CD1FF5800BBD10E /* ARIFetch.app */,
+				4A360D8C1CD1FF5800BBD10E /* SwiftSockets.framework */,
+				4A360D8E1CD1FF5800BBD10E /* SwiftSockets.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		4A3D1E281C603F21009F9760 /* Channel */ = {
@@ -310,6 +359,7 @@
 			isa = PBXGroup;
 			children = (
 				CCB4D4731C7595D900B9A925 /* README.MD */,
+				4AEB8F701CD2079A00028BBE /* EchoServer.swift */,
 				4A9FCFA91CC5DE4300FD4608 /* identities */,
 				CC77632F1C566F0700B584F5 /* ssh */,
 				4A9FCFA61CC5C1AF00FD4608 /* KeyPairTests.swift */,
@@ -331,7 +381,6 @@
 			children = (
 				4A1DC2331CC7178600458E3E /* initTestEnv.sh */,
 				4A1DC2341CC7178600458E3E /* osx-adduser.sh */,
-				CCE0E5211C858CC400E81427 /* echo_server.py */,
 				CC7763301C56704B00B584F5 /* ssh_rsa_key */,
 				CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */,
 			);
@@ -355,6 +404,7 @@
 				4AC052C71B4ACB8F00B555F6 /* README.md */,
 				4AF3D46B1BCF8AA2009970A9 /* Makefile */,
 				4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */,
+				4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */,
 				E4E96D8D158E10FD002E6E0A /* SSHKitCore */,
 				CC77631E1C5665F700B584F5 /* SSHKitCoreTests */,
 				E4E96D86158E10FD002E6E0A /* Frameworks */,
@@ -458,6 +508,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4A360D901CD1FFB300BBD10E /* PBXTargetDependency */,
 				CC7763241C5665F700B584F5 /* PBXTargetDependency */,
 			);
 			name = SSHKitCoreTests;
@@ -517,6 +568,10 @@
 					ProductGroup = 4AEF724119FFE2AC009B0CC7 /* Products */;
 					ProjectRef = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 				},
+				{
+					ProductGroup = 4A360D811CD1FF5800BBD10E /* Products */;
+					ProjectRef = 4A360D801CD1FF5800BBD10E /* SwiftSockets.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -527,6 +582,34 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		4A360D881CD1FF5800BBD10E /* ARIEchoServer.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = ARIEchoServer.app;
+			remoteRef = 4A360D871CD1FF5800BBD10E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4A360D8A1CD1FF5800BBD10E /* ARIFetch.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = ARIFetch.app;
+			remoteRef = 4A360D891CD1FF5800BBD10E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4A360D8C1CD1FF5800BBD10E /* SwiftSockets.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftSockets.framework;
+			remoteRef = 4A360D8B1CD1FF5800BBD10E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		4A360D8E1CD1FF5800BBD10E /* SwiftSockets.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = SwiftSockets.framework;
+			remoteRef = 4A360D8D1CD1FF5800BBD10E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		4AEF725819FFE2AE009B0CC7 /* libssh.4.4.1.dylib */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.dylib";
@@ -578,7 +661,6 @@
 				4A9FCFC01CC5DE4300FD4608 /* id_dsa in Resources */,
 				CC7763321C56704B00B584F5 /* ssh_rsa_key in Resources */,
 				4A9FCFCC1CC5DE4300FD4608 /* id_rsa in Resources */,
-				4A9FCFA81CC5C2C600FD4608 /* echo_server.py in Resources */,
 				4A9FCFC41CC5DE4300FD4608 /* id_ecdsa in Resources */,
 				4A9FCFC91CC5DE4300FD4608 /* id_ed25519.pub in Resources */,
 				4A9FCFD11CC5DE4300FD4608 /* id_rsa_4096.pub in Resources */,
@@ -626,6 +708,7 @@
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
 				CC7763201C5665F700B584F5 /* SessionTestCase.swift in Sources */,
 				4A360D7F1CD1F02900BBD10E /* ForwardChannelTests.swift in Sources */,
+				4AEB8F711CD2079A00028BBE /* EchoServer.swift in Sources */,
 				4A1346ED1CC6091800A20CCE /* HostKeyTests.swift in Sources */,
 				CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */,
 			);
@@ -661,6 +744,11 @@
 			isa = PBXTargetDependency;
 			name = ssh_threads_static;
 			targetProxy = 4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */;
+		};
+		4A360D901CD1FFB300BBD10E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "SwiftSockets-OSX";
+			targetProxy = 4A360D8F1CD1FFB300BBD10E /* PBXContainerItemProxy */;
 		};
 		CC7763241C5665F700B584F5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
