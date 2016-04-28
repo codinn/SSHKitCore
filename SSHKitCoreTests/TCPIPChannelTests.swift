@@ -10,11 +10,12 @@ import XCTest
 
 class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     private var openExpectation: XCTestExpectation?
+    private var closeExpectation: XCTestExpectation?
     private var writeExpectation: XCTestExpectation?
     
     let echoTask = NSTask()
     let echoHost = "127.0.0.1"
-    let echoPort : UInt16 = 6007
+    let echoPort = 6007
     
     var writeDataCount: Int = 0
     let writeDataMaxTimes = 100
@@ -79,7 +80,7 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     
     // MARK: - Open Channel
     
-    func openDirectChannelWithTargetHost(host: String, port: UInt16) throws -> SSHKitChannel {
+    func openDirectChannelWithTargetHost(host: String, port: Int) throws -> SSHKitDirectChannel {
         let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
         
         openExpectation = expectationWithDescription("Open Direct Channel")
@@ -116,6 +117,8 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
         do {
             let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
             XCTAssert(channel.isOpen)
+            XCTAssertEqual(channel.targetHost, echoHost)
+            XCTAssertEqual( Int(channel.targetPort), echoPort)
         } catch let error as NSError {
             XCTFail(error.localizedDescription)
         }
@@ -159,6 +162,26 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
         }
     }
     
+    func testDirectChannelClose() {
+        do {
+            let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
+            XCTAssert(channel.isOpen)
+            XCTAssertEqual(channel.targetHost, echoHost)
+            XCTAssertEqual( Int(channel.targetPort), echoPort)
+            
+            closeExpectation = expectationWithDescription("Close direct channel")
+            channel.close()
+            waitForExpectationsWithTimeout(1) { error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
+            XCTAssertFalse(channel.isOpen)
+        } catch let error as NSError {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
     // MARK: - SSHKitChannelDelegate
     
     func channelDidOpen(channel: SSHKitChannel) {
@@ -181,4 +204,9 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
         print("didReadStderrData")
     }
 
+    func channelDidClose(channel: SSHKitChannel!, withError error: NSError!) {
+        if let expectation = closeExpectation {
+            expectation.fulfill()
+        }
+    }
 }
