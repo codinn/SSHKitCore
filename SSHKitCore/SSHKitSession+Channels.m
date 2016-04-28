@@ -12,11 +12,11 @@
 
 @interface SSHKitForwardRequest : NSObject
 
-- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block;
+- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitListeningRequestCompletionBlock)block;
 
 @property (readonly, copy) NSString    *listenHost;
 @property (readonly)       uint16_t    listenPort;
-@property (readonly, strong)       SSHKitForwardRequestCompletionBlock completionHandler;
+@property (readonly, strong)       SSHKitListeningRequestCompletionBlock completionHandler;
 
 @end
 
@@ -75,7 +75,7 @@
     return channel;
 }
 
-- (void)requestForwardChannelWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block {
+- (void)requestListeningOnAddress:(NSString *)host port:(uint16_t)port completion:(SSHKitListeningRequestCompletionBlock)block {
     __weak SSHKitSession *weakSelf = self;
     
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
@@ -163,13 +163,13 @@
 
 @property (readwrite, copy) NSString    *listenHost;
 @property (readwrite)       uint16_t    listenPort;
-@property (readwrite, strong)       SSHKitForwardRequestCompletionBlock completionHandler;
+@property (readwrite, strong)       SSHKitListeningRequestCompletionBlock completionHandler;
 
 @end
 
 @implementation SSHKitForwardRequest
 
-- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block {
+- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitListeningRequestCompletionBlock)block {
     self = [super init];
     
     if (self) {

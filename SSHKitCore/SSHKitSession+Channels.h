@@ -18,7 +18,21 @@
 
 - (SSHKitDirectChannel *)openDirectChannelWithTargetHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
-- (void)requestForwardChannelWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block;
+/**
+ * @brief Sends the "tcpip-forward" global request to ask the server to begin
+ *        listening for inbound connections.
+ *
+ * @param[in]  host     The address to bind to on the server. Pass NULL to bind
+ *                      to all available addresses on all protocol families
+ *                      supported by the server.
+ *
+ * @param[in]  port     The port to bind to on the server. Pass 0 to ask the
+ *                      server to allocate the next available unprivileged port
+ *                      number
+ *
+ * @param[in]  block    A block will run after request complete
+ **/
+- (void)requestListeningOnAddress:(NSString *)host port:(uint16_t)port completion:(SSHKitListeningRequestCompletionBlock)block;
 
 - (SSHKitShellChannel *)openShellChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate;
 

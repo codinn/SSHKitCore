@@ -13,6 +13,8 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
     private var closeExpectation: XCTestExpectation?
     private var writeExpectation: XCTestExpectation?
     
+    private var forwardChannel: SSHKitForwardChannel?
+    
     let echoTask = NSTask()
     let echoHost = "127.0.0.1"
     let echoPort = 6007
@@ -78,7 +80,7 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
         echoTask.terminate()
     }
     
-    // MARK: - Open Channel
+    // MARK: - Direct-TCPIP Channel
     
     func openDirectChannelWithTargetHost(host: String, port: Int) throws -> SSHKitDirectChannel {
         let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
@@ -98,20 +100,6 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
         
         return channel
     }
-    
-    func openForwardChannelWithSession(session: SSHKitSession) -> SSHKitChannel {
-        openExpectation = expectationWithDescription("Open Forward Channel")
-        let channel = session.openForwardChannel()
-        waitForExpectationsWithTimeout(1) { error in
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
-        }
-        XCTAssert(channel.isOpen)
-        return channel
-    }
-    
-    // MARK: - Direct-TCPIP Channel
     
     func testOpenDirectChannel() {
         do {
@@ -162,7 +150,94 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
         }
     }
     
-    func testDirectChannelClose() {
+    func testCloseDirectChannel() {
+        do {
+            let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
+            XCTAssert(channel.isOpen)
+            XCTAssertEqual(channel.targetHost, echoHost)
+            XCTAssertEqual( Int(channel.targetPort), echoPort)
+            
+            closeExpectation = expectationWithDescription("Close direct channel")
+            channel.close()
+            waitForExpectationsWithTimeout(1) { error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
+            XCTAssertFalse(channel.isOpen)
+        } catch let error as NSError {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
+    // MARK: - TCPIP-Forward Channel
+    
+    func doTryOpenForwardChannelWithListenHost(host: String, port: Int) throws -> SSHKitForwardChannel {
+        let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+        
+        let requestExpectation = expectationWithDescription("Request forward channel")
+        openExpectation = expectationWithDescription("Open Forward Channel")
+        
+        session.requestListeningOnAddress(host, port: UInt16(port)) { (success, boundPort, error) in
+            if error != nil {
+                self.error = error
+            }
+            
+            XCTAssertEqual(port, Int(boundPort))
+            requestExpectation.fulfill()
+        }
+        
+        waitForExpectationsWithTimeout(1) { error in
+            if let error = error {
+                self.error = error
+            }
+        }
+        
+        if let error = self.error {
+            throw error
+        }
+        
+        XCTAssertNotNil(forwardChannel)
+        return forwardChannel!
+    }
+    
+    func testOpenForwardChannel() {
+        do {
+            let channel = try self.doTryOpenForwardChannelWithListenHost(sshHost, port: echoPort+1)
+            XCTAssert(channel.isOpen)
+            XCTAssertEqual(channel.destinationPort, echoPort+1)
+        } catch let error as NSError {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
+    func testReadWriteForwardChannel() {
+        do {
+            let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
+            XCTAssert(channel.isOpen)
+            
+            writeExpectation = expectationWithDescription("Channel write data")
+            let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
+            
+            totoalWroteDataLength = (data?.length)! * writeDataMaxTimes
+            for _ in 0..<writeDataMaxTimes {
+                channel.writeData(data)
+                dataWrote.appendData(data!)
+            }
+            
+            waitForExpectationsWithTimeout(5) { error in
+                if let error = error {
+                    XCTFail(error.description)
+                }
+            }
+            
+            XCTAssertEqual(dataRead, dataWrote)
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testCloseForwardChannel() {
         do {
             let channel = try self.openDirectChannelWithTargetHost(echoHost, port: echoPort)
             XCTAssert(channel.isOpen)
@@ -208,5 +283,12 @@ class TCPIPChannelTests: SessionTestCase, SSHKitChannelDelegate {
         if let expectation = closeExpectation {
             expectation.fulfill()
         }
+    }
+    
+    // MARK: - SSHKitSessionDelegate
+    
+    func session(session: SSHKitSession!, didOpenForwardChannel channel: SSHKitForwardChannel!) {
+        forwardChannel = channel
+        openExpectation!.fulfill()
     }
 }
