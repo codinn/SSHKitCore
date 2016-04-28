@@ -15,6 +15,7 @@
 		4A2B5B071A4A6F3C007D20DF /* SSHKitHostKey.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B051A4A6F3C007D20DF /* SSHKitHostKey.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A2B5B081A4A6F3C007D20DF /* SSHKitHostKey.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */; };
 		4A2B5B241A4BBE3F007D20DF /* SSHKitCoreCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4A360D7F1CD1F02900BBD10E /* ForwardChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A360D7E1CD1F02900BBD10E /* ForwardChannelTests.swift */; };
 		4A3D1E2B1C603F21009F9760 /* SSHKitChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E291C603F21009F9760 /* SSHKitChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4A3D1E2C1C603F22009F9760 /* SSHKitChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D1E2A1C603F21009F9760 /* SSHKitChannel.m */; };
 		4A3D1E2F1C604405009F9760 /* SSHKitDirectChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 4A3D1E2D1C604405009F9760 /* SSHKitDirectChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -54,7 +55,7 @@
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
 		CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */; };
-		CC5F9DA91C7A013E008F0A3A /* TCPIPChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* TCPIPChannelTests.swift */; };
+		CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */; };
 		CC7763201C5665F700B584F5 /* SessionTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC77631F1C5665F700B584F5 /* SessionTestCase.swift */; };
 		CC7763221C5665F700B584F5 /* SSHKitCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */; };
 		CC7763321C56704B00B584F5 /* ssh_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_rsa_key */; };
@@ -145,6 +146,7 @@
 		4A2B5B051A4A6F3C007D20DF /* SSHKitHostKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitHostKey.h; sourceTree = "<group>"; };
 		4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitHostKey.m; sourceTree = "<group>"; };
 		4A2B5B231A4BBE3F007D20DF /* SSHKitCoreCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitCoreCommon.h; sourceTree = "<group>"; };
+		4A360D7E1CD1F02900BBD10E /* ForwardChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ForwardChannelTests.swift; sourceTree = "<group>"; };
 		4A3D1E291C603F21009F9760 /* SSHKitChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitChannel.h; sourceTree = "<group>"; };
 		4A3D1E2A1C603F21009F9760 /* SSHKitChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitChannel.m; sourceTree = "<group>"; };
 		4A3D1E2D1C604405009F9760 /* SSHKitDirectChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitDirectChannel.h; sourceTree = "<group>"; };
@@ -187,7 +189,7 @@
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
 		CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
-		CC5F9DA81C7A013E008F0A3A /* TCPIPChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TCPIPChannelTests.swift; sourceTree = "<group>"; };
+		CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectChannelTests.swift; sourceTree = "<group>"; };
 		CC77631D1C5665F700B584F5 /* SSHKitCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SSHKitCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC77631F1C5665F700B584F5 /* SessionTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTestCase.swift; sourceTree = "<group>"; };
 		CC7763211C5665F700B584F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -314,7 +316,8 @@
 				4A1346EC1CC6091800A20CCE /* HostKeyTests.swift */,
 				CC77631F1C5665F700B584F5 /* SessionTestCase.swift */,
 				CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */,
-				CC5F9DA81C7A013E008F0A3A /* TCPIPChannelTests.swift */,
+				CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */,
+				4A360D7E1CD1F02900BBD10E /* ForwardChannelTests.swift */,
 				CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */,
 				CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */,
 				CC7763211C5665F700B584F5 /* Info.plist */,
@@ -620,8 +623,9 @@
 				CCCDEA561C9DAE9400319B01 /* SFTPTests.swift in Sources */,
 				4A9FCFA71CC5C1AF00FD4608 /* KeyPairTests.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
-				CC5F9DA91C7A013E008F0A3A /* TCPIPChannelTests.swift in Sources */,
+				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
 				CC7763201C5665F700B584F5 /* SessionTestCase.swift in Sources */,
+				4A360D7F1CD1F02900BBD10E /* ForwardChannelTests.swift in Sources */,
 				4A1346ED1CC6091800A20CCE /* HostKeyTests.swift in Sources */,
 				CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */,
 			);
