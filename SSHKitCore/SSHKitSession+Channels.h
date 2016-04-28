@@ -18,9 +18,7 @@
 
 - (SSHKitDirectChannel *)openDirectChannelWithTargetHost:(NSString *)host port:(NSUInteger)port delegate:(id<SSHKitChannelDelegate>)aDelegate;
 
-- (SSHKitForwardChannel *)openForwardChannel;
-
-- (void)enqueueForwardRequestWithListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
+- (void)requestForwardChannelWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block;
 
 - (SSHKitShellChannel *)openShellChannelWithTerminalType:(NSString *)type columns:(NSInteger)columns rows:(NSInteger)rows delegate:(id<SSHKitShellChannelDelegate>)aDelegate;
 
@@ -28,5 +26,8 @@
 
 // @internal
 - (void)doSendForwardRequest;
+
+// @internal
+- (SSHKitForwardChannel *)doTryOpenForwardChannel;
 
 @end

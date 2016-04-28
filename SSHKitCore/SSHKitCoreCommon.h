@@ -115,7 +115,7 @@ typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
 typedef NSString *(^ SSHKitAskPassBlock)();
 typedef NSArray *(^ SSHKitAskInteractiveInfoBlock)(NSInteger, NSString *, NSString *, NSArray *);
 
-typedef void (^ SSHKitRequestRemoteForwardCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
+typedef void (^ SSHKitForwardRequestCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
 
 // Block typedefs
 typedef void(^SSHKitSFTPRequestCancelHandler)(void);

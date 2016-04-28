@@ -12,11 +12,11 @@
 
 @interface SSHKitForwardRequest : NSObject
 
-- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler;
+- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block;
 
 @property (readonly, copy) NSString    *listenHost;
 @property (readonly)       uint16_t    listenPort;
-@property (readonly, strong)       SSHKitRequestRemoteForwardCompletionBlock completionHandler;
+@property (readonly, strong)       SSHKitForwardRequestCompletionBlock completionHandler;
 
 @end
 
@@ -54,7 +54,7 @@
     return channel;
 }
 
-- (SSHKitForwardChannel *)openForwardChannel {
+- (SSHKitForwardChannel *)doTryOpenForwardChannel {
     NSAssert([self isOnSessionQueue], @"Must be dispatched on session queue");
     
     int destination_port = 0;
@@ -75,7 +75,7 @@
     return channel;
 }
 
-- (void)enqueueForwardRequestWithListenHost:(NSString *)host listenPort:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler {
+- (void)requestForwardChannelWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block {
     __weak SSHKitSession *weakSelf = self;
     
     [self dispatchAsyncOnSessionQueue: ^{ @autoreleasepool {
@@ -84,7 +84,7 @@
             return_from_block;
         }
         
-        SSHKitForwardRequest *request = [[SSHKitForwardRequest alloc] initWithListenHost:host port:port completionHandler:completionHandler];
+        SSHKitForwardRequest *request = [[SSHKitForwardRequest alloc] initWithListenHost:host port:port completion:block];
         
         [strongSelf->_forwardRequests addObject:request];
         [strongSelf doSendForwardRequest];
@@ -163,13 +163,13 @@
 
 @property (readwrite, copy) NSString    *listenHost;
 @property (readwrite)       uint16_t    listenPort;
-@property (readwrite, strong)       SSHKitRequestRemoteForwardCompletionBlock completionHandler;
+@property (readwrite, strong)       SSHKitForwardRequestCompletionBlock completionHandler;
 
 @end
 
 @implementation SSHKitForwardRequest
 
-- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completionHandler:(SSHKitRequestRemoteForwardCompletionBlock)completionHandler {
+- (instancetype)initWithListenHost:(NSString *)host port:(uint16_t)port completion:(SSHKitForwardRequestCompletionBlock)block {
     self = [super init];
     
     if (self) {
@@ -180,7 +180,7 @@
         }
         
         self.listenPort = port;
-        self.completionHandler = completionHandler;
+        self.completionHandler = block;
     }
     
     return self;

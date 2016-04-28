@@ -769,7 +769,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                 // WARN: keep following lines of code, prevent wild data trigger dispatch souce again and again
                 //       another method is create a temporary channel, and let it consumes the wild data.
                 //       The real cause is unkown, may be it's caused by data arrived while channels already closed
-                SSHKitForwardChannel *forwardChannel = [self openForwardChannel];
+                SSHKitForwardChannel *forwardChannel = [self doTryOpenForwardChannel];
                 
                 if (forwardChannel) {
                     if (strongSelf->_delegateFlags.didOpenForwardChannel) {
