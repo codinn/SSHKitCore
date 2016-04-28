@@ -13,8 +13,15 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
     private var closeExpectation: XCTestExpectation?
     private var writeExpectation: XCTestExpectation?
     
-    let listenHost = "127.0.0.1"
-    let listenPort = 6008
+    private let listenHost = "127.0.0.1"
+    private let listenPort = 6008
+    
+    private var writeDataCount: Int = 0
+    private let writeDataMaxTimes = 100
+    private var totoalWroteDataLength: Int = -1
+    
+    private let dataWrote = NSMutableData()
+    private let dataRead = NSMutableData()
     
     private var forwardChannel: SSHKitForwardChannel?
 
@@ -58,7 +65,7 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
         return resultPort
     }
     
-    func openForwardChannelWithListenHost(host: String, port: Int) throws -> (channel: SSHKitForwardChannel, input: NSInputStream, output: NSOutputStream) {
+    func openWithListenHost(host: String, port: Int) throws -> (channel: SSHKitForwardChannel, input: NSInputStream, output: NSOutputStream) {
         let resultPort = try requestListeningOnAddress(host, port: port)
         XCTAssertEqual(port, resultPort)
         
@@ -97,26 +104,26 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
         }
     }
     
-    func testReadWriteForwardChannel() {
+    func testReadWrite() {
         do {
-            let (channel, inputStream, outputStream) = try openForwardChannelWithListenHost(listenHost, port: listenPort)
+            let (channel, inputStream, outputStream) = try openWithListenHost(listenHost, port: listenPort)
             
-            //            writeExpectation = expectationWithDescription("Channel write data")
-            //            let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
-            //
-            //            totoalWroteDataLength = (data?.length)! * writeDataMaxTimes
-            //            for _ in 0..<writeDataMaxTimes {
-            //                channel.writeData(data)
-            //                dataWrote.appendData(data!)
-            //            }
-            //
-            //            waitForExpectationsWithTimeout(5) { error in
-            //                if let error = error {
-            //                    XCTFail(error.description)
-            //                }
-            //            }
-            //
-            //            XCTAssertEqual(dataRead, dataWrote)
+            writeExpectation = expectationWithDescription("Channel write data")
+            let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
+            
+            totoalWroteDataLength = (data?.length)! * writeDataMaxTimes
+            for _ in 0..<writeDataMaxTimes {
+                channel.writeData(data)
+                dataWrote.appendData(data!)
+            }
+
+            waitForExpectationsWithTimeout(5) { error in
+                if let error = error {
+                    XCTFail(error.description)
+                }
+            }
+
+            XCTAssertEqual(dataRead, dataWrote)
         } catch let error as NSError {
             XCTFail(error.description)
         }
@@ -137,9 +144,15 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
     }
     
     func channelDidWriteData(channel: SSHKitChannel) {
+        writeDataCount += 1
     }
     
     func channel(channel: SSHKitChannel, didReadStdoutData data: NSData) {
+        dataRead.appendData(data)
+        
+        if writeDataCount == writeDataMaxTimes && dataRead.length == totoalWroteDataLength {
+            writeExpectation!.fulfill()
+        }
     }
     
     func channel(channel: SSHKitChannel, didReadStderrData data: NSData) {

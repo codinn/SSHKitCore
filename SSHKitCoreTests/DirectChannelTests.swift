@@ -13,16 +13,16 @@ class DirectChannelTests: SessionTestCase, SSHKitChannelDelegate {
     private var closeExpectation: XCTestExpectation?
     private var writeExpectation: XCTestExpectation?
     
-    let echoTask = NSTask()
-    let echoHost = "127.0.0.1"
-    let echoPort = 6007
+    private let echoTask = NSTask()
+    private let echoHost = "127.0.0.1"
+    private let echoPort = 6007
     
-    var writeDataCount: Int = 0
-    let writeDataMaxTimes = 100
-    var totoalWroteDataLength: Int = -1
+    private var writeDataCount: Int = 0
+    private let writeDataMaxTimes = 100
+    private var totoalWroteDataLength: Int = -1
     
-    let dataWrote = NSMutableData()
-    let dataRead = NSMutableData()
+    private let dataWrote = NSMutableData()
+    private let dataRead = NSMutableData()
 
     override func setUp() {
         super.setUp()
