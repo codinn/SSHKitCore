@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import SwiftSockets
 
 class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
     private var openExpectation: XCTestExpectation?
@@ -37,7 +38,7 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
     
     // MARK: - TCPIP-Forward Channel
     
-    func requestListeningOnAddress(host: String, port: Int) throws -> Int {
+    func requestListeningOnAddress(host: String, port: Int) throws -> (SSHKitSession, Int) {
         let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
         let requestExpectation = expectationWithDescription("Request listening on remote")
         
@@ -62,27 +63,23 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
             throw error
         }
         
-        return resultPort
+        return (session, resultPort)
     }
     
-    func openWithListenHost(host: String, port: Int) throws -> (channel: SSHKitForwardChannel, input: NSInputStream, output: NSOutputStream) {
-        let resultPort = try requestListeningOnAddress(host, port: port)
+    func openWithListenHost(host: String, port: Int) throws -> (session: SSHKitSession, channel: SSHKitForwardChannel, clientSocket: ActiveSocketIPv4) {
+        let (session, resultPort) = try requestListeningOnAddress(host, port: port)
         XCTAssertEqual(port, resultPort)
-        
-        // connect to opened port
-        var inp :NSInputStream?
-        var out :NSOutputStream?
         
         openExpectation = expectationWithDescription("Open Forward Channel")
         
-        NSStream.getStreamsToHostWithName(host, port: resultPort, inputStream: &inp, outputStream: &out)
+        // connect to opened port
+        let remoteBoundAddress = sockaddr_in(address:host, port:port)
+        let sendBackClient = ActiveSocketIPv4()!
         
-        let inputStream = inp!
-        let outputStream = out!
-        inputStream.open()
-        outputStream.open()
+        sendBackClient.connect(remoteBoundAddress) { socket in
+        }
         
-        waitForExpectationsWithTimeout(10) { error in
+        waitForExpectationsWithTimeout(1) { error in
             if let error = error {
                 self.error = error
             }
@@ -92,13 +89,14 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
             throw error
         }
         
-        return (forwardChannel!, inputStream, outputStream)
+        return (session, forwardChannel!, sendBackClient)
     }
     
     func testRequestRemoteListening() {
         do {
-            let resultPort = try self.requestListeningOnAddress(listenHost, port: listenPort)
+            let (session, resultPort) = try self.requestListeningOnAddress(listenHost, port: listenPort)
             XCTAssertEqual(listenPort, resultPort)
+            try disconnectSessionAndWait(session)
         } catch let error as NSError {
             XCTFail(error.localizedDescription)
         }
@@ -106,7 +104,19 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
     
     func testReadWrite() {
         do {
-            let (channel, inputStream, outputStream) = try openWithListenHost(listenHost, port: listenPort)
+            let (session, channel, client) = try openWithListenHost(listenHost, port: listenPort)
+            XCTAssert(channel.isOpen)
+            
+            // receive data then just echo back
+            client.onRead({ (sock, _) in
+                let (count, data, errno) = sock.read()
+                guard count > 0 else {
+                    print("EOF, or great error handling \(errno).")
+                    return
+                }
+                
+                sock.asyncWrite(data, length: count)
+            })
             
             writeExpectation = expectationWithDescription("Channel write data")
             let data = "00000000123456789qwertyuiop]中文".dataUsingEncoding(NSUTF8StringEncoding)
@@ -124,17 +134,30 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
             }
 
             XCTAssertEqual(dataRead, dataWrote)
+            try disconnectSessionAndWait(session)
         } catch let error as NSError {
             XCTFail(error.description)
         }
     }
     
-    func testCloseForwardChannel() {
-//        do {
-//            XCTAssertFalse(channel.isOpen)
-//        } catch let error as NSError {
-//            XCTFail(error.localizedDescription)
-//        }
+    func testClose() {
+        do {
+            let (session, channel, _) = try openWithListenHost(listenHost, port: listenPort)
+            XCTAssert(channel.isOpen)
+            
+            closeExpectation = expectationWithDescription("Close forward channel")
+            channel.close()
+            
+            waitForExpectationsWithTimeout(1) { error in
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
+            XCTAssertFalse(channel.isOpen)
+            try disconnectSessionAndWait(session)
+        } catch let error as NSError {
+            XCTFail(error.localizedDescription)
+        }
     }
     
     // MARK: - SSHKitChannelDelegate
@@ -168,6 +191,7 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
     // MARK: - SSHKitSessionDelegate
     
     func session(session: SSHKitSession!, didOpenForwardChannel channel: SSHKitForwardChannel!) {
+        channel.delegate = self;
         forwardChannel = channel
         openExpectation!.fulfill()
     }
