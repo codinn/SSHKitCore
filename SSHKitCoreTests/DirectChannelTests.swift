@@ -143,7 +143,7 @@ class DirectChannelTests: SessionTestCase, SSHKitChannelDelegate {
     }
     
     func channel(channel: SSHKitChannel, didReadStderrData data: NSData) {
-        print("didReadStderrData")
+        XCTFail("Should never reach here")
     }
 
     func channelDidClose(channel: SSHKitChannel!, withError error: NSError!) {

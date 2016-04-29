@@ -154,6 +154,9 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
                                             code:rc
                                         userInfo: @{ NSLocalizedDescriptionKey : @"Failed to change remote pty size" }];
             }
+        } else {
+            strongSelf->_columns = columns;
+            strongSelf->_rows = rows;
         }
         
         [strongSelf.delegate channel:strongSelf didChangePtySizeToColumns:columns rows:rows withError:error];
