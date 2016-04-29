@@ -13,6 +13,7 @@ class ShellChannelTests: SessionTestCase, SSHKitShellChannelDelegate {
     private var openExpectation: XCTestExpectation?
     private var writeCmdExpectation: XCTestExpectation?
     private var readResultExpectation: XCTestExpectation?
+    private var closeExpectation: XCTestExpectation?
     
     // let server prints its system name
     private let command = "uname -s\n"
@@ -69,11 +70,11 @@ class ShellChannelTests: SessionTestCase, SSHKitShellChannelDelegate {
             }
             
             if let error = self.error {
-                XCTFail(error.description)
-            } else {
-                XCTAssertEqual(channel.rows, 150)
-                XCTAssertEqual(channel.columns, 150)
+                throw error
             }
+            
+            XCTAssertEqual(channel.rows, 150)
+            XCTAssertEqual(channel.columns, 150)
         } catch let error as NSError {
             XCTFail(error.description)
         }
@@ -97,13 +98,40 @@ class ShellChannelTests: SessionTestCase, SSHKitShellChannelDelegate {
             }
             
             if let error = self.error {
-                XCTFail(error.description)
-                return
+                throw error
             }
         } catch let error as NSError {
             XCTFail(error.description)
         }
     }
+    
+    func testClose() {
+        do {
+            let session = try self.launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+            let channel = try self.openChannelWithSession(session)
+            XCTAssert(channel.isOpen)
+            
+            closeExpectation = expectationWithDescription("Close forward channel")
+            channel.close()
+            
+            waitForExpectationsWithTimeout(1) { error in
+                if let error = error {
+                    self.error = error
+                }
+            }
+            
+            if let error = self.error {
+                throw error
+            }
+            
+            XCTAssertFalse(channel.isOpen)
+            try disconnectSessionAndWait(session)
+        } catch let error as NSError {
+            XCTFail(error.localizedDescription)
+        }
+    }
+    
+    // TODO: add case for stderr data
     
     // MARK: - SSHKitChannelDelegate
     
@@ -127,6 +155,7 @@ class ShellChannelTests: SessionTestCase, SSHKitShellChannelDelegate {
     
     func channelDidClose(channel: SSHKitChannel, withError error: NSError) {
         self.error = error;
+        closeExpectation?.fulfill()
     }
     
     func channelDidOpen(channel: SSHKitChannel) {

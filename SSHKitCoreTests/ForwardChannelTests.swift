@@ -183,9 +183,8 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
     }
     
     func channelDidClose(channel: SSHKitChannel!, withError error: NSError!) {
-        if let expectation = closeExpectation {
-            expectation.fulfill()
-        }
+        self.error = error
+        closeExpectation?.fulfill()
     }
     
     // MARK: - SSHKitSessionDelegate
