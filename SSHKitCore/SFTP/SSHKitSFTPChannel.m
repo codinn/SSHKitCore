@@ -187,7 +187,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
             ];
 }
 
-- (int)rename:(NSString *)original mode:(NSString *)newName {
+- (int)rename:(NSString *)original newName:(NSString *)newName {
     return sftp_rename(self.rawSFTPSession, [original UTF8String], [newName UTF8String]);
 }
 

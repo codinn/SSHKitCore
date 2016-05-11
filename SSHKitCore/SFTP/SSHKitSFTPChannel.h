@@ -27,7 +27,7 @@
 - (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode;
 - (NSString *)canonicalizePath:(NSString *)path;
 - (int)chmod:(NSString *)filePath mode:(unsigned long)mode;
-- (int)rename:(NSString *)original mode:(NSString *)newName;
+- (int)rename:(NSString *)original newName:(NSString *)newName;
 - (int)mkdir:(NSString *)directoryPath mode:(unsigned long)mode;
 - (int)rmdir:(NSString *)directoryPath;
 - (int)unlink:(NSString *)filePath;
