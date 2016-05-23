@@ -24,8 +24,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     int _againCount;
 }
 
-@property (nonatomic, strong) NSString *fullFilename;
-@property (nonatomic, strong) NSString *filename;
 @property (nonatomic, readwrite) BOOL isDirectory;
 @property (nonatomic, strong) NSDate *modificationDate;
 @property (nonatomic, strong) NSDate *lastAccess;

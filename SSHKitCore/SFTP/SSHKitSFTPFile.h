@@ -20,9 +20,9 @@
  Property that stores the name of the underlaying file.
  Note that the file may also be a directory.
  */
-@property (nonatomic, readonly) NSString *filename;
+@property (nonatomic) NSString *filename;
 
-@property (nonatomic, readonly) NSString *fullFilename;
+@property (nonatomic) NSString *fullFilename;
 
 /** Property that declares whether the file is a directory or a regular file */
 @property (nonatomic, readonly) BOOL isDirectory;
