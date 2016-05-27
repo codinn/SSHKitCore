@@ -313,6 +313,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         SET_SSH_OPTIONS(SSH_OPTIONS_KEY_EXCHANGE, kex.UTF8String);
     }
     
+    // Make ssh dir self-adaptive, points to app container in sandbox env, and points to `~/.ssh` otherwise
+    NSString *sshdir = [NSString stringWithFormat:@"%@/.ssh", NSHomeDirectory()];
+    SET_SSH_OPTIONS(SSH_OPTIONS_SSH_DIR, sshdir.UTF8String);
+    
     // host key algorithms
     NSString *hostKeys = self.options[kVTKitHostKeyAlgorithmsKey];
     if (hostKeys.length) {
