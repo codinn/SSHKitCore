@@ -25,6 +25,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 @property (nonatomic, readwrite) BOOL isDirectory;
+@property (nonatomic, strong) NSDate *creationDate;
 @property (nonatomic, strong) NSDate *modificationDate;
 @property (nonatomic, strong) NSDate *lastAccess;
 @property (nonatomic, strong) NSNumber *fileSize;
@@ -257,6 +258,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         self.fullFilename = [parentPath stringByAppendingPathComponent:filename];
     }
     self.modificationDate = [NSDate dateWithTimeIntervalSince1970:fileAttributes->mtime];
+    self.creationDate = [NSDate dateWithTimeIntervalSince1970:fileAttributes->createtime];
     self.lastAccess = [NSDate dateWithTimeIntervalSinceNow:fileAttributes->atime];
     self.fileSize = @(fileAttributes->size);
     self.ownerUserID = fileAttributes->uid;

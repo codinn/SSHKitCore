@@ -27,6 +27,8 @@
 /** Property that declares whether the file is a directory or a regular file */
 @property (nonatomic, readonly) BOOL isDirectory;
 
+@property (nonatomic, readonly) NSDate *creationDate;
+
 /** Returns the last modification date of the file */
 @property (nonatomic, readonly) NSDate *modificationDate;
 
