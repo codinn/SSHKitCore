@@ -31,7 +31,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 @property (nonatomic, readwrite) unsigned long ownerUserID;
 @property (nonatomic, readwrite) unsigned long ownerGroupID;
 @property (nonatomic, strong) NSString *permissions;
-@property (nonatomic) unsigned long posixPermissions;
 @property (nonatomic, readwrite) u_long flags;
 
 @property (nonatomic) SSHKitFileStage stage;
@@ -262,11 +261,15 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self.fileSize = @(fileAttributes->size);
     self.ownerUserID = fileAttributes->uid;
     self.ownerGroupID = fileAttributes->gid;
-    self.permissions = [self convertPermissionToSymbolicNotation:fileAttributes->permissions];
     self.posixPermissions = fileAttributes->permissions;
     self->_fileTypeLetter = [self fileTypeLetter:fileAttributes->permissions];
     self.isDirectory = S_ISDIR(fileAttributes->permissions);
     self.flags = fileAttributes->flags;
+}
+
+- (void)setPosixPermissions:(unsigned long)posixPermissions {
+    _posixPermissions = posixPermissions;
+    self.permissions = [self convertPermissionToSymbolicNotation:posixPermissions];
 }
 
 - (void)close {

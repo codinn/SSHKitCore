@@ -45,7 +45,7 @@
 /** Returns the file permissions in symbolic notation. E.g. drwxr-xr-x */
 @property (nonatomic, readonly) NSString *permissions;
 
-@property (nonatomic, readonly) unsigned long posixPermissions;
+@property (nonatomic) unsigned long posixPermissions;
 
 @property (nonatomic, readonly) char fileTypeLetter;
 
