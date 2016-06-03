@@ -574,8 +574,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 
 - (void)authenticateWithAskInteractiveInfo:(SSHKitAskInteractiveInfoBlock)askInteractiveInfo {
-    self.stage = SSHKitSessionStageAuthenticating;
-
     __block NSInteger index = 0;
     __block int rc = SSH_AUTH_AGAIN;
     
@@ -585,6 +583,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         if (!strongSelf) {
             return_from_block;
         }
+        
+        strongSelf.stage = SSHKitSessionStageAuthenticating;
         
         // try keyboard-interactive method
         if (rc==SSH_AUTH_AGAIN) {
@@ -615,7 +615,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                         [prompts addObject:@[promptString, @(echo)]];
                     }
                     
+                    // we cancel connect timer for temporarily, since askInteractiveInfo might waiting for user type in
+                    [strongSelf _cancelConnectTimer];
                     NSArray *information = askInteractiveInfo(index, nameString, instructionString, prompts);
+                    [strongSelf _setupConnectTimer];
                     
                     for (int i = 0; i < information.count; i++) {
                         if (ssh_userauth_kbdint_setanswer(strongSelf->_rawSession, i, [information[i] UTF8String]) < 0)
@@ -643,9 +646,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)authenticateWithAskPassword:(SSHKitAskPassBlock)askPassword {
+    // we cancel conenct timer for temporarily, since askPassword might waiting for user type in password
+    [self _cancelConnectTimer];
     NSString *password = askPassword();
-    
-    self.stage = SSHKitSessionStageAuthenticating;
+    [self _setupConnectTimer];
     
     __weak SSHKitSession *weakSelf = self;
     _authBlock = ^{ @autoreleasepool {
@@ -653,6 +657,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         if (!strongSelf) {
             return_from_block;
         }
+        
+        strongSelf.stage = SSHKitSessionStageAuthenticating;
         
         // try "password" method, which is deprecated in SSH 2.0
         int rc = ssh_userauth_password(strongSelf->_rawSession, NULL, password.UTF8String);
@@ -666,6 +672,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }};
     
     [self dispatchAsyncOnSessionQueue: _authBlock];
+    
 }
 
 - (void)authenticateWithKeyPair:(SSHKitKeyPair *)keyPair {
