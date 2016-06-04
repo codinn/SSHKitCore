@@ -244,7 +244,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         [strongSelf _doConnect];
-        [strongSelf _setupConnectTimer];
+//        [strongSelf _setupConnectTimer];
     }}];
 }
 
@@ -398,7 +398,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     _stage = SSHKitSessionStageDisconnected;
     
     [self _cancelHeartbeatTimer];
-    [self _cancelConnectTimer];
+//    [self _cancelConnectTimer];
     
     NSArray *channels = [_channels copy];
     for (SSHKitChannel* channel in channels) {
@@ -529,7 +529,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     self.stage = SSHKitSessionStageAuthenticated;
     
     // stop connect timer and throw to heartbeat timer
-    [self _cancelConnectTimer];
+//    [self _cancelConnectTimer];
     [self _setupHeartbeatTimer];
     
     if (_delegateFlags.didAuthenticateUser) {
@@ -616,9 +616,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
                     }
                     
                     // we cancel connect timer for temporarily, since askInteractiveInfo might waiting for user type in
-                    [strongSelf _cancelConnectTimer];
+//                    [strongSelf _cancelConnectTimer];
                     NSArray *information = askInteractiveInfo(index, nameString, instructionString, prompts);
-                    [strongSelf _setupConnectTimer];
+//                    [strongSelf _setupConnectTimer];
                     
                     for (int i = 0; i < information.count; i++) {
                         if (ssh_userauth_kbdint_setanswer(strongSelf->_rawSession, i, [information[i] UTF8String]) < 0)
@@ -647,9 +647,9 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 
 - (void)authenticateWithAskPassword:(SSHKitAskPassBlock)askPassword {
     // we cancel conenct timer for temporarily, since askPassword might waiting for user type in password
-    [self _cancelConnectTimer];
+//    [self _cancelConnectTimer];
     NSString *password = askPassword();
-    [self _setupConnectTimer];
+//    [self _setupConnectTimer];
     
     __weak SSHKitSession *weakSelf = self;
     _authBlock = ^{ @autoreleasepool {
