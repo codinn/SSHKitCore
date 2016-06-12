@@ -137,13 +137,23 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 }
 
 - (int)getLastSFTPError {
-    return sftp_get_error(self.rawSFTPSession);
+    __block int errorCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        errorCode = sftp_get_error(weakSelf.rawSFTPSession);
+    }];
+    return errorCode;
 }
 
 - (BOOL)isFileExist:(NSString *)path {
     SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
     // TODO handle error
-    return [file isExist];
+    __block BOOL isExist;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        isExist = [file isExist];
+    }];
+    return isExist;
 }
 
 - (SSHKitSFTPFile *)getDirectory:(NSString *)path {
@@ -153,7 +163,9 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path {
     SSHKitSFTPFile* directory = [self getDirectory:path];
     // TODO handle error
-    [directory open];
+    [self.session dispatchSyncOnSessionQueue:^{
+        [directory open];
+    }];
     return directory;
 }
 
@@ -164,54 +176,91 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 - (SSHKitSFTPFile *)openFile:(NSString *)path {
     SSHKitSFTPFile* file = [self getFile:path];
     // TODO handle error
-    [file open];
+    [self.session dispatchSyncOnSessionQueue:^{
+        [file open];
+    }];
     return file;
 }
 
 - (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode {
     SSHKitSFTPFile* file = [self getFile:path];
     // TODO handle error
-    [file openFile:accessType mode:mode];
+    [self.session dispatchSyncOnSessionQueue:^{
+        [file openFile:accessType mode:mode];
+    }];
     return file;
 }
 
 - (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode {
     SSHKitSFTPFile* file = [self getFile:path];
     // TODO handle error
-    [file openFileForWrite:shouldResume mode:mode];
+    [self.session dispatchSyncOnSessionQueue:^{
+        [file openFileForWrite:shouldResume mode:mode];
+    }];
     return file;
 }
 
 - (NSString *)canonicalizePath:(NSString *)path {
-    return [NSString stringWithUTF8String:sftp_canonicalize_path(self.rawSFTPSession, [path UTF8String])
-            ];
+    __block NSString *newPath;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        newPath = [NSString stringWithUTF8String:sftp_canonicalize_path(weakSelf.rawSFTPSession, [path UTF8String])];
+    }];
+    return newPath;
 }
 
 - (int)rename:(NSString *)original newName:(NSString *)newName {
-    return sftp_rename(self.rawSFTPSession, [original UTF8String], [newName UTF8String]);
+    __block int returnCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        returnCode = sftp_rename(self.rawSFTPSession, [original UTF8String], [newName UTF8String]);
+    }];
+    return returnCode;
 }
 
 - (int)chmod:(NSString *)filePath mode:(unsigned long)mode {
-    return sftp_chmod(self.rawSFTPSession, [filePath UTF8String], mode);
+    __block int returnCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        returnCode = sftp_chmod(self.rawSFTPSession, [filePath UTF8String], mode);
+    }];
+    return returnCode;
 }
 
 - (int)mkdir:(NSString *)directoryPath mode:(unsigned long)mode {
-    return sftp_mkdir(self.rawSFTPSession, [directoryPath UTF8String], mode);
+    __block int returnCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        returnCode = sftp_mkdir(self.rawSFTPSession, [directoryPath UTF8String], mode);
+    }];
+    return returnCode;
 }
+
+- (int)rmdir:(NSString *)directoryPath {
+    __block int returnCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        returnCode = sftp_rmdir(self.rawSFTPSession, [directoryPath UTF8String]);
+    }];
+    return returnCode;
+}
+
+- (int)unlink:(NSString *)filePath {
+    __block int returnCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        returnCode = sftp_unlink(self.rawSFTPSession, [filePath UTF8String]);
+    }];
+    return returnCode;
+}
+
+#pragma mark - property
 
 - (NSMutableArray *)remoteFiles {
     if (_remoteFiles == nil) {
         _remoteFiles = [@[]mutableCopy];
     }
     return _remoteFiles;
-}
-
-- (int)rmdir:(NSString *)directoryPath {
-    return sftp_rmdir(self.rawSFTPSession, [directoryPath UTF8String]);
-}
-
-- (int)unlink:(NSString *)filePath {
-    return sftp_unlink(self.rawSFTPSession, [filePath UTF8String]);
 }
 
 @end

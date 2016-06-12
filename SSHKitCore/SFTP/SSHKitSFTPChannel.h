@@ -19,8 +19,6 @@
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
 - (int)getLastSFTPError;
 - (BOOL)isFileExist:(NSString *)path;
-- (SSHKitSFTPFile *)getDirectory:(NSString *)path;
-- (SSHKitSFTPFile *)getFile:(NSString *)path;
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path;
 - (SSHKitSFTPFile *)openFile:(NSString *)path;
 - (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode;
