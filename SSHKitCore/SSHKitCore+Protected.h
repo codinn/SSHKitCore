@@ -123,5 +123,8 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 /** Raw libssh struct. */
 @property (nonatomic, readonly) sftp_dir rawDirectory;
 @property (nonatomic, readonly) sftp_file rawFile;
+- (void)open;
+- (void)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
+- (void)openFile:(int)accessType mode:(unsigned long)mode;
 
 @end

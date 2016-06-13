@@ -57,9 +57,6 @@
 @property (nonatomic, readonly) SSHKitSFTPChannel *sftp;
 @property (nonatomic, readonly) BOOL directoryEof;
 - (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory;
-- (void)open;
-- (void)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
-- (void)openFile:(int)accessType mode:(unsigned long)mode;
 - (void)close;
 - (BOOL)updateStat;
 - (BOOL)isExist;
