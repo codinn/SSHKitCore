@@ -116,7 +116,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (_rawFile == NULL) {
         return;
     }
-    [self.sftp.remoteFiles addObject:self];
     sftp_file_set_nonblocking(self.rawFile);
 }
 
@@ -137,12 +136,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
     _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
     if (_asyncRequest) {
-        _stage = SSHKitFileStageReadingFile;
+        self.stage = SSHKitFileStageReadingFile;
     }
 }
 
 - (void)cancelAsyncReadFile {
-    _stage = SSHKitFileStageNone;
+    self.stage = SSHKitFileStageNone;
 }
 
 - (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
@@ -173,7 +172,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     _againCount = 0;
     if (nbytes < 0) {
         // finish or fail
-        _stage = SSHKitFileStageNone;
+        self.stage = SSHKitFileStageNone;
         NSError *error = nil;  // TODO
         free(buffer);
         self.fileTransferFailBlock(error);
@@ -181,7 +180,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
     if (nbytes == 0) {
         // finish or fail
-        _stage = SSHKitFileStageNone;
+        self.stage = SSHKitFileStageNone;
         // SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime)
         free(buffer);
         self.fileTransferSuccessBlock(self, nil, nil, nil);
@@ -199,13 +198,13 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
     if (_asyncRequest == 0) {
         // finish or fail
-        _stage = SSHKitFileStageNone;
+        self.stage = SSHKitFileStageNone;
         self.fileTransferSuccessBlock(self, nil, nil, nil);
         return;
     }
     if (_asyncRequest < 0) {
         // finish or fail
-        _stage = SSHKitFileStageNone;
+        self.stage = SSHKitFileStageNone;
         NSError *error = nil;  // TODO
         self.fileTransferFailBlock(error);
         return;
@@ -228,12 +227,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 
-# pragma MARK SSHKitChannelDelegate
+# pragma mark SSHKitChannelDelegate
 
 - (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
     // TODO call asyncRead on data arraived
     __weak SSHKitSFTPFile *weakSelf = self;
-    if (_stage == SSHKitFileStageReadingFile) {
+    if (self.stage == SSHKitFileStageReadingFile) {
         // 16397 - 16384
         [self.sftp.session dispatchAsyncOnSessionQueue:^{
             __strong SSHKitSFTPFile *strongSelf = weakSelf;
@@ -242,7 +241,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
-# pragma MARK property
 
 - (instancetype)initWithSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
     if ((self = [super init])) {
@@ -267,11 +265,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self->_fileTypeLetter = [self fileTypeLetter:fileAttributes->permissions];
     self.isDirectory = S_ISDIR(fileAttributes->permissions);
     self.flags = fileAttributes->flags;
-}
-
-- (void)setPosixPermissions:(unsigned long)posixPermissions {
-    _posixPermissions = posixPermissions;
-    self.permissions = [self convertPermissionToSymbolicNotation:posixPermissions];
 }
 
 - (void)close {
@@ -417,6 +410,31 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 - (NSComparisonResult)compare:(SSHKitSFTPFile *)otherFile {
     return [self.filename compare:otherFile.filename];
+}
+
+# pragma mark - property
+
+- (void)setPosixPermissions:(unsigned long)posixPermissions {
+    _posixPermissions = posixPermissions;
+    self.permissions = [self convertPermissionToSymbolicNotation:posixPermissions];
+}
+
+- (void)setStage:(SSHKitFileStage)stage {
+    if (!self.sftp) {
+        _stage = stage;
+        return;
+    }
+    switch (stage) {
+        case SSHKitFileStageReadingFile:
+            [self.sftp.remoteFiles addObject:self];
+            break;
+        case SSHKitFileStageNone:
+            [self.sftp.remoteFiles removeObject:self];
+            break;
+        default:
+            break;
+    }
+    _stage = stage;
 }
 
 @end
