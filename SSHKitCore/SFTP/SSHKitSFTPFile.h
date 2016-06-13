@@ -14,7 +14,7 @@
 
 @class SSHKitSFTPChannel;
 
-@interface SSHKitSFTPFile : NSObject <SSHKitChannelDelegate>
+@interface SSHKitSFTPFile : NSObject
 
 /**
  Property that stores the name of the underlaying file.

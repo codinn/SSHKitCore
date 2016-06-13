@@ -226,10 +226,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     return totoalWriteLength;
 }
 
-
-# pragma mark SSHKitChannelDelegate
-
-- (void)channel:(SSHKitChannel *)channel didReadStdoutData:(NSData *)data {
+- (void)didReceiveData:(NSData *)data {
     // TODO call asyncRead on data arraived
     __weak SSHKitSFTPFile *weakSelf = self;
     if (self.stage == SSHKitFileStageReadingFile) {

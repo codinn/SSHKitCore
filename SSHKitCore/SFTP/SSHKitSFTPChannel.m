@@ -40,7 +40,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     if (isSTDError) {
     } else {
         for (SSHKitSFTPFile *file in _remoteFiles) {
-            [file channel:self didReadStdoutData:readData];
+            [file didReceiveData:readData];
         }
     }
     // pass data to ssh_channel_read

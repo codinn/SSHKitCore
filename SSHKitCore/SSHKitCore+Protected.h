@@ -126,5 +126,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 - (void)open;
 - (void)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
 - (void)openFile:(int)accessType mode:(unsigned long)mode;
+- (void)didReceiveData:(NSData *)data;
 
 @end
