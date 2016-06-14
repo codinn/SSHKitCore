@@ -293,7 +293,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (SSHKitSFTPFile *)readDirectory {
-    sftp_attributes attributes = sftp_readdir(self.sftp.rawSFTPSession, self.rawDirectory);
+    __block sftp_attributes attributes = nil;
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        attributes = sftp_readdir(weakSelf.sftp.rawSFTPSession, weakSelf.rawDirectory);
+    }];
     if (!attributes) {
         return nil;
     }
@@ -302,14 +306,24 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     return instance;
 }
 
-- (NSArray *)listDirectory {
+- (NSArray *)listDirectory:(SSHKitSFTPListDirFilter)filter {
     // add call back to cancel it?
     NSMutableArray *files = [@[] mutableCopy];
     SSHKitSFTPFile *file = [self readDirectory];
     while (file != nil) {
         // ignore self and parent
-        if (![file.filename isEqualToString:@"."] && ![file.filename isEqualToString:@".."]) {
-            [files addObject:file];
+        SSHKitSFTPListDirFilterCode code = filter(file.filename);
+        switch (code) {
+            case SSHKitSFTPListDirFilterCodeAdd:
+                [files addObject:file];
+                break;
+            case SSHKitSFTPListDirFilterCodeCancel:
+                return files;
+                break;
+            case SSHKitSFTPListDirFilterCodeIgnore:
+                break;
+            default:
+                break;
         }
         file = [self readDirectory];
     }

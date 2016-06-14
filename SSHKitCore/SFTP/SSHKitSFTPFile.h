@@ -58,8 +58,7 @@
 @property (nonatomic, readonly) BOOL directoryEof;
 - (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory;
 - (void)close;
-- (SSHKitSFTPFile *)readDirectory;
-- (NSArray *)listDirectory;
+- (NSArray *)listDirectory:(SSHKitSFTPListDirFilter)filter;
 - (void)asyncReadFile:(unsigned long long)offset
         readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock

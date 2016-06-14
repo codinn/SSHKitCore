@@ -103,6 +103,13 @@ typedef NS_ENUM(NSInteger, SSHKitSFTPRequestStatusCode) {
     SSHKitSFTPRequestStatusFailed   = 1001,
 };
 
+typedef NS_ENUM(NSInteger, SSHKitSFTPListDirFilterCode) {
+    // error code from libssh
+    SSHKitSFTPListDirFilterCodeAdd  = 0,
+    SSHKitSFTPListDirFilterCodeIgnore,
+    SSHKitSFTPListDirFilterCodeCancel,
+};
+
 typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
 
 /* All implementations MUST be able to process packets with an
@@ -118,6 +125,7 @@ typedef NSArray *(^ SSHKitAskInteractiveInfoBlock)(NSInteger, NSString *, NSStri
 typedef void (^ SSHKitListeningRequestCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
 
 // Block typedefs
+typedef SSHKitSFTPListDirFilterCode(^SSHKitSFTPListDirFilter)(NSString *filename);
 typedef void(^SSHKitSFTPRequestCancelHandler)(void);
 typedef void(^SSHKitSFTPClientSuccessBlock)(void);
 typedef void(^SSHKitSFTPClientFailureBlock)(NSError *error);
