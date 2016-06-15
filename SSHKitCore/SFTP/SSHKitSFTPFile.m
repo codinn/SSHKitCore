@@ -58,6 +58,15 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     return self;
 }
 
+- (instancetype)initWithSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
+    if ((self = [super init])) {
+        [self populateValuesFromSFTPAttributes:fileAttributes parentPath:parentPath];
+    }
+    return self;
+}
+
+#pragma mark - open file/directory
+
 - (void)openDirectory {
     __weak SSHKitSFTPFile *weakSelf = self;
     [self.sftp.session dispatchSyncOnSessionQueue:^{
@@ -134,6 +143,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }];
 }
 
+#pragma mark - SFTP Function warper
+
 - (void)seek64:(unsigned long long)offset {
     __weak SSHKitSFTPFile *weakSelf = self;
     [self.sftp.session dispatchSyncOnSessionQueue:^{
@@ -148,6 +159,17 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         strongSelf->_asyncRequest = sftp_async_read_begin(strongSelf.rawFile, MAX_XFER_BUF_SIZE);
     }];
 }
+
+-(long)sftpWrite:(const void *)buffer size:(long)size {
+    __block long writeLength;
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        writeLength = sftp_write(weakSelf.rawFile, buffer, size);
+    }];
+    return writeLength;
+}
+
+#pragma mark - read/write file
 
 - (void)asyncReadFile:(unsigned long long)offset
         readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
@@ -246,15 +268,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
--(long)sftpWrite:(const void *)buffer size:(long)size {
-    __block long writeLength;
-    __weak SSHKitSFTPFile *weakSelf = self;
-    [self.sftp.session dispatchSyncOnSessionQueue:^{
-        writeLength = sftp_write(weakSelf.rawFile, buffer, size);
-    }];
-    return writeLength;
-}
-
 -(long)write:(const void *)buffer size:(long)size {
     long totoalWriteLength = 0;
     long writeLength = [self sftpWrite:buffer size:size];
@@ -282,13 +295,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
-
-- (instancetype)initWithSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
-    if ((self = [super init])) {
-        [self populateValuesFromSFTPAttributes:fileAttributes parentPath:parentPath];
-    }
-    return self;
-}
+#pragma mark - file information
 
 - (void)populateValuesFromSFTPAttributes:(sftp_attributes)fileAttributes parentPath:(NSString *)parentPath {
     if (parentPath != nil) {
@@ -336,6 +343,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     [self close];
     return exist;
 }
+
+#pragma mark - list dir
 
 - (BOOL)directoryEof {
     return sftp_dir_eof(self.rawDirectory);
