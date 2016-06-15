@@ -207,7 +207,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     
     if (result < 0 && result != -2) {
         // Received a too big DATA packet from sftp server: 751 and asked for 8
-        printf("%s: %d\n", [self.sftp getLastSFTPError], result);
+        printf("%d: %d\n", [self.sftp getLastSFTPError], result);
     }
     return result;
 }

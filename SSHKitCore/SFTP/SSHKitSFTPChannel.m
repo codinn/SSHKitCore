@@ -149,7 +149,6 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
     // TODO handle error
     __block BOOL isExist;
-    __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
         isExist = [file isExist];
     }];
@@ -213,7 +212,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
-        returnCode = sftp_rename(self.rawSFTPSession, [original UTF8String], [newName UTF8String]);
+        returnCode = sftp_rename(weakSelf.rawSFTPSession, [original UTF8String], [newName UTF8String]);
     }];
     return returnCode;
 }
@@ -222,7 +221,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
-        returnCode = sftp_chmod(self.rawSFTPSession, [filePath UTF8String], mode);
+        returnCode = sftp_chmod(weakSelf.rawSFTPSession, [filePath UTF8String], mode);
     }];
     return returnCode;
 }
@@ -231,7 +230,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
-        returnCode = sftp_mkdir(self.rawSFTPSession, [directoryPath UTF8String], mode);
+        returnCode = sftp_mkdir(weakSelf.rawSFTPSession, [directoryPath UTF8String], mode);
     }];
     return returnCode;
 }
@@ -240,7 +239,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
-        returnCode = sftp_rmdir(self.rawSFTPSession, [directoryPath UTF8String]);
+        returnCode = sftp_rmdir(weakSelf.rawSFTPSession, [directoryPath UTF8String]);
     }];
     return returnCode;
 }
@@ -249,7 +248,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
-        returnCode = sftp_unlink(self.rawSFTPSession, [filePath UTF8String]);
+        returnCode = sftp_unlink(weakSelf.rawSFTPSession, [filePath UTF8String]);
     }];
     return returnCode;
 }

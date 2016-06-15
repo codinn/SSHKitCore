@@ -62,6 +62,7 @@
 		CC7763321C56704B00B584F5 /* ssh_rsa_key in Resources */ = {isa = PBXBuildFile; fileRef = CC7763301C56704B00B584F5 /* ssh_rsa_key */; };
 		CC7763331C56704B00B584F5 /* ssh_rsa_key.pub in Resources */ = {isa = PBXBuildFile; fileRef = CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */; };
 		CC9D3B591C892D6700DF3C0A /* ShellChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */; };
+		CCA914DA1D11982A00A0ED39 /* SFTPChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCA914D91D11982A00A0ED39 /* SFTPChannelTests.swift */; };
 		CCBEE2561C8D5EE0004394A4 /* SSHKitSFTPChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */; };
 		CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -78,14 +79,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 885B3534361C48CE8968C51D;
+			remoteGlobalIDString = DE0A6E23D1AD4D5DBEDC6819;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = E070549D51EE4C8B9D0965F7;
+			remoteGlobalIDString = 9E6A7444652A46919F32E935;
 			remoteInfo = ssh_threads_static;
 		};
 		4A360D871CD1FF5800BBD10E /* PBXContainerItemProxy */ = {
@@ -235,6 +236,7 @@
 		CC7763301C56704B00B584F5 /* ssh_rsa_key */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_rsa_key; sourceTree = "<group>"; };
 		CC7763311C56704B00B584F5 /* ssh_rsa_key.pub */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ssh_rsa_key.pub; sourceTree = "<group>"; };
 		CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShellChannelTests.swift; sourceTree = "<group>"; };
+		CCA914D91D11982A00A0ED39 /* SFTPChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SFTPChannelTests.swift; sourceTree = "<group>"; };
 		CCB4D4731C7595D900B9A925 /* README.MD */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.MD; sourceTree = "<group>"; };
 		CCBEE2521C8D5EE0004394A4 /* SSHKitSFTPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPChannel.h; sourceTree = "<group>"; };
 		CCBEE2531C8D5EE0004394A4 /* SSHKitSFTPChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPChannel.m; sourceTree = "<group>"; };
@@ -370,6 +372,7 @@
 				4A360D7E1CD1F02900BBD10E /* ForwardChannelTests.swift */,
 				CC9D3B581C892D6700DF3C0A /* ShellChannelTests.swift */,
 				CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */,
+				CCA914D91D11982A00A0ED39 /* SFTPChannelTests.swift */,
 				CC7763211C5665F700B584F5 /* Info.plist */,
 				CC77632E1C5666D200B584F5 /* Bridging-Header.h */,
 			);
@@ -706,6 +709,7 @@
 				4A9FCFA71CC5C1AF00FD4608 /* KeyPairTests.swift in Sources */,
 				CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */,
 				CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */,
+				CCA914DA1D11982A00A0ED39 /* SFTPChannelTests.swift in Sources */,
 				CC7763201C5665F700B584F5 /* SessionTestCase.swift in Sources */,
 				4A360D7F1CD1F02900BBD10E /* ForwardChannelTests.swift in Sources */,
 				4AEB8F711CD2079A00028BBE /* EchoServer.swift in Sources */,
