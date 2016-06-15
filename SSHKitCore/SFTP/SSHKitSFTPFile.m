@@ -59,7 +59,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (void)openDirectory {
-    self->_rawDirectory = sftp_opendir(self.sftp.rawSFTPSession, [self.fullFilename UTF8String]);
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        strongSelf->_rawDirectory = sftp_opendir(strongSelf.sftp.rawSFTPSession, [strongSelf.fullFilename UTF8String]);
+    }];
     if (self.rawDirectory == NULL) {
         // fprintf(stderr, "Error allocating SFTP session: %s\n", ssh_get_error(session));
         // return SSH_ERROR;
@@ -67,7 +71,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (BOOL)updateStat {
-    sftp_attributes file_attributes = sftp_stat(self.sftp.rawSFTPSession, [self.fullFilename UTF8String]);
+    __block sftp_attributes file_attributes = NULL;
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        file_attributes = sftp_stat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
+    }];
     if (file_attributes == NULL) {
         return NO;
     }
@@ -112,11 +120,33 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (void)openFile:(int)accessType mode:(unsigned long)mode {
     // TODO create file
     // http://api.libssh.org/master/group__libssh__sftp.html#gab95cb5fe091efcc49dfa7729e4d48010
-    _rawFile = sftp_open(self.sftp.rawSFTPSession, [self.fullFilename UTF8String], accessType, mode);
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        strongSelf->_rawFile = sftp_open(strongSelf.sftp.rawSFTPSession, [strongSelf.fullFilename UTF8String], accessType, mode);
+    }];
+
     if (_rawFile == NULL) {
         return;
     }
-    sftp_file_set_nonblocking(self.rawFile);
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        sftp_file_set_nonblocking(weakSelf.rawFile);
+    }];
+}
+
+- (void)seek64:(unsigned long long)offset {
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        sftp_seek64(weakSelf.rawFile, offset);
+    }];
+}
+
+- (void)asyncReadBegin {
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        strongSelf->_asyncRequest = sftp_async_read_begin(strongSelf.rawFile, MAX_XFER_BUF_SIZE);
+    }];
 }
 
 - (void)asyncReadFile:(unsigned long long)offset
@@ -132,9 +162,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self.fileTransferFailBlock = fileTransferFailBlock;
     self.fileTransferSuccessBlock = fileTransferSuccessBlock;
     if (offset > 0) {
-        sftp_seek64(self.rawFile, offset);
+        [self seek64:offset];
     }
-    _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
+    [self asyncReadBegin];
     if (_asyncRequest) {
         self.stage = SSHKitFileStageReadingFile;
     }
@@ -147,10 +177,15 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
     // [self dispatchAsyncOnSessionQueue:
     // `sftp_async_read
-    int result = sftp_async_read(_rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
+    __block int result;
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        result = sftp_async_read(weakSelf.rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
+    }];
+    
     if (result < 0 && result != -2) {
         // Received a too big DATA packet from sftp server: 751 and asked for 8
-        printf("%s: %d\n", ssh_get_error(self.sftp.session.rawSession), result);
+        printf("%s: %d\n", [self.sftp getLastSFTPError], result);
     }
     return result;
 }
@@ -195,7 +230,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
     _readedpackageLen = 0;
     // free(buffer);
-    _asyncRequest = sftp_async_read_begin(self.rawFile, MAX_XFER_BUF_SIZE);
+    [self asyncReadBegin];
     if (_asyncRequest == 0) {
         // finish or fail
         self.stage = SSHKitFileStageNone;
@@ -211,13 +246,22 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
+-(long)sftpWrite:(const void *)buffer size:(long)size {
+    __block long writeLength;
+    __weak SSHKitSFTPFile *weakSelf = self;
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        writeLength = sftp_write(weakSelf.rawFile, buffer, size);
+    }];
+    return writeLength;
+}
+
 -(long)write:(const void *)buffer size:(long)size {
     long totoalWriteLength = 0;
-    long writeLength = sftp_write(self.rawFile, buffer, size);
+    long writeLength = [self sftpWrite:buffer size:size];
     totoalWriteLength += writeLength;
     // TODO check window size?
     while (writeLength >= 0 && totoalWriteLength < size) {
-        writeLength = sftp_write(self.rawFile, buffer, size);
+        writeLength = [self sftpWrite:buffer size:size];
         totoalWriteLength += writeLength;
     }
     if (writeLength < 0) {  // get a error
@@ -265,11 +309,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (void)close {
+    __weak SSHKitSFTPFile *weakSelf = self;
     if (self.rawDirectory != nil) {
-        sftp_closedir(self.rawDirectory);
+        [self.sftp.session dispatchAsyncOnSessionQueue:^{
+            sftp_closedir(weakSelf.rawDirectory);
+        }];
     }
     if (self.rawFile != nil) {
-        sftp_close(self.rawFile);
+        [self.sftp.session dispatchAsyncOnSessionQueue:^{
+            sftp_close(weakSelf.rawFile);
+        }];
     }
     if (self.sftp) {
         [self.sftp.remoteFiles removeObject:self];
