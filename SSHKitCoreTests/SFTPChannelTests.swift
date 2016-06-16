@@ -33,19 +33,72 @@ class SFTPChannelTests: SFTPTests {
         super.tearDown()
     }
 
-    func testOpenDirectory() {
+    func testOpenDirectorySucc() {
+        // try succ
         do {
             let session = try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
             let channel = try self.openSFTPChannel(session)
+            defer {
+                channel.close()
+                session.disconnect()
+            }
             XCTAssert(channel.isOpen)
-            channel .openDirectory("./")
-            session.disconnect()
+            let dir = try channel.openDirectory("./")
+            dir.close()
         } catch let error as NSError {
             XCTFail(error.description)
         }
     }
     
-    func testOpenFile() {
+    func testOpenDirectoryFail() {
+        // try fail
+        do {
+            let session = try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+            let channel = try self.openSFTPChannel(session)
+            defer {
+                channel.close();
+                session.disconnect()
+            }
+            XCTAssert(channel.isOpen)
+            try channel.openDirectory("./xxxx")
+            XCTFail("open dir must fail, but succ")
+        } catch _ as NSError {
+            return
+        }
+    }
+    
+    func testOpenFileSucc() {
+        // try succ
+        do {
+            let session = try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+            let channel = try self.openSFTPChannel(session)
+            defer {
+                channel.close()
+                session.disconnect()
+            }
+            XCTAssert(channel.isOpen)
+            let file = try channel.openFile("a.txt")
+            file.close()
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testOpenFileFail() {
+        // try fail
+        do {
+            let session = try launchSessionWithAuthMethod(.PublicKey, user: userForSFA)
+            let channel = try self.openSFTPChannel(session)
+            defer {
+                channel.close()
+                session.disconnect()
+            }
+            XCTAssert(channel.isOpen)
+            try channel.openFile("./xxxx")
+            XCTFail("open file must fail, but succ")
+        } catch _ as NSError {
+            return
+        }
     }
     
     func testCanonicalizePath() {

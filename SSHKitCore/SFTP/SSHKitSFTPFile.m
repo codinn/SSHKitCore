@@ -67,49 +67,54 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 #pragma mark - open file/directory
 
-- (void)openDirectory {
+- (NSError *)openDirectory {
     __weak SSHKitSFTPFile *weakSelf = self;
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         __strong SSHKitSFTPFile *strongSelf = weakSelf;
         strongSelf->_rawDirectory = sftp_opendir(strongSelf.sftp.rawSFTPSession, [strongSelf.fullFilename UTF8String]);
     }];
     if (self.rawDirectory == NULL) {
-        // fprintf(stderr, "Error allocating SFTP session: %s\n", ssh_get_error(session));
-        // return SSH_ERROR;
+        return self.sftp.libsshSFTPError;
     }
+    return nil;
 }
 
-- (BOOL)updateStat {
+- (NSError *)updateStat {
     __block sftp_attributes file_attributes = NULL;
     __weak SSHKitSFTPFile *weakSelf = self;
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         file_attributes = sftp_stat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
     }];
     if (file_attributes == NULL) {
-        return NO;
+        return self.sftp.session.libsshError;
     }
     [self populateValuesFromSFTPAttributes:file_attributes parentPath:nil];
     [SSHKitSFTPChannel freeSFTPAttributes:file_attributes];
-    return YES;
+    return nil;
 }
 
-- (void)open {
+- (NSError *)open {
+    NSError *error = nil;
     if (self.isDirectory) {
-        [self openDirectory];
+        error = [self openDirectory];
     } else {
-        [self openFile];
+        error = [self openFile];
+    }
+    if (error) {
+        return error;
     }
     // if updateStat not exec
     if (self.permissions == nil) {
-        [self updateStat];
+        error = [self updateStat];
     }
+    return error;
 }
 
-- (void)openFile {
-    [self openFile:O_RDONLY mode:0];
+- (NSError *)openFile {
+    return [self openFile:O_RDONLY mode:0];
 }
 
-- (void)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode {
+- (NSError *)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode {
     int oflag;
     if (shouldResume) {
         oflag =   O_APPEND
@@ -120,13 +125,21 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         | O_CREAT
         | O_TRUNC;
     }
-    [self openFile:oflag mode:mode];
-    if (self.permissions == nil) {
-        [self updateStat];
+    NSError *error = [self openFile:oflag mode:mode];
+    if (error) {
+        return error;
     }
+    if (self.permissions == nil) {
+        error = [self updateStat];
+        if (error) {
+            [self close];
+            return error;
+        }
+    }
+    return nil;
 }
 
-- (void)openFile:(int)accessType mode:(unsigned long)mode {
+- (NSError *)openFile:(int)accessType mode:(unsigned long)mode {
     // TODO create file
     // http://api.libssh.org/master/group__libssh__sftp.html#gab95cb5fe091efcc49dfa7729e4d48010
     __weak SSHKitSFTPFile *weakSelf = self;
@@ -136,11 +149,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }];
 
     if (_rawFile == NULL) {
-        return;
+        return self.sftp.session.libsshError;
     }
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         sftp_file_set_nonblocking(weakSelf.rawFile);
     }];
+    return nil;
 }
 
 #pragma mark - SFTP Function warper
@@ -197,7 +211,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
-    // [self dispatchAsyncOnSessionQueue:
+    // [self dispatchSyncOnSessionQueue:
     // `sftp_async_read
     __block int result;
     __weak SSHKitSFTPFile *weakSelf = self;
@@ -288,7 +302,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     __weak SSHKitSFTPFile *weakSelf = self;
     if (self.stage == SSHKitFileStageReadingFile) {
         // 16397 - 16384
-        [self.sftp.session dispatchAsyncOnSessionQueue:^{
+        [self.sftp.session dispatchSyncOnSessionQueue:^{
             __strong SSHKitSFTPFile *strongSelf = weakSelf;
             [strongSelf _asyncReadFile];
         }];
@@ -318,12 +332,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (void)close {
     __weak SSHKitSFTPFile *weakSelf = self;
     if (self.rawDirectory != nil) {
-        [self.sftp.session dispatchAsyncOnSessionQueue:^{
+        [self.sftp.session dispatchSyncOnSessionQueue:^{
             sftp_closedir(weakSelf.rawDirectory);
         }];
     }
     if (self.rawFile != nil) {
-        [self.sftp.session dispatchAsyncOnSessionQueue:^{
+        [self.sftp.session dispatchSyncOnSessionQueue:^{
             sftp_close(weakSelf.rawFile);
         }];
     }

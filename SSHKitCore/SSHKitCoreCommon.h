@@ -17,6 +17,7 @@
 #endif
 
 #define SSHKitLibsshErrorDomain @"SSHKit.libssh"
+#define SSHKitLibsshSFTPErrorDomain @"SSHKit.libssh.SFTP"
 #define SSHKitCoreErrorDomain   @"SSHKit.Core"
 #define SSHKitSFTPErrorDomain   @"SSHKit.SFTP"
 #define SSHKitSFTPRequestNotImplemented   @"SSHKit.SSHKitSFTPRequestNotImplemented"

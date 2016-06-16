@@ -100,9 +100,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 
 @end
 
-@interface SSHKitSFTPChannel()
-@end
-
 @interface SSHKitKeyPair ()
 
 @property (nonatomic, readonly) ssh_key privateKey;
@@ -118,16 +115,24 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 
 @end
 
+@interface SSHKitSFTPChannel()
+
+@property (nonatomic, readwrite) sftp_session rawSFTPSession;
+@property (nonatomic, readonly) NSError* libsshSFTPError;
+
+@end
+
 @interface SSHKitSFTPFile ()
 
 /** Raw libssh struct. */
 @property (nonatomic, readonly) sftp_dir rawDirectory;
 @property (nonatomic, readonly) sftp_file rawFile;
-- (void)open;
-- (void)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
-- (void)openFile:(int)accessType mode:(unsigned long)mode;
+
+- (NSError *)open;
+- (NSError *)openFileForWrite:(BOOL)shouldResume mode:(unsigned long)mode;
+- (NSError *)openFile:(int)accessType mode:(unsigned long)mode;
 - (void)didReceiveData:(NSData *)data;
-- (BOOL)updateStat;
+- (NSError *)updateStat;
 - (BOOL)isExist;
 
 @end

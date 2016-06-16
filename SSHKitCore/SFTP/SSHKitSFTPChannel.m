@@ -16,7 +16,6 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 
 @interface SSHKitSFTPChannel()
 
-@property (nonatomic, readwrite) sftp_session rawSFTPSession;
 @property (nonatomic) SessionChannelReqState   reqState;
 
 @end
@@ -136,15 +135,6 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     sftp_attributes_free(attributes);
 }
 
-- (int)getLastSFTPError {
-    __block int errorCode;
-    __weak SSHKitSFTPChannel *weakSelf = self;
-    [self.session dispatchSyncOnSessionQueue:^{
-        errorCode = sftp_get_error(weakSelf.rawSFTPSession);
-    }];
-    return errorCode;
-}
-
 - (BOOL)isFileExist:(NSString *)path {
     SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
     // TODO handle error
@@ -159,12 +149,20 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     return [[SSHKitSFTPFile alloc]init:self path:path isDirectory:YES];
 }
 
-- (SSHKitSFTPFile *)openDirectory:(NSString *)path {
+- (SSHKitSFTPFile *)openDirectory:(NSString *)path errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* directory = [self getDirectory:path];
-    // TODO handle error
+
     [self.session dispatchSyncOnSessionQueue:^{
-        [directory open];
+        NSError *error = [directory open];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
     }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
     return directory;
 }
 
@@ -172,30 +170,54 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     return [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
 }
 
-- (SSHKitSFTPFile *)openFile:(NSString *)path {
+- (SSHKitSFTPFile *)openFile:(NSString *)path errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* file = [self getFile:path];
-    // TODO handle error
+
     [self.session dispatchSyncOnSessionQueue:^{
-        [file open];
+        NSError *error = [file open];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
     }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
     return file;
 }
 
-- (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode {
+- (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* file = [self getFile:path];
-    // TODO handle error
+
     [self.session dispatchSyncOnSessionQueue:^{
-        [file openFile:accessType mode:mode];
+        NSError *error = [file openFile:accessType mode:mode];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
     }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
     return file;
 }
 
-- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode {
+- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* file = [self getFile:path];
-    // TODO handle error
+
     [self.session dispatchSyncOnSessionQueue:^{
-        [file openFileForWrite:shouldResume mode:mode];
+        NSError *error = [file openFileForWrite:shouldResume mode:mode];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
     }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
     return file;
 }
 
@@ -260,6 +282,42 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
         _remoteFiles = [@[]mutableCopy];
     }
     return _remoteFiles;
+}
+
+#pragma mark Diagnostics
+
+- (int)getLastSFTPError {
+    __block int errorCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    [self.session dispatchSyncOnSessionQueue:^{
+        errorCode = sftp_get_error(weakSelf.rawSFTPSession);
+    }];
+    return errorCode;
+}
+
+- (NSError *)libsshSFTPError {
+    if(!self.session.rawSession) {
+        return nil;
+    }
+    
+    __block NSError *error;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    
+    int code = [self getLastSFTPError];
+    [self.session dispatchSyncOnSessionQueue :^{ @autoreleasepool {
+        
+        if (code == SSHKitErrorNoError) {
+            return_from_block;
+        }
+        
+        const char* errorStr = ssh_get_error(weakSelf.session.rawSession);
+        
+        error = [NSError errorWithDomain:SSHKitLibsshSFTPErrorDomain
+                                    code:code
+                                userInfo: errorStr ? @{ NSLocalizedDescriptionKey : @(errorStr) } : nil];
+    }}];
+    
+    return error;
 }
 
 @end

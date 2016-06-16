@@ -19,10 +19,10 @@
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
 - (int)getLastSFTPError;
 - (BOOL)isFileExist:(NSString *)path;
-- (SSHKitSFTPFile *)openDirectory:(NSString *)path;
-- (SSHKitSFTPFile *)openFile:(NSString *)path;
-- (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode;
-- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode;
+- (SSHKitSFTPFile *)openDirectory:(NSString *)path errorPtr:(NSError **)errorPtr;
+- (SSHKitSFTPFile *)openFile:(NSString *)path errorPtr:(NSError **)errorPtr;
+- (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode errorPtr:(NSError **)errorPtr;
+- (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode errorPtr:(NSError **)errorPtr;
 - (NSString *)canonicalizePath:(NSString *)path;
 - (int)chmod:(NSString *)filePath mode:(unsigned long)mode;
 - (int)rename:(NSString *)original newName:(NSString *)newName;
