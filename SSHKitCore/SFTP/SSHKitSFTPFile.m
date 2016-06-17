@@ -174,12 +174,18 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }];
 }
 
--(long)sftpWrite:(const void *)buffer size:(long)size {
+-(long)sftpWrite:(const void *)buffer size:(long)size errorPtr:(NSError **)errorPtr{
     __block long writeLength;
     __weak SSHKitSFTPFile *weakSelf = self;
+    
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         writeLength = sftp_write(weakSelf.rawFile, buffer, size);
     }];
+    
+    if (writeLength < 0) {
+        *errorPtr = self.sftp.libsshSFTPError;
+    }
+    
     return writeLength;
 }
 
@@ -282,18 +288,29 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
--(long)write:(const void *)buffer size:(long)size {
+-(long)write:(const void *)buffer size:(long)size errorPtr:(NSError **)errorPtr {
     long totoalWriteLength = 0;
-    long writeLength = [self sftpWrite:buffer size:size];
+    NSError *error;
+    long writeLength = [self sftpWrite:buffer size:size errorPtr:&error];
     totoalWriteLength += writeLength;
+    
+    if (writeLength < 0) {
+        *errorPtr = error;
+        return totoalWriteLength;
+    }
+    
     // TODO check window size?
     while (writeLength >= 0 && totoalWriteLength < size) {
-        writeLength = [self sftpWrite:buffer size:size];
+        writeLength = [self sftpWrite:buffer size:size errorPtr:&error];
+        
+        if (writeLength < 0) {
+            *errorPtr = error;
+            return totoalWriteLength;
+        }
+        
         totoalWriteLength += writeLength;
     }
-    if (writeLength < 0) {  // get a error
-        return writeLength;
-    }
+    
     return totoalWriteLength;
 }
 
@@ -365,14 +382,18 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (SSHKitSFTPFile *)readDirectory {
     __block sftp_attributes attributes = nil;
     __weak SSHKitSFTPFile *weakSelf = self;
+    
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         attributes = sftp_readdir(weakSelf.sftp.rawSFTPSession, weakSelf.rawDirectory);
     }];
+    
     if (!attributes) {
         return nil;
     }
+    
     SSHKitSFTPFile *instance = [[SSHKitSFTPFile alloc] initWithSFTPAttributes: attributes parentPath:self.fullFilename];
     [SSHKitSFTPChannel freeSFTPAttributes:attributes];
+    
     return instance;
 }
 
