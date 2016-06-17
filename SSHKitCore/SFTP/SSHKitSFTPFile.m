@@ -276,7 +276,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (_asyncRequest < 0) {
         // finish or fail
         self.stage = SSHKitFileStageNone;
-        NSError *error = nil;  // TODO
+        NSError *error = self.sftp.libsshSFTPError;
         self.fileTransferFailBlock(error);
         return;
     }
@@ -381,8 +381,10 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     NSMutableArray *files = [@[] mutableCopy];
     SSHKitSFTPFile *file = [self readDirectory];
     while (file != nil) {
-        // ignore self and parent
-        SSHKitSFTPListDirFilterCode code = filter(file.filename);
+        SSHKitSFTPListDirFilterCode code = SSHKitSFTPListDirFilterCodeAdd;
+        if (filter) {
+            code = filter(file.filename);
+        }
         switch (code) {
             case SSHKitSFTPListDirFilterCodeAdd:
                 [files addObject:file];
