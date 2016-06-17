@@ -111,6 +111,24 @@ typedef NS_ENUM(NSInteger, SSHKitSFTPListDirFilterCode) {
     SSHKitSFTPListDirFilterCodeCancel,
 };
 
+typedef NS_ENUM(NSInteger, SSHKitSFTPErrorCode) {
+    // error code from libssh
+    SSHKitSFTPErrorCodeOK = 0,
+    SSHKitSFTPErrorCodeEOF = 1,
+    SSHKitSFTPErrorCodeNoSuchFile = 2,
+    SSHKitSFTPErrorCodePermissionDenied = 3,
+    SSHKitSFTPErrorCodeGenericFailure = 4,
+    SSHKitSFTPErrorCodeBadMessage = 5,
+    SSHKitSFTPErrorCodeNoConnection = 6,
+    SSHKitSFTPErrorCodeConnectionLost = 7,
+    SSHKitSFTPErrorCodeOpUnsupported = 8,
+    SSHKitSFTPErrorCodeInvalidHandle = 9,
+    SSHKitSFTPErrorCodeNoSuchPath = 10,
+    SSHKitSFTPErrorCodeFileAlreadyExists = 11,
+    SSHKitSFTPErrorCodeWriteProtect = 12,
+    SSHKitSFTPErrorCodeNoMedia = 13,
+};
+
 typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
 
 /* All implementations MUST be able to process packets with an

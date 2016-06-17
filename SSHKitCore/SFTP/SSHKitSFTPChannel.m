@@ -221,58 +221,64 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     return file;
 }
 
-- (NSString *)canonicalizePath:(NSString *)path {
-    __block NSString *newPath;
+- (NSString *)canonicalizePath:(NSString *)path errorPtr:(NSError **)errorPtr {
+    __block NSString *newPath = nil;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
-        newPath = [NSString stringWithUTF8String:sftp_canonicalize_path(weakSelf.rawSFTPSession, [path UTF8String])];
+        char *charNewPath = sftp_canonicalize_path(weakSelf.rawSFTPSession, [path UTF8String]);
+        if (charNewPath) {
+            newPath = [NSString stringWithUTF8String:charNewPath];
+        }
     }];
+    if (!newPath) {
+        *errorPtr = self.libsshSFTPError;
+    }
     return newPath;
 }
 
-- (int)rename:(NSString *)original newName:(NSString *)newName {
+- (NSError *)rename:(NSString *)original newName:(NSString *)newName {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
         returnCode = sftp_rename(weakSelf.rawSFTPSession, [original UTF8String], [newName UTF8String]);
     }];
-    return returnCode;
+    return [self libsshSFTPError:returnCode];
 }
 
-- (int)chmod:(NSString *)filePath mode:(unsigned long)mode {
+- (NSError *)chmod:(NSString *)filePath mode:(unsigned long)mode {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
         returnCode = sftp_chmod(weakSelf.rawSFTPSession, [filePath UTF8String], mode);
     }];
-    return returnCode;
+    return [self libsshSFTPError:returnCode];
 }
 
-- (int)mkdir:(NSString *)directoryPath mode:(unsigned long)mode {
+- (NSError *)mkdir:(NSString *)directoryPath mode:(unsigned long)mode {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
         returnCode = sftp_mkdir(weakSelf.rawSFTPSession, [directoryPath UTF8String], mode);
     }];
-    return returnCode;
+    return [self libsshSFTPError:returnCode];
 }
 
-- (int)rmdir:(NSString *)directoryPath {
+- (NSError *)rmdir:(NSString *)directoryPath {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
         returnCode = sftp_rmdir(weakSelf.rawSFTPSession, [directoryPath UTF8String]);
     }];
-    return returnCode;
+    return [self libsshSFTPError:returnCode];
 }
 
-- (int)unlink:(NSString *)filePath {
+- (NSError *)unlink:(NSString *)filePath {
     __block int returnCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
     [self.session dispatchSyncOnSessionQueue:^{
         returnCode = sftp_unlink(weakSelf.rawSFTPSession, [filePath UTF8String]);
     }];
-    return returnCode;
+    return [self libsshSFTPError:returnCode];
 }
 
 #pragma mark - property
@@ -286,38 +292,95 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 
 #pragma mark Diagnostics
 
-- (int)getLastSFTPError {
+- (int)getSFTPErrorCode {
     __block int errorCode;
     __weak SSHKitSFTPChannel *weakSelf = self;
+
     [self.session dispatchSyncOnSessionQueue:^{
         errorCode = sftp_get_error(weakSelf.rawSFTPSession);
     }];
+
     return errorCode;
 }
 
-- (NSError *)libsshSFTPError {
-    if(!self.session.rawSession) {
+- (NSError *)libsshSFTPError:(int)errorCode {
+    if (errorCode == 0) {
         return nil;
     }
     
-    __block NSError *error;
-    __weak SSHKitSFTPChannel *weakSelf = self;
+    return self.libsshSFTPError;
+}
+
+- (NSError *)libsshSFTPError {
+    int errorCode = [self getSFTPErrorCode];
+    NSString *errorStr = nil;
+    switch (errorCode) {
+        case SSHKitSFTPErrorCodeOK:
+            return nil;
+            break;
+            
+        case SSHKitSFTPErrorCodeEOF:
+            errorStr = @"End-of-file encountered.";
+            break;
+            
+        case SSHKitSFTPErrorCodeNoSuchFile:
+            errorStr = @"File doesn't exist.";
+            break;
+            
+        case SSHKitSFTPErrorCodePermissionDenied:
+            errorStr = @"Permission denied.";
+            break;
+            
+        case SSHKitSFTPErrorCodeGenericFailure:
+            errorStr = @"Generic failure.";
+            break;
+            
+        case SSHKitSFTPErrorCodeBadMessage:
+            errorStr = @"Garbage received from server.";
+            break;
+            
+        case SSHKitSFTPErrorCodeNoConnection:
+            errorStr = @"No connection has been set up.";
+            break;
+            
+        case SSHKitSFTPErrorCodeConnectionLost:
+            errorStr = @"There was a connection, but we lost it.";
+            break;
+            
+        case SSHKitSFTPErrorCodeOpUnsupported:
+            errorStr = @"Operation not supported by the server.";
+            break;
+            
+        case SSHKitSFTPErrorCodeInvalidHandle:
+            errorStr = @"Invalid file handle.";
+            break;
+            
+        case SSHKitSFTPErrorCodeNoSuchPath:
+            errorStr = @"No such file or directory path exists.";
+            break;
+            
+        case SSHKitSFTPErrorCodeFileAlreadyExists:
+            errorStr = @"An attempt to create an already existing file or directory has been made.";
+            break;
+            
+        case SSHKitSFTPErrorCodeWriteProtect:
+            errorStr = @"We are trying to write on a write-protected filesystem.";
+            break;
+            
+        case SSHKitSFTPErrorCodeNoMedia:
+            errorStr = @"No media in remote drive.";
+            break;
+            
+            
+        default:
+            break;
+    }
     
-    int code = [self getLastSFTPError];
-    [self.session dispatchSyncOnSessionQueue :^{ @autoreleasepool {
-        
-        if (code == SSHKitErrorNoError) {
-            return_from_block;
-        }
-        
-        const char* errorStr = ssh_get_error(weakSelf.session.rawSession);
-        
-        error = [NSError errorWithDomain:SSHKitLibsshSFTPErrorDomain
-                                    code:code
-                                userInfo: errorStr ? @{ NSLocalizedDescriptionKey : @(errorStr) } : nil];
-    }}];
-    
+    NSError *error = [NSError errorWithDomain:SSHKitLibsshSFTPErrorDomain
+                                code:errorCode
+                            userInfo: errorStr ? @{ NSLocalizedDescriptionKey : errorStr } : nil];
     return error;
+    // return [self libsshSFTPError:code];
 }
 
 @end

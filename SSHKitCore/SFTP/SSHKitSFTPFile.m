@@ -221,7 +221,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     
     if (result < 0 && result != -2) {
         // Received a too big DATA packet from sftp server: 751 and asked for 8
-        printf("%d: %d\n", [self.sftp getLastSFTPError], result);
+        // printf("%d: %d\n", [self.sftp getLastSFTPError], result);
     }
     return result;
 }
@@ -348,11 +348,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 - (BOOL)isExist {
     BOOL exist = YES;
-    if ([self updateStat]) {
-    } else if ([self.sftp getLastSFTPError] == SSH_FX_NO_SUCH_FILE) {
-        exist = NO;
-    } else {
-        exist = NO;
+    NSError *error = [self updateStat];
+    if (error && error.code == SSHKitSFTPErrorCodeNoSuchFile) {
+        return NO;
     }
     [self close];
     return exist;

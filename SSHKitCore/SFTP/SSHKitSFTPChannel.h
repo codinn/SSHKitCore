@@ -15,19 +15,22 @@
 @class SSHKitSFTPRequest;  // define in SSHKitExtras
 
 @interface SSHKitSFTPChannel : SSHKitChannel
+
 @property (nonatomic) NSMutableArray *remoteFiles;
+
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
-- (int)getLastSFTPError;
 - (BOOL)isFileExist:(NSString *)path;
+
 - (SSHKitSFTPFile *)openDirectory:(NSString *)path errorPtr:(NSError **)errorPtr;
 - (SSHKitSFTPFile *)openFile:(NSString *)path errorPtr:(NSError **)errorPtr;
 - (SSHKitSFTPFile *)openFile:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode errorPtr:(NSError **)errorPtr;
 - (SSHKitSFTPFile *)openFileForWrite:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode errorPtr:(NSError **)errorPtr;
-- (NSString *)canonicalizePath:(NSString *)path;
-- (int)chmod:(NSString *)filePath mode:(unsigned long)mode;
-- (int)rename:(NSString *)original newName:(NSString *)newName;
-- (int)mkdir:(NSString *)directoryPath mode:(unsigned long)mode;
-- (int)rmdir:(NSString *)directoryPath;
-- (int)unlink:(NSString *)filePath;
+
+- (NSString *)canonicalizePath:(NSString *)path errorPtr:(NSError **)errorPtr;
+- (NSError *)chmod:(NSString *)filePath mode:(unsigned long)mode;
+- (NSError *)rename:(NSString *)original newName:(NSString *)newName;
+- (NSError *)mkdir:(NSString *)directoryPath mode:(unsigned long)mode;
+- (NSError *)rmdir:(NSString *)directoryPath;
+- (NSError *)unlink:(NSString *)filePath;
 
 @end
