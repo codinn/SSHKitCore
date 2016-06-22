@@ -14,6 +14,7 @@ class SFTPChannelTests: SFTPTests {
     let folderPathForTest = "./folder"
     let newFolderPathForTest = "./newFolder"
     
+    // MARK: - setUp
     override func setUp() {
         super.setUp()
         createEmptyFile(filePathForTest)
@@ -28,44 +29,7 @@ class SFTPChannelTests: SFTPTests {
         rmdir(folderPathForTest)
     }
     
-    func createEmptyFile(filename: String) {
-        do {
-            let file = try channel?.openFileForWrite(filename, shouldResume: false, mode: 0o755)
-            file?.close()
-        } catch let error as NSError {
-            if error.code != SSHKitSFTPErrorCode.FileAlreadyExists.rawValue {
-                XCTFail(error.description)
-            }
-        }
-    }
-    
-    func unlink(path: String) {
-        let error = channel!.unlink(path)
-        if let error=error {
-            if error.code != SSHKitSFTPErrorCode.NoSuchFile.rawValue {
-            }
-        }
-    }
-    
-    func rmdir(path: String) {
-        let error = channel!.rmdir(path)
-        if let error=error {
-            if error.code != SSHKitSFTPErrorCode.NoSuchFile.rawValue {
-                XCTFail(error.description)
-            }
-        }
-    }
-    
-    func mkdir(path: String) {
-        let error = channel!.mkdir(path, mode: 0o755)
-        
-        if let error=error {
-            if error.code != SSHKitSFTPErrorCode.FileAlreadyExists.rawValue {
-                XCTFail(error.description)
-            }
-        }
-    }
-    
+    // MARK: - test
     func testUnlik() {
         let path = filePathForTest
         var error = channel!.unlink(path)
