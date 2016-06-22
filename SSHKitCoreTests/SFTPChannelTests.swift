@@ -10,6 +10,73 @@ import XCTest
 
 class SFTPChannelTests: SFTPTests {
     // TODO add a script to reset sftp test env(file.txt,rename.txt,remove.txt,ls/1,ls/2)
+    let filePathForTest = "./file.txt"
+    let folderPathForTest = "./folder"
+    let newFolderPathForTest = "./newFolder"
+    
+    override func setUp() {
+        super.setUp()
+        createEmptyFile(filePathForTest)
+        mkdir(folderPathForTest)
+        rmdir(newFolderPathForTest)
+    }
+    
+    override func tearDown() {
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        super.tearDown()
+        unlink(filePathForTest)
+        rmdir(folderPathForTest)
+    }
+    
+    func createEmptyFile(filename: String) {
+        do {
+            let file = try channel?.openFileForWrite(filename, shouldResume: false, mode: 0o755)
+            file?.close()
+        } catch let error as NSError {
+            if error.code != SSHKitSFTPErrorCode.FileAlreadyExists.rawValue {
+                XCTFail(error.description)
+            }
+        }
+    }
+    
+    func unlink(path: String) {
+        let error = channel!.unlink(path)
+        if let error=error {
+            if error.code != SSHKitSFTPErrorCode.NoSuchFile.rawValue {
+            }
+        }
+    }
+    
+    func rmdir(path: String) {
+        let error = channel!.rmdir(path)
+        if let error=error {
+            if error.code != SSHKitSFTPErrorCode.NoSuchFile.rawValue {
+                XCTFail(error.description)
+            }
+        }
+    }
+    
+    func mkdir(path: String) {
+        let error = channel!.mkdir(path, mode: 0o755)
+        
+        if let error=error {
+            if error.code != SSHKitSFTPErrorCode.FileAlreadyExists.rawValue {
+                XCTFail(error.description)
+            }
+        }
+    }
+    
+    func testUnlik() {
+        let path = filePathForTest
+        var error = channel!.unlink(path)
+        
+        if let error=error {
+            XCTFail(error.description)
+        }
+        
+        error = channel!.unlink(path)
+        XCTAssertEqual(error.code, SSHKitSFTPErrorCode.NoSuchFile.rawValue)  // folder existed
+    }
 
     func testOpenDirectorySucc() {
         do {
@@ -31,7 +98,7 @@ class SFTPChannelTests: SFTPTests {
     
     func testOpenFileSucc() {
         do {
-            let file = try channel!.openFile("file.txt")
+            let file = try channel!.openFile(filePathForTest)
             file.close()
         } catch let error as NSError {
             XCTFail(error.description)
@@ -57,11 +124,10 @@ class SFTPChannelTests: SFTPTests {
     }
     
     func testChmod() {
-        let path = "./file.txt"
+        let path = filePathForTest
         let error = channel!.chmod(path, mode: 0o700)
         
         if let error=error {
-            // TODO remove folder
             XCTFail(error.description)
         }
         
@@ -76,42 +142,33 @@ class SFTPChannelTests: SFTPTests {
     }
     
     func testRename() {
-        // TODO create folder
-        let oldName = "./rename.txt"
+        let oldName = filePathForTest
         let newName = "./renamed.txt"
-        var error = channel!.rename(oldName, newName: newName)
+        let error = channel!.rename(oldName, newName: newName)
         
         if let error=error {
             XCTFail(error.description)
         }
         
-        error = channel!.rename(newName, newName: oldName)
+        unlink(newName)  // clean test file
     }
     
     func testMkdir() {
-        let path = "./newFolder"
+        let path = newFolderPathForTest
+        
         var error = channel!.mkdir(path, mode: 0o755)
         if let error=error {
             XCTFail(error.description)
         }
+        
         error = channel!.mkdir(path, mode: 0o755)
         XCTAssertEqual(error.code, SSHKitSFTPErrorCode.FileAlreadyExists.rawValue)  // folder existed
-        
-        error = channel!.rmdir(path)
-        if let error=error {
-            XCTFail(error.description)
-        }
     }
     
     func testRmdir() {
-        // create folder
-        let path = "./newFolder"
-        var error = channel!.mkdir(path, mode: 0o755)
-        if let error=error {
-            XCTFail(error.description)
-        }
-        
-        error = channel!.rmdir(path)
+        let path = folderPathForTest
+        var error = channel!.rmdir(path)
+
         if let error=error {
             XCTFail(error.description)
         }
@@ -120,17 +177,5 @@ class SFTPChannelTests: SFTPTests {
         XCTAssertEqual(error.code, SSHKitSFTPErrorCode.NoSuchFile.rawValue)
     }
     
-    func testUnlik() {
-        // TODO create file
-        let path = "./remove.txt"
-        var error = channel!.unlink(path)
-        if let error=error {
-            XCTFail(error.description)
-        }
-        
-        error = channel!.unlink(path)
-        XCTAssertEqual(error.code, SSHKitSFTPErrorCode.NoSuchFile.rawValue)  // folder existed
-    }
-
 
 }
