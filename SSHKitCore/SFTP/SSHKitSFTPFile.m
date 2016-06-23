@@ -295,7 +295,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     totoalWriteLength += writeLength;
     
     if (writeLength < 0) {
-        *errorPtr = error;
+        if (errorPtr) {
+            *errorPtr = error;
+        }
         return totoalWriteLength;
     }
     
