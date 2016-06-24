@@ -19,9 +19,6 @@
 #define SSHKitLibsshErrorDomain @"SSHKit.libssh"
 #define SSHKitLibsshSFTPErrorDomain @"SSHKit.libssh.SFTP"
 #define SSHKitCoreErrorDomain   @"SSHKit.Core"
-#define SSHKitSFTPErrorDomain   @"SSHKit.SFTP"
-#define SSHKitSFTPRequestNotImplemented   @"SSHKit.SSHKitSFTPRequestNotImplemented"
-#define SSHKitSFTPUnderlyingErrorKey      @"SSHKit.SSHKitSFTPUnderlyingErrorKey"
 
 #define SSHKit_SSH_OK 0     /* No error */
 #define SSHKit_SSH_ERROR -1 /* Error of some kind */
