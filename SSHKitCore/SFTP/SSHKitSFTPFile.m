@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 @property (nonatomic) SSHKitFileStage stage;
 @property (nonatomic, copy) SSHKitSFTPClientReadFileBlock readFileBlock;
 @property (nonatomic, copy) SSHKitSFTPClientProgressBlock progressBlock;
-@property (nonatomic, copy) SSHKitSFTPClientFileTransferSuccessBlock fileTransferSuccessBlock;
+@property (nonatomic, copy) SSHKitSFTPClientSuccessBlock fileTransferSuccessBlock;
 @property (nonatomic, copy) SSHKitSFTPClientFailureBlock fileTransferFailBlock;
 // @property (nonatomic) SSHKitFileStage readBytesLength;
 @end
@@ -194,7 +194,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (void)asyncReadFile:(unsigned long long)offset
         readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
-        fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
+        fileTransferSuccessBlock:(SSHKitSFTPClientSuccessBlock)fileTransferSuccessBlock
         fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock {
     _againCount = 0;
     _readedpackageLen = 0;
@@ -260,11 +260,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         self.stage = SSHKitFileStageNone;
         // SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime)
         free(buffer);
-        self.fileTransferSuccessBlock(self, nil, nil, nil);
+        self.fileTransferSuccessBlock();
         return;
     }
-    _readFileBlock(buffer, nbytes);
-    _progressBlock(nbytes, _totalBytes, self.fileSize.longLongValue);
+    self.readFileBlock(buffer, nbytes);
+    self.progressBlock(nbytes, _totalBytes, self.fileSize.longLongValue);
     _readedpackageLen += nbytes;
     if (_readedpackageLen < MAX_XFER_BUF_SIZE && _totalBytes < self.fileSize.longLongValue) {  // if not all data readed
         // NSLog(@"not all data readed.");
@@ -276,7 +276,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (_asyncRequest == 0) {
         // finish or fail
         self.stage = SSHKitFileStageNone;
-        self.fileTransferSuccessBlock(self, nil, nil, nil);
+        self.fileTransferSuccessBlock();
         return;
     }
     if (_asyncRequest < 0) {

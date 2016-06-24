@@ -62,7 +62,7 @@
 - (void)asyncReadFile:(unsigned long long)offset
         readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
-        fileTransferSuccessBlock:(SSHKitSFTPClientFileTransferSuccessBlock)fileTransferSuccessBlock
+        fileTransferSuccessBlock:(SSHKitSFTPClientSuccessBlock)fileTransferSuccessBlock
 fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock;
 - (void)cancelAsyncReadFile;
 -(long)write:(const void *)buffer size:(long)size errorPtr:(NSError **)errorPtr;
