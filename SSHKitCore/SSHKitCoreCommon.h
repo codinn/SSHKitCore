@@ -53,54 +53,6 @@ typedef NS_ENUM(NSInteger, SSHKitProxyType) {
     SSHKitProxyTypeHTTPS, // just alias of SSHKitProxyTypeHTTP
 };
 
-typedef NS_ENUM(NSInteger, SSHKitSFTPClientErrorCode) {
-    SSHKitSFTPClientErrorUnknown = 1,
-    SSHKitSFTPClientErrorNotImplemented,
-    SSHKitSFTPClientErrorOperationInProgress,
-    SSHKitSFTPClientErrorInvalidHostname,
-    SSHKitSFTPClientErrorInvalidUsername,
-    SSHKitSFTPClientErrorInvalidPasswordOrKey,
-    SSHKitSFTPClientErrorInvalidPath,
-    SSHKitSFTPClientErrorAlreadyConnected,
-    SSHKitSFTPClientErrorConnectionTimedOut,
-    SSHKitSFTPClientErrorUnableToResolveHostname,
-    SSHKitSFTPClientErrorSocketError,
-    SSHKitSFTPClientErrorUnableToConnect,
-    SSHKitSFTPClientErrorUnableToInitializeSession,
-    SSHKitSFTPClientErrorDisconnected,
-    SSHKitSFTPClientErrorHandshakeFailed,
-    SSHKitSFTPClientErrorAuthenticationFailed,
-    SSHKitSFTPClientErrorNotConnected,
-    SSHKitSFTPClientErrorUnableToInitializSSHKitSFTP,
-    SSHKitSFTPClientErrorUnableToOpenDirectory,
-    SSHKitSFTPClientErrorUnableToCloseDirectory,
-    SSHKitSFTPClientErrorUnableToOpenFile,
-    SSHKitSFTPClientErrorUnableToCloseFile,
-    SSHKitSFTPClientErrorUnableToOpenLocalFileForWriting,
-    SSHKitSFTPClientErrorUnableToReadDirectory,
-    SSHKitSFTPClientErrorUnableToReadFile,
-    SSHKitSFTPClientErrorUnableToStatFile,
-    SSHKitSFTPClientErrorUnableToCreateChannel,
-    SSHKitSFTPClientErrorCancelledByUser,
-    SSHKitSFTPClientErrorUnableToOpenLocalFileForReading,
-    SSHKitSFTPClientErrorUnableToWriteFile,
-    SSHKitSFTPClientErrorUnableToMakeDirectory,
-    SSHKitSFTPClientErrorUnableToRename,
-    SSHKitSFTPClientErrorUnableToRemove
-};
-
-typedef NS_ENUM(NSInteger, SSHKitSFTPRequestStatusCode) {
-    // error code from libssh
-    SSHKitSFTPRequestStatusWaiting  = 0,
-    SSHKitSFTPRequestStatusStarted,
-    SSHKitSFTPRequestStatusPaused,
-    SSHKitSFTPRequestStatusCanceled,
-    SSHKitSFTPRequestStatusFinished,
-    
-    // our error code
-    SSHKitSFTPRequestStatusFailed   = 1001,
-};
-
 typedef NS_ENUM(NSInteger, SSHKitSFTPListDirFilterCode) {
     // error code from libssh
     SSHKitSFTPListDirFilterCodeAdd  = 0,
