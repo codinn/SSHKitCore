@@ -281,6 +281,36 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     return [self libsshSFTPError:returnCode];
 }
 
+- (NSString *)readlink:(NSString *)path errorPtr:(NSError **)errorPtr {
+    __block NSString *linkTo = nil;
+    __weak typeof(self) weakSelf = self;
+    
+    [self.session dispatchSyncOnSessionQueue:^{
+        char * cLinkTo = sftp_readlink(weakSelf.rawSFTPSession, [path UTF8String]);
+        if (cLinkTo == NULL) {
+        } else {
+            linkTo = [[NSString alloc]initWithUTF8String:cLinkTo];
+        }
+    }];
+    
+    if (linkTo == nil && errorPtr) {
+        *errorPtr = self.libsshSFTPError;
+    }
+    
+    return linkTo;
+}
+
+- (NSError *)symlink:(NSString *)targetPath destination:(NSString *)destination {
+    __block int returnCode;
+    __weak SSHKitSFTPChannel *weakSelf = self;
+    
+    [self.session dispatchSyncOnSessionQueue:^{
+        returnCode = sftp_symlink(weakSelf.rawSFTPSession, [targetPath UTF8String], [destination UTF8String]);
+    }];
+    
+    return [self libsshSFTPError:returnCode];
+}
+
 #pragma mark - property
 
 - (NSMutableArray *)remoteFiles {

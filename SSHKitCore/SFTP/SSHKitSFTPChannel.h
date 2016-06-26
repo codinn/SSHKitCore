@@ -32,5 +32,7 @@
 - (NSError *)mkdir:(NSString *)directoryPath mode:(unsigned long)mode;
 - (NSError *)rmdir:(NSString *)directoryPath;
 - (NSError *)unlink:(NSString *)filePath;
+- (NSString *)readlink:(NSString *)path errorPtr:(NSError **)errorPtr;
+- (NSError *)symlink:(NSString *)targetPath destination:(NSString *)destination;
 
 @end
