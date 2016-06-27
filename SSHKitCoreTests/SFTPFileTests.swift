@@ -116,7 +116,7 @@ class SFTPFileTests: SFTPTests {
             file?.asyncReadFile(0, readFileBlock: { (buffer, bufferLength) in
                 //
                 }, progressBlock: { (bytesNewReceived, bytesReceived, bytesTotal) in
-                }, fileTransferSuccessBlock: { (file, startTime, finishTime, newFilePath) in
+                }, fileTransferSuccessBlock: {
                     self.readFileExpectation?.fulfill()
                 }, fileTransferFailBlock: { (error) in
                     XCTFail(error.description)

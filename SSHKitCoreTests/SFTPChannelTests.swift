@@ -12,14 +12,21 @@ class SFTPChannelTests: SFTPTests {
     // TODO add a script to reset sftp test env(file.txt,rename.txt,remove.txt,ls/1,ls/2)
     let filePathForTest = "./file.txt"
     let folderPathForTest = "./folder"
+    let symlinkFolderPathForTest = "./symlink"
+    let newSymlinkFolderPathForTest = "./newSymlink"
     let newFolderPathForTest = "./newFolder"
     
     // MARK: - setUp
     override func setUp() {
         super.setUp()
+        
         createEmptyFile(filePathForTest)
+        
         mkdir(folderPathForTest)
         rmdir(newFolderPathForTest)
+        
+        unlink(newSymlinkFolderPathForTest)
+        channel!.symlink(folderPathForTest, destination: symlinkFolderPathForTest)
     }
     
     override func tearDown() {
@@ -141,5 +148,33 @@ class SFTPChannelTests: SFTPTests {
         XCTAssertEqual(error.code, SSHKitSFTPErrorCode.NoSuchFile.rawValue)
     }
     
+    func testSymlink() {
+        let targetPath = folderPathForTest
+        let destination = symlinkFolderPathForTest
+        
+        var error = channel!.symlink(targetPath, destination: destination)
+        if let error=error {
+            XCTFail(error.description)
+        }
+        
+        error = channel!.symlink(targetPath, destination: destination)
+        XCTAssertEqual(error.code, SSHKitSFTPErrorCode.GenericFailure.rawValue)
+    }
+    
+    func testReadlink() {
+        let path = symlinkFolderPathForTest
+        do {
+            let destination = try channel!.readlink(path)
+            XCTAssertEqual(destination, folderPathForTest)
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+        do {
+            try channel!.readlink("./no_this_link")
+            XCTFail("readk link must fail, but succ")
+        } catch let error as NSError {
+            XCTAssertEqual(error.code, SSHKitSFTPErrorCode.GenericFailure.rawValue)
+        }
+    }
 
 }
