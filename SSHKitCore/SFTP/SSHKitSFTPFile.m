@@ -25,6 +25,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 @property (nonatomic, readwrite) BOOL isDirectory;
+@property (nonatomic, readwrite) BOOL isLink;
 @property (nonatomic, strong) NSDate *creationDate;
 @property (nonatomic, strong) NSDate *modificationDate;
 @property (nonatomic, strong) NSDate *lastAccess;
@@ -54,7 +55,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         self.filename = [path lastPathComponent];
         _sftp = sftp;
     }
-    // TODO use sftp_stat to get file info.
     return self;
 }
 
@@ -345,6 +345,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self.posixPermissions = fileAttributes->permissions;
     self->_fileTypeLetter = [self fileTypeLetter:fileAttributes->permissions];
     self.isDirectory = S_ISDIR(fileAttributes->permissions);
+#ifdef S_ISLNK
+    self.isLink = S_ISLNK(fileAttributes->permissions);
+#endif
     self.flags = fileAttributes->flags;
 }
 
