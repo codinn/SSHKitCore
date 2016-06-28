@@ -45,8 +45,8 @@ class SFTPTests: SessionTestCase, SSHKitChannelDelegate {
     // MARK: - helper function
     func createEmptyFile(filename: String) {
         do {
-            let file = try channel?.openFileForWrite(filename, shouldResume: false, mode: 0o755)
-            file?.close()
+            let file = try SSHKitSFTPFile.openFileForWrite(channel, path: filename, shouldResume: false, mode: 0o755)
+            file.close()
         } catch let error as NSError {
             if error.code != SSHKitSFTPErrorCode.FileAlreadyExists.rawValue {
                 XCTFail(error.description)

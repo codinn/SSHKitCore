@@ -65,6 +65,82 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     return self;
 }
 
++ (instancetype)initDirectory:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path {
+    return [[SSHKitSFTPFile alloc]init:sftpChannel path:path isDirectory:YES];
+}
+
++ (instancetype)initFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path {
+    return [[SSHKitSFTPFile alloc]init:sftpChannel path:path isDirectory:NO];
+}
+
++ (instancetype)openDirectory:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr {
+    SSHKitSFTPFile* directory = [SSHKitSFTPFile initDirectory:sftpChannel path:path];
+
+    [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        NSError *error = [directory open];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+    }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
+    return directory;
+}
+
++ (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr {
+    SSHKitSFTPFile* file = [SSHKitSFTPFile initFile:sftpChannel path:path];
+
+    [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        NSError *error = [file open];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+    }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
+    return file;
+}
+
++ (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode errorPtr:(NSError **)errorPtr {
+    SSHKitSFTPFile* file = [SSHKitSFTPFile initFile:sftpChannel path:path];
+
+    [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        NSError *error = [file openFile:accessType mode:mode];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+    }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
+    return file;
+}
+
++ (instancetype)openFileForWrite:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode errorPtr:(NSError **)errorPtr {
+    SSHKitSFTPFile* file = [SSHKitSFTPFile initFile:sftpChannel path:path];
+
+    [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        NSError *error = [file openFileForWrite:shouldResume mode:mode];
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+    }];
+
+    if (*errorPtr) {
+        return nil;
+    }
+
+    return file;
+}
+
 #pragma mark - open file/directory
 
 - (NSError *)openDirectory {

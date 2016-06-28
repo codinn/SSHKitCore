@@ -51,7 +51,7 @@ class SFTPChannelTests: SFTPTests {
 
     func testOpenDirectorySucc() {
         do {
-            let dir = try channel!.openDirectory("./")
+            let dir = try SSHKitSFTPFile.openDirectory(channel, path: "./")
             dir.close()
         } catch let error as NSError {
             XCTFail(error.description)
@@ -60,7 +60,7 @@ class SFTPChannelTests: SFTPTests {
     
     func testOpenDirectoryFail() {
         do {
-            try channel!.openDirectory("./no_this_dir")
+            try SSHKitSFTPFile.openDirectory(channel, path: "./no_this_dir")
             XCTFail("open dir must fail, but succ")
         } catch let error as NSError {
             XCTAssertEqual(error.code, SSHKitSFTPErrorCode.NoSuchFile.rawValue)
@@ -69,7 +69,7 @@ class SFTPChannelTests: SFTPTests {
     
     func testOpenFileSucc() {
         do {
-            let file = try channel!.openFile(filePathForTest)
+            let file = try SSHKitSFTPFile.openFile(channel, path: filePathForTest)
             file.close()
         } catch let error as NSError {
             XCTFail(error.description)
@@ -78,7 +78,7 @@ class SFTPChannelTests: SFTPTests {
     
     func testOpenFileFail() {
         do {
-            try channel!.openFile("./no_this_file")
+            try SSHKitSFTPFile.openFile(channel, path: "./no_this_file")
             XCTFail("open file must fail, but succ")
         } catch let error as NSError {
             XCTAssertEqual(error.code, SSHKitSFTPErrorCode.EOF.rawValue)
@@ -103,7 +103,7 @@ class SFTPChannelTests: SFTPTests {
         }
         
         do {
-            let file = try channel!.openFile(path)
+            let file = try SSHKitSFTPFile.openFile(channel, path: path)
             XCTAssertEqual(file.posixPermissions, 0o100700)
         } catch let error as NSError {
             XCTFail(error.description)
@@ -150,7 +150,7 @@ class SFTPChannelTests: SFTPTests {
     
     func testSymlink() {
         let targetPath = folderPathForTest
-        let destination = symlinkFolderPathForTest
+        let destination = newSymlinkFolderPathForTest
         
         var error = channel!.symlink(targetPath, destination: destination)
         if let error=error {

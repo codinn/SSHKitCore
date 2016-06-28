@@ -58,6 +58,13 @@
 
 @property (nonatomic, readonly) SSHKitSFTPChannel *sftp;
 @property (nonatomic, readonly) BOOL directoryEof;
+
++ (instancetype)openDirectory:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr;
++ (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr;
++ (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode errorPtr:(NSError **)errorPtr;
++ (instancetype)openFileForWrite:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode errorPtr:(NSError **)errorPtr;
+
+
 - (instancetype)init:(SSHKitSFTPChannel *)sftp path:(NSString *)path isDirectory:(BOOL)isDirectory;
 - (void)close;
 - (NSArray *)listDirectory:(SSHKitSFTPListDirFilter)filter;

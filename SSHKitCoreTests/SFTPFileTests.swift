@@ -41,13 +41,13 @@ class SFTPFileTests: SFTPTests {
     func createFile(filename: String, content: String) {
         
         do {
-            let file = try channel?.openFileForWrite(filename, shouldResume: false, mode: 0o755)
+            let file = try SSHKitSFTPFile.openFileForWrite(channel, path: filename, shouldResume: false, mode: 0o755)
             let length = content.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)
             let data = content.cStringUsingEncoding(NSUTF8StringEncoding)
             let error: NSErrorPointer = nil
-            let writeLength = file?.write(data!, size: length, errorPtr: error)
+            let writeLength = file.write(data!, size: length, errorPtr: error)
             XCTAssertEqual(length, writeLength)
-            file?.close()
+            file.close()
         } catch let error as NSError {
             XCTFail(error.description)
         }
@@ -56,12 +56,12 @@ class SFTPFileTests: SFTPTests {
     // MARK: - test
     func testListDirectory() {
         do {
-            var dir = try channel!.openDirectory(lsFolderPathForTest)
+            var dir = try SSHKitSFTPFile.openDirectory(channel, path: lsFolderPathForTest)
             var files = dir.listDirectory(nil)
             XCTAssertEqual(files.count, 4)
             dir.close()
             
-            dir = try channel!.openDirectory(lsFolderPathForTest)
+            dir = try SSHKitSFTPFile.openDirectory(channel, path: lsFolderPathForTest)
             files = dir.listDirectory({ (filename) -> SSHKitSFTPListDirFilterCode in
                 if filename == "." {
                     return .Ignore;
@@ -71,7 +71,7 @@ class SFTPFileTests: SFTPTests {
             XCTAssertEqual(files.count, 3)
             dir.close()
             
-            dir = try channel!.openDirectory(lsFolderPathForTest)
+            dir = try SSHKitSFTPFile.openDirectory(channel, path: lsFolderPathForTest)
             files = dir.listDirectory({ (filename) -> SSHKitSFTPListDirFilterCode in
                 return .Cancel
             })
@@ -111,9 +111,9 @@ class SFTPFileTests: SFTPTests {
         
         do {
             readFileExpectation = expectationWithDescription("Read File Success")
-            let file = try channel?.openFile(filename)
+            let file = try SSHKitSFTPFile.openFile(channel, path: filename)
             
-            file?.asyncReadFile(0, readFileBlock: { (buffer, bufferLength) in
+            file.asyncReadFile(0, readFileBlock: { (buffer, bufferLength) in
                 //
                 }, progressBlock: { (bytesNewReceived, bytesReceived, bytesTotal) in
                 }, fileTransferSuccessBlock: {
@@ -128,7 +128,7 @@ class SFTPFileTests: SFTPTests {
                 }
             }
             
-            file?.close()
+            file.close()
         } catch let error as NSError {
             XCTFail(error.description)
         }
