@@ -86,10 +86,10 @@
  **/
 - (void)connectWithTimeout:(NSTimeInterval)timeout;
 /**
- * Connects to the server via an opened socket.
+ * Connects to the server via a socket callback.
  *
  **/
-- (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd;
+- (void)connectWithTimeout:(NSTimeInterval)timeout fileDescriptorBlock:(int (^)(NSError **))block;
 
 // -----------------------------------------------------------------------------
 #pragma mark Disconnecting

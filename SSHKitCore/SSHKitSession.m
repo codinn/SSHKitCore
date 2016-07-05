@@ -223,10 +223,10 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 }
 
 - (void)connectWithTimeout:(NSTimeInterval)timeout {
-    [self connectWithTimeout:timeout viaFileDescriptor:SSH_INVALID_SOCKET];
+    [self connectWithTimeout:timeout fileDescriptorBlock:nil];
 }
 
-- (void)connectWithTimeout:(NSTimeInterval)timeout viaFileDescriptor:(int)fd {
+- (void)connectWithTimeout:(NSTimeInterval)timeout fileDescriptorBlock:(int (^)(NSError **))block {
     _timeout = timeout > 0 ? timeout : SSHKIT_SESSION_DEFAULT_TIMEOUT;
     
     __weak SSHKitSession *weakSelf = self;
@@ -237,6 +237,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         }
         
         strongSelf.stage = SSHKitSessionStageConnecting;
+        int fd = SSH_INVALID_SOCKET;
+        
+        if (block) {
+            NSError *error = nil;
+            fd = block(&error);
+            
+            if (fd==SSH_INVALID_SOCKET || error) {
+                [strongSelf _doDisconnectWithError:error];
+                return_from_block;
+            }
+        }
         
         BOOL prepared = [strongSelf _doPrepareWithFileDescriptor:fd];
         if (!prepared) {
