@@ -50,7 +50,7 @@ class EchoServer {
         let queue = dispatch_get_global_queue(0, 0)
         
         // Note: capturing self here
-        listenSocket!.listen(queue, backlog: 5) { newSock in
+        listenSocket!.listen(queue:queue, backlog: 5) { newSock in
             
             self.log("got new socket: \(newSock) nio=\(newSock.isNonBlocking)")
             newSock.isNonBlocking = true
@@ -109,7 +109,7 @@ class EchoServer {
                 return
             }
             
-            socket.asyncWrite(block, length: count)
+            socket.asyncWrite(buffer:block, length: count)
         } while (true)
     }
 }
