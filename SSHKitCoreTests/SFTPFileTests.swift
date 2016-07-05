@@ -30,11 +30,14 @@ class SFTPFileTests: SFTPTests {
     
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-        
         unlink(lsFolderPathForTest.stringByAppendingString("/1"))
         unlink(lsFolderPathForTest.stringByAppendingString("/2"))
         rmdir(lsFolderPathForTest)
+        
+        unlink(filePathForWriteTest)
+        unlink(filePathForReadTest)
+        
+        super.tearDown()
     }
     
     // MARK: - helper function

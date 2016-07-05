@@ -78,8 +78,8 @@ static channel_callbacks s_null_channel_callbacks = {0};
     
     ssh_channel_free(self->_rawChannel);
     self->_rawChannel = NULL;
-    if (self.rawSFTPSession) {
-        sftp_free(self.rawSFTPSession);
+    if (self->_rawSFTPSession) {
+        sftp_free(self->_rawSFTPSession);
         _rawSFTPSession = NULL;
     }
     self->_rawChannel = NULL;

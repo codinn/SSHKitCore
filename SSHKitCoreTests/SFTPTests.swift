@@ -34,12 +34,9 @@ class SFTPTests: SessionTestCase, SSHKitChannelDelegate {
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
-        /*
-         if let session=self.session {
-         session.disconnect()
-         }
-         */
-        // FIXME session.disconnect() may fail. error at ssh_channel_free(ssh_channel channel)
+        if let session=self.session {
+            session.disconnect()
+        }
     }
     
     // MARK: - helper function

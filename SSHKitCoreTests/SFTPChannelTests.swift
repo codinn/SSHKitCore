@@ -31,9 +31,14 @@ class SFTPChannelTests: SFTPTests {
     
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
         unlink(filePathForTest)
         rmdir(folderPathForTest)
+        
+        rmdir(newFolderPathForTest)
+        unlink(newSymlinkFolderPathForTest)
+        channel!.symlink(folderPathForTest, destination: symlinkFolderPathForTest)
+        
+        super.tearDown()
     }
     
     // MARK: - test
