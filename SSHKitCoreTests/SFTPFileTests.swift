@@ -13,6 +13,8 @@ class SFTPFileTests: SFTPTests {
     private var readFileExpectation: XCTestExpectation?
 
     let lsFolderPathForTest = "./ls"
+    let lnFolderPathForTest = "./ln"
+    let lnFilePathForTest = "./lnFile"
     let filePathForWriteTest = "./test_write.txt"
     let filePathForReadTest = "./test_read.txt"
 
@@ -23,6 +25,8 @@ class SFTPFileTests: SFTPTests {
         mkdir(lsFolderPathForTest)
         createEmptyFile(lsFolderPathForTest.stringByAppendingString("/1"))
         createEmptyFile(lsFolderPathForTest.stringByAppendingString("/2"))
+        channel!.symlink(lsFolderPathForTest, destination: lnFolderPathForTest)
+        channel!.symlink(lsFolderPathForTest.stringByAppendingString("/1"), destination: lnFilePathForTest)
         
         unlink(filePathForWriteTest)
         unlink(filePathForReadTest)
@@ -32,6 +36,8 @@ class SFTPFileTests: SFTPTests {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         unlink(lsFolderPathForTest.stringByAppendingString("/1"))
         unlink(lsFolderPathForTest.stringByAppendingString("/2"))
+        unlink(lnFolderPathForTest)
+        unlink(lnFilePathForTest)
         rmdir(lsFolderPathForTest)
         
         unlink(filePathForWriteTest)
@@ -81,8 +87,25 @@ class SFTPFileTests: SFTPTests {
             XCTAssertEqual(files.count, 0)
             dir.close()
             
+            // test symlink
+            dir = try SSHKitSFTPFile.openDirectory(channel, path: lnFolderPathForTest)
+            files = dir.listDirectory(nil)
+            XCTAssertEqual(files.count, 4)
+            dir.close()
+            
         } catch let error as NSError {
             XCTFail(error.description)
+        }
+        do {
+            // try to ls symlink file
+            let dir = try SSHKitSFTPFile.openDirectory(channel, path: lnFilePathForTest)
+            let files = dir.listDirectory(nil)
+            XCTAssertEqual(files.count, 4)
+            dir.close()
+        } catch let error as NSError {
+            if error.code != SSHKitSFTPErrorCode.NoSuchFile.rawValue {
+                XCTFail(error.description)
+            }
         }
     }
     
