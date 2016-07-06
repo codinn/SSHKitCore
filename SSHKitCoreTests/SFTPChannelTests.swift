@@ -171,6 +171,8 @@ class SFTPChannelTests: SFTPTests {
         do {
             let destination = try channel!.readlink(path)
             XCTAssertEqual(destination, folderPathForTest)
+            let file = try SSHKitSFTPFile.openFile(channel, path: path)
+            XCTAssert(file.isLink)
         } catch let error as NSError {
             XCTFail(error.description)
         }

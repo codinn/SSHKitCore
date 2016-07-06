@@ -159,7 +159,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     __block sftp_attributes file_attributes = NULL;
     __weak SSHKitSFTPFile *weakSelf = self;
     [self.sftp.session dispatchSyncOnSessionQueue:^{
-        file_attributes = sftp_stat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
+        // file_attributes = sftp_stat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
+        file_attributes = sftp_lstat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
     }];
     if (file_attributes == NULL) {
         return self.sftp.session.libsshError;
