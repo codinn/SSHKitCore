@@ -47,7 +47,7 @@ static void SSHKitCoreFinalize() {
 }
 
 // AES BLOWFISH DES
-NSString * const kVTKitDefaultEncryptionCiphers = @"aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc,3des-cbc";
+NSString * const kVTKitDefaultEncryptionCiphers = @"aes256-ctr,aes192-ctr,aes128-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc,3des-cbc,des-cbc-ssh1";
 
 // HOSTKEYS
 NSString * const kVTKitDefaultHostKeyAlgorithms = @"ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,ssh-rsa,ssh-dss,ssh-rsa1";

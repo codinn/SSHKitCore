@@ -115,7 +115,7 @@ class ForwardChannelTests: SessionTestCase, SSHKitChannelDelegate {
                     return
                 }
                 
-                sock.asyncWrite(data, length: count)
+                sock.asyncWrite(buffer: data, length: count)
             })
             
             writeExpectation = expectationWithDescription("Channel write data")
