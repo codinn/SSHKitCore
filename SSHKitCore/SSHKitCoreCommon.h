@@ -93,7 +93,7 @@ typedef NSArray *(^ SSHKitAskInteractiveInfoBlock)(NSInteger, NSString *, NSStri
 typedef void (^ SSHKitListeningRequestCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
 
 // Block typedefs
-typedef SSHKitSFTPListDirFilterCode(^SSHKitSFTPListDirFilter)(NSString *filename);
+typedef SSHKitSFTPListDirFilterCode(^SSHKitSFTPListDirFilter)(SSHKitSFTPFile *sftpFile);
 typedef void(^SSHKitSFTPClientSuccessBlock)(void);
 typedef void(^SSHKitSFTPClientFailureBlock)(NSError *error);
 typedef void(^SSHKitSFTPClientProgressBlock) (unsigned long bytesNewReceived, unsigned long long bytesReceived, unsigned long long bytesTotal);

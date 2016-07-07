@@ -71,7 +71,8 @@ class SFTPFileTests: SFTPTests {
             dir.close()
             
             dir = try SSHKitSFTPFile.openDirectory(channel, path: lsFolderPathForTest)
-            files = dir.listDirectory({ (filename) -> SSHKitSFTPListDirFilterCode in
+            files = dir.listDirectory({ (sftpFile) -> SSHKitSFTPListDirFilterCode in
+                let filename = sftpFile.filename
                 if filename == "." {
                     return .Ignore;
                 }

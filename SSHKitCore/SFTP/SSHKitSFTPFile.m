@@ -515,7 +515,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     while (file != nil) {
         SSHKitSFTPListDirFilterCode code = SSHKitSFTPListDirFilterCodeAdd;
         if (filter) {
-            code = filter(file.filename);
+            code = filter(file);
         }
         switch (code) {
             case SSHKitSFTPListDirFilterCodeAdd:
