@@ -11,7 +11,8 @@ import XCTest
 class SFTPChannelTests: SFTPTests {
     let filePathForTest = "./file.txt"
     let folderPathForTest = "./folder"
-    let symlinkFolderPathForTest = "./symlink"
+    let symlinkFolderPathForTest = "./symlinkFolder"
+    let symlinkFilePathForTest = "./symlinkFile"
     let newSymlinkFolderPathForTest = "./newSymlink"
     let newFolderPathForTest = "./newFolder"
     
@@ -26,6 +27,7 @@ class SFTPChannelTests: SFTPTests {
         
         unlink(newSymlinkFolderPathForTest)
         channel!.symlink(folderPathForTest, destination: symlinkFolderPathForTest)
+        channel!.symlink(filePathForTest, destination: symlinkFilePathForTest)
     }
     
     override func tearDown() {
@@ -35,7 +37,8 @@ class SFTPChannelTests: SFTPTests {
         
         rmdir(newFolderPathForTest)
         unlink(newSymlinkFolderPathForTest)
-        channel!.symlink(folderPathForTest, destination: symlinkFolderPathForTest)
+        unlink(symlinkFolderPathForTest)
+        unlink(symlinkFilePathForTest)
         
         super.tearDown()
     }
@@ -101,6 +104,23 @@ class SFTPChannelTests: SFTPTests {
             }
             XCTAssertFalse(file.symlinkTarget.isLink)
             XCTAssertEqual(file.symlinkTarget.filename, "folder")
+        } catch let error as NSError {
+            XCTFail(error.description)
+        }
+    }
+    
+    func testOpenSymlinkDirectory() {
+        let path = symlinkFolderPathForTest
+        do {
+            let dir = try SSHKitSFTPFile.openDirectory(channel, path: path)
+            dir.close()
+            XCTAssert(dir.isLink)
+            let error = dir.updateSymlinkTargetStat()
+            if let error=error {
+                XCTFail(error.description)
+            }
+            XCTAssertFalse(dir.symlinkTarget.isLink)
+            XCTAssertEqual(dir.symlinkTarget.filename, "folder")
         } catch let error as NSError {
             XCTFail(error.description)
         }

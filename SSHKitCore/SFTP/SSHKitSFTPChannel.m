@@ -206,22 +206,22 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 }
 
 - (NSString *)readlink:(NSString *)path errorPtr:(NSError **)errorPtr {
-    __block NSString *linkTo = nil;
+    __block NSString *symlinkTarget = nil;
     __weak typeof(self) weakSelf = self;
     
     [self.session dispatchSyncOnSessionQueue:^{
-        char * cLinkTo = sftp_readlink(weakSelf.rawSFTPSession, [path UTF8String]);
-        if (cLinkTo == NULL) {
+        char * cSymlinkTarget = sftp_readlink(weakSelf.rawSFTPSession, [path UTF8String]);
+        if (cSymlinkTarget == NULL) {
         } else {
-            linkTo = [[NSString alloc]initWithUTF8String:cLinkTo];
+            symlinkTarget = [[NSString alloc]initWithUTF8String:cSymlinkTarget];
         }
     }];
     
-    if (linkTo == nil && errorPtr) {
+    if (symlinkTarget == nil && errorPtr) {
         *errorPtr = self.libsshSFTPError;
     }
     
-    return linkTo;
+    return symlinkTarget;
 }
 
 - (NSError *)symlink:(NSString *)targetPath destination:(NSString *)destination {
