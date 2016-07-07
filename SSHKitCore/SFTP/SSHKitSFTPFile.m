@@ -170,6 +170,35 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     return nil;
 }
 
+- (NSError *)updateSymlinkTargetStat {
+    __block sftp_attributes file_attributes = NULL;
+    __weak SSHKitSFTPFile *weakSelf = self;
+    NSError *error;
+    NSString *symlinkTargetPath = [self.sftp readlink:self.fullFilename errorPtr:&error];
+    if (error) {
+        return error;
+    }
+    
+    symlinkTargetPath = [self.sftp canonicalizePath:symlinkTargetPath errorPtr:&error];
+    if (error) {
+        return error;
+    }
+    
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        file_attributes = sftp_stat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
+    }];
+    if (file_attributes == NULL) {
+        return self.sftp.session.libsshError;
+    }
+    SSHKitSFTPFile *symlinkTarget = [[SSHKitSFTPFile alloc] initWithSFTPAttributes:file_attributes parentPath:nil];
+    symlinkTarget.fullFilename = symlinkTargetPath;
+    symlinkTarget.filename = [symlinkTargetPath lastPathComponent];
+    self->_symlinkTarget = symlinkTarget;
+    
+    [SSHKitSFTPChannel freeSFTPAttributes:file_attributes];
+    return nil;
+}
+
 - (NSError *)open {
     NSError *error = nil;
     if (self.isDirectory) {

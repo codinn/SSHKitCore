@@ -59,6 +59,8 @@
 @property (nonatomic, readonly) SSHKitSFTPChannel *sftp;
 @property (nonatomic, readonly) BOOL directoryEof;
 
+@property (nonatomic, readonly) SSHKitSFTPFile *symlinkTarget;
+
 + (instancetype)openDirectory:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr;
 + (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr;
 + (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode errorPtr:(NSError **)errorPtr;
@@ -75,5 +77,7 @@
 fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock;
 - (void)cancelAsyncReadFile;
 -(long)write:(const void *)buffer size:(long)size errorPtr:(NSError **)errorPtr;
+
+- (NSError *)updateSymlinkTargetStat;  // get symlink's tagert info
 
 @end

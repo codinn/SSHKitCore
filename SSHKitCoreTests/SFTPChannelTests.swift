@@ -9,7 +9,6 @@
 import XCTest
 
 class SFTPChannelTests: SFTPTests {
-    // TODO add a script to reset sftp test env(file.txt,rename.txt,remove.txt,ls/1,ls/2)
     let filePathForTest = "./file.txt"
     let folderPathForTest = "./folder"
     let symlinkFolderPathForTest = "./symlink"
@@ -87,6 +86,23 @@ class SFTPChannelTests: SFTPTests {
             XCTFail("open file must fail, but succ")
         } catch let error as NSError {
             XCTAssertEqual(error.code, SSHKitSFTPErrorCode.EOF.rawValue)
+        }
+    }
+    
+    func testOpenSymlinkFile() {
+        let path = symlinkFolderPathForTest
+        do {
+            let file = try SSHKitSFTPFile.openFile(channel, path: path)
+            file.close()
+            XCTAssert(file.isLink)
+            let error = file.updateSymlinkTargetStat()
+            if let error=error {
+                XCTFail(error.description)
+            }
+            XCTAssertFalse(file.symlinkTarget.isLink)
+            XCTAssertEqual(file.symlinkTarget.filename, "folder")
+        } catch let error as NSError {
+            XCTFail(error.description)
         }
     }
     
@@ -171,8 +187,6 @@ class SFTPChannelTests: SFTPTests {
         do {
             let destination = try channel!.readlink(path)
             XCTAssertEqual(destination, folderPathForTest)
-            let file = try SSHKitSFTPFile.openFile(channel, path: path)
-            XCTAssert(file.isLink)
         } catch let error as NSError {
             XCTFail(error.description)
         }
