@@ -117,7 +117,12 @@
     
     int boundport = 0;
     
-    int rc = ssh_channel_listen_forward(self.rawSession, request.listenHost.UTF8String, request.listenPort, &boundport);
+    const char *listenHost = NULL; /* passing NULL for listening on all interfaces available */
+    if (request.listenHost.length) {
+        listenHost = request.listenHost.UTF8String;
+    }
+    
+    int rc = ssh_channel_listen_forward(self.rawSession, listenHost, request.listenPort, &boundport);
     
     switch (rc) {
         case SSH_OK: {
@@ -173,8 +178,8 @@
     self = [super init];
     
     if (self) {
-        if (!host.length) {
-            self.listenHost = @"localhost";
+        if (!host.length || [host isEqualToString:@"*"]) {
+            self.listenHost = nil;
         } else {
             self.listenHost = host.lowercaseString;
         }
