@@ -55,6 +55,7 @@
 		4AD161031B00E087004B5FCE /* SSHKitCoreCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD161021B00E087004B5FCE /* SSHKitCoreCommon.m */; };
 		4AEB8F711CD2079A00028BBE /* EchoServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AEB8F701CD2079A00028BBE /* EchoServer.swift */; };
 		4AFD803C19FF91D000D9E48B /* SSHKitCore+Protected.h in Headers */ = {isa = PBXBuildFile; fileRef = 4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */; };
+		CC40CE4C1D336725008C7B33 /* SSHKitSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC40CE4B1D336725008C7B33 /* SSHKitSession.swift */; };
 		CC46E9DD1D1433D300ABA00E /* SFTPFileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC46E9DC1D1433D300ABA00E /* SFTPFileTests.swift */; };
 		CC5F9DA71C79FDCD008F0A3A /* SessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */; };
 		CC5F9DA91C7A013E008F0A3A /* DirectChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */; };
@@ -69,6 +70,7 @@
 		CCBEE2581C8D5EE0004394A4 /* SSHKitSFTPFile.h in Headers */ = {isa = PBXBuildFile; fileRef = CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CCBEE2591C8D5EE0004394A4 /* SSHKitSFTPFile.m in Sources */ = {isa = PBXBuildFile; fileRef = CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */; };
 		CCCDEA561C9DAE9400319B01 /* SFTPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */; };
+		CCE5D99C1D34B61D00BF21B1 /* CBridgingFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCE5D99B1D34B61D00BF21B1 /* CBridgingFunctions.swift */; };
 		E42815C21593D95200CF680C /* SSHKitSession.h in Headers */ = {isa = PBXBuildFile; fileRef = E42815C01593D95200CF680C /* SSHKitSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42815C31593D95200CF680C /* SSHKitSession.m in Sources */ = {isa = PBXBuildFile; fileRef = E42815C11593D95200CF680C /* SSHKitSession.m */; };
 		E42815FE15962B7600CF680C /* SSHKitCore.h in Headers */ = {isa = PBXBuildFile; fileRef = E4E96D94158E10FD002E6E0A /* SSHKitCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -80,14 +82,14 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = DE0A6E23D1AD4D5DBEDC6819;
+			remoteGlobalIDString = 3AC875A698B345EA94BE14B3;
 			remoteInfo = ssh_static;
 		};
 		4A10CFF11BCF55AD005EB7DD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = 9E6A7444652A46919F32E935;
+			remoteGlobalIDString = BCFB18B1D64247E79523C3F4;
 			remoteInfo = ssh_threads_static;
 		};
 		4A360D871CD1FF5800BBD10E /* PBXContainerItemProxy */ = {
@@ -228,6 +230,7 @@
 		4AEF724019FFE2AC009B0CC7 /* libssh.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = libssh.xcodeproj; path = libssh/build/libssh.xcodeproj; sourceTree = "<group>"; };
 		4AF3D46B1BCF8AA2009970A9 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SSHKitCore+Protected.h"; sourceTree = "<group>"; };
+		CC40CE4B1D336725008C7B33 /* SSHKitSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SSHKitSession.swift; sourceTree = "<group>"; };
 		CC46E9DC1D1433D300ABA00E /* SFTPFileTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SFTPFileTests.swift; sourceTree = "<group>"; };
 		CC5F9DA61C79FDCD008F0A3A /* SessionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionTests.swift; sourceTree = "<group>"; };
 		CC5F9DA81C7A013E008F0A3A /* DirectChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectChannelTests.swift; sourceTree = "<group>"; };
@@ -245,6 +248,7 @@
 		CCBEE2541C8D5EE0004394A4 /* SSHKitSFTPFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSFTPFile.h; sourceTree = "<group>"; };
 		CCBEE2551C8D5EE0004394A4 /* SSHKitSFTPFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSFTPFile.m; sourceTree = "<group>"; };
 		CCCDEA551C9DAE9400319B01 /* SFTPTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SFTPTests.swift; sourceTree = "<group>"; };
+		CCE5D99B1D34B61D00BF21B1 /* CBridgingFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBridgingFunctions.swift; sourceTree = "<group>"; };
 		E42815C01593D95200CF680C /* SSHKitSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSHKitSession.h; sourceTree = "<group>"; };
 		E42815C11593D95200CF680C /* SSHKitSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSHKitSession.m; sourceTree = "<group>"; };
 		E4E96D84158E10FD002E6E0A /* SSHKitCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SSHKitCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -290,6 +294,7 @@
 				4A281DC01A4A570D00EA1583 /* SSHKitKeyPair.m */,
 				4A2B5B051A4A6F3C007D20DF /* SSHKitHostKey.h */,
 				4A2B5B061A4A6F3C007D20DF /* SSHKitHostKey.m */,
+				CCE5D99B1D34B61D00BF21B1 /* CBridgingFunctions.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -462,6 +467,7 @@
 				4AFD803B19FF91D000D9E48B /* SSHKitCore+Protected.h */,
 				E42815C01593D95200CF680C /* SSHKitSession.h */,
 				E42815C11593D95200CF680C /* SSHKitSession.m */,
+				CC40CE4B1D336725008C7B33 /* SSHKitSession.swift */,
 				4A3D1E411C60934A009F9760 /* SSHKitSession+Channels.h */,
 				4A3D1E421C60934A009F9760 /* SSHKitSession+Channels.m */,
 				E4E96D8E158E10FD002E6E0A /* Supporting Files */,
@@ -550,7 +556,7 @@
 		E4E96D7A158E10FD002E6E0A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0720;
+				LastSwiftUpdateCheck = 0730;
 				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0700;
 				TargetAttributes = {
@@ -726,10 +732,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CCE5D99C1D34B61D00BF21B1 /* CBridgingFunctions.swift in Sources */,
 				4A3D1E2C1C603F22009F9760 /* SSHKitChannel.m in Sources */,
 				CCBEE2571C8D5EE0004394A4 /* SSHKitSFTPChannel.m in Sources */,
 				4A2B5B081A4A6F3C007D20DF /* SSHKitHostKey.m in Sources */,
 				4A3D1E441C60934A009F9760 /* SSHKitSession+Channels.m in Sources */,
+				CC40CE4C1D336725008C7B33 /* SSHKitSession.swift in Sources */,
 				4A3D1E301C604405009F9760 /* SSHKitDirectChannel.m in Sources */,
 				CCBEE2591C8D5EE0004394A4 /* SSHKitSFTPFile.m in Sources */,
 				4A3D1E341C6044A6009F9760 /* SSHKitForwardChannel.m in Sources */,
@@ -847,6 +855,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "SSHKitCore-Bridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -885,12 +894,14 @@
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "SSHKitCore-Bridging-Header.h";
 			};
 			name = Release;
 		};
 		E4E96DAF158E10FD002E6E0A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -900,9 +911,12 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "SSHKitCore/SSHKitCore-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/openssl/openssl-1.0.2d-osx/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.codinn.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = SSHKitCore;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				VERSIONING_SYSTEM = "apple-generic";
 				WRAPPER_EXTENSION = framework;
 			};
@@ -911,6 +925,7 @@
 		E4E96DB0158E10FD002E6E0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -920,9 +935,11 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "SSHKitCore/SSHKitCore-Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/openssl/openssl-1.0.2d-osx/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.codinn.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = SSHKitCore;
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				VERSIONING_SYSTEM = "apple-generic";
 				WRAPPER_EXTENSION = framework;
 			};
