@@ -75,15 +75,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 + (instancetype)openDirectory:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* directory = [SSHKitSFTPFile initDirectory:sftpChannel path:path];
+    __block NSError *error;
 
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
-        NSError *error = [directory open];
+        error = [directory open];
         if (errorPtr) {
             *errorPtr = error;
         }
     }];
 
-    if (*errorPtr) {
+    if (error) {
         return nil;
     }
 
@@ -92,15 +93,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 + (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* file = [SSHKitSFTPFile initFile:sftpChannel path:path];
+    __block NSError *error;
 
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
-        NSError *error = [file open];
+        error = [file open];
         if (errorPtr) {
             *errorPtr = error;
         }
     }];
 
-    if (*errorPtr) {
+    if (error) {
         return nil;
     }
 
@@ -109,15 +111,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 + (instancetype)openFile:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path accessType:(int)accessType mode:(unsigned long)mode errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* file = [SSHKitSFTPFile initFile:sftpChannel path:path];
+    __block NSError *error;
 
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
-        NSError *error = [file openFile:accessType mode:mode];
+        error = [file openFile:accessType mode:mode];
         if (errorPtr) {
             *errorPtr = error;
         }
     }];
 
-    if (*errorPtr) {
+    if (error) {
         return nil;
     }
 
@@ -126,15 +129,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 + (instancetype)openFileForWrite:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* file = [SSHKitSFTPFile initFile:sftpChannel path:path];
+    __block NSError *error;
 
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
-        NSError *error = [file openFileForWrite:shouldResume mode:mode];
+        error = [file openFileForWrite:shouldResume mode:mode];
         if (errorPtr) {
             *errorPtr = error;
         }
     }];
 
-    if (*errorPtr) {
+    if (error) {
         return nil;
     }
 
@@ -477,7 +481,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (BOOL)isExist {
     BOOL exist = YES;
     NSError *error = [self updateStat];
-    if (error && error.code == SSHKitSFTPErrorCodeNoSuchFile) {
+    if (error && (error.code == SSHKitSFTPErrorCodeNoSuchFile || error.code == SSHKitSFTPErrorCodeEOF)) {
         return NO;
     }
     [self close];

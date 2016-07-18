@@ -154,7 +154,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
             newPath = [NSString stringWithUTF8String:charNewPath];
         }
     }];
-    if (!newPath) {
+    if (!newPath && errorPtr) {
         *errorPtr = self.libsshSFTPError;
     }
     return newPath;
