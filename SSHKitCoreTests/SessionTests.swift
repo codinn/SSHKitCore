@@ -27,7 +27,8 @@ class SessionTests: SessionTestCase {
             let session = try launchSessionWithTimeoutHost()
             XCTAssertNotNil(session)
         } catch let error as NSError {
-            XCTAssertEqual(SSHKitErrorCode.Timeout.rawValue, error.code, error.description)
+            // Compare with SSHKitErrorCode.Timeout.rawValue if launch session using connector
+            XCTAssertEqual(SSHKitErrorCode.Fatal.rawValue, error.code, error.description)
             return
         }
         
