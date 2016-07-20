@@ -218,7 +218,13 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     }];
     
     if (symlinkTarget == nil && errorPtr) {
-        *errorPtr = self.libsshSFTPError;
+        NSError *error = self.libsshSFTPError;
+        if (!error) {
+            error = [NSError errorWithDomain:SSHKitLibsshSFTPErrorDomain
+                                        code:SSHKitSFTPErrorCodeGenericFailure
+                                    userInfo: @{ NSLocalizedDescriptionKey : @"Generic failure." }];
+        }
+        *errorPtr = error;
     }
     
     return symlinkTarget;
