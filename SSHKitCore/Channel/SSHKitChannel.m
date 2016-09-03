@@ -259,7 +259,7 @@ static void channel_eof_received(ssh_session session,
                                  ssh_channel channel,
                                  void *userdata) {
     SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
-    [selfChannel doCloseWithError:nil];
+    // TODO: call a new delegate here? i.e. channelDidReceiveEOF
 }
 
 @end
