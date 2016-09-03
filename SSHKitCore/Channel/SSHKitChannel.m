@@ -29,6 +29,7 @@ static channel_callbacks s_null_channel_callbacks = {0};
 - (instancetype)initWithSession:(SSHKitSession *)session delegate:(id<SSHKitChannelDelegate>)aDelegate {
     if ((self = [super init])) {
         _session = session;
+        _exitStatus = -1;
 		self.delegate = aDelegate;
         self.stage = SSHKitChannelStageInitial;
     }
@@ -179,6 +180,7 @@ NS_INLINE BOOL is_channel_writable(ssh_channel raw_channel) {
         .channel_data_function  = channel_data_available,
         .channel_close_function = channel_close_received,
         .channel_eof_function   = channel_eof_received,
+        .channel_exit_status_function = channel_exit_status,
     };
     
     ssh_callbacks_init(&_callback);
@@ -260,6 +262,14 @@ static void channel_eof_received(ssh_session session,
                                  void *userdata) {
     SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
     // TODO: call a new delegate here? i.e. channelDidReceiveEOF
+}
+
+static void channel_exit_status(ssh_session session,
+                                ssh_channel channel,
+                                int exit_status,
+                                void *userdata) {
+    SSHKitChannel *selfChannel = (__bridge SSHKitChannel *)userdata;
+    selfChannel->_exitStatus = exit_status;
 }
 
 @end
