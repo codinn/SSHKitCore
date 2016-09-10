@@ -32,6 +32,13 @@
  */
 @property (nonatomic, readonly) BOOL isOpen;
 
+/**
+ The exit status of the channel (error code from the executed instruction).
+ -1 if no exit status has been returned (yet).
+ (read-only).
+ */
+@property (nonatomic, readonly) NSInteger exitStatus;
+
 - (void)close;
 
 - (void)writeData:(NSData *)data;
