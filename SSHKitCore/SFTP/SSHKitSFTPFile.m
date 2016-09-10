@@ -352,35 +352,40 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (nbytes == SSHKit_SSH_AGAIN) {
         _againCount += 1;
         // NSLog(@"SSHKit_SSH_AGAIN");
+        free(buffer);
         return;
     }
     _totalBytes += nbytes;
     // NSLog(@"AGAIN: %d;  _asyncRequest: %d; len: %d; total: %llu", _againCount, _asyncRequest, nbytes, _totalBytes);
     _againCount = 0;
+    BOOL isFinished = _totalBytes == self.fileSize.longLongValue;
+    isFinished |= nbytes == 0;
     if (nbytes < 0) {
         // finish or fail
         self.stage = SSHKitFileStageNone;
         NSError *error = nil;  // TODO
-        free(buffer);
         self.fileTransferFailBlock(error);
-        return;
-    }
-    if (nbytes == 0) {
-        // finish or fail
-        self.stage = SSHKitFileStageNone;
-        // SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime)
         free(buffer);
-        self.fileTransferSuccessBlock();
         return;
     }
     self.readFileBlock(buffer, nbytes);
     self.progressBlock(nbytes, _totalBytes, self.fileSize.longLongValue);
+    if (isFinished) {
+        // finish or fail
+        self.stage = SSHKitFileStageNone;
+        // SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime)
+        self.fileTransferSuccessBlock();
+        // TODO FIXME
+        // free(buffer);
+        return;
+    }
     _readedpackageLen += nbytes;
     if (_readedpackageLen < MAX_XFER_BUF_SIZE && _totalBytes < self.fileSize.longLongValue) {  // if not all data readed
         // NSLog(@"not all data readed.");
         return;
     }
     _readedpackageLen = 0;
+    // FIXME HOW TO FREE BUFFER
     // free(buffer);
     [self asyncReadBegin];
     if (_asyncRequest == 0) {
@@ -464,12 +469,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (void)close {
     __weak SSHKitSFTPFile *weakSelf = self;
     if (self.rawDirectory != nil) {
-        [self.sftp.session dispatchSyncOnSessionQueue:^{
+        [self.sftp.session dispatchAsyncOnSessionQueue:^{
             sftp_closedir(weakSelf.rawDirectory);
         }];
     }
     if (self.rawFile != nil) {
-        [self.sftp.session dispatchSyncOnSessionQueue:^{
+        [self.sftp.session dispatchAsyncOnSessionQueue:^{
             sftp_close(weakSelf.rawFile);
         }];
     }
