@@ -32,6 +32,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 @property (nonatomic, strong) NSNumber *fileSize;
 @property (nonatomic, readwrite) unsigned long ownerUserID;
 @property (nonatomic, readwrite) unsigned long ownerGroupID;
+@property (nonatomic, strong) NSString *ownerUserName;
+@property (nonatomic, strong) NSString *ownerGroupName;
 @property (nonatomic, strong) NSString *permissions;
 @property (nonatomic, readwrite) u_long flags;
 
@@ -457,6 +459,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self.fileSize = @(fileAttributes->size);
     self.ownerUserID = fileAttributes->uid;
     self.ownerGroupID = fileAttributes->gid;
+    self.ownerUserName = [[NSString alloc]initWithUTF8String:fileAttributes->owner];
+    self.ownerGroupName = [[NSString alloc]initWithUTF8String:fileAttributes->group];
     self.posixPermissions = fileAttributes->permissions;
     self->_fileTypeLetter = [self fileTypeLetter:fileAttributes->permissions];
     self.isDirectory = S_ISDIR(fileAttributes->permissions);
