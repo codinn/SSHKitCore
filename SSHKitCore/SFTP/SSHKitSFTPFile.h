@@ -53,6 +53,8 @@
 
 @property (nonatomic, readonly) char fileTypeLetter;
 
+@property (nonatomic, readonly) NSString *kindOfFile;
+
 /** Returns the user defined flags for the file */
 @property (nonatomic, readonly) u_long flags;
 

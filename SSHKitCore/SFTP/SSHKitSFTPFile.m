@@ -470,6 +470,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     self.flags = fileAttributes->flags;
 }
 
+- (NSString *)kindOfFile {
+    if (! self.filename) {
+        return @"";
+    }
+    NSString *extension = [self.filename pathExtension];
+    CFStringRef typeForExt = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,(__bridge CFStringRef)extension , NULL);
+    
+    return (__bridge_transfer NSString *)UTTypeCopyDescription(typeForExt);
+}
+
 - (void)close {
     __weak SSHKitSFTPFile *weakSelf = self;
     if (self.rawDirectory != nil) {
