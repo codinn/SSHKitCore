@@ -46,6 +46,10 @@
 /** Returns the numeric identifier of the group that is the owner of the file */
 @property (nonatomic, readonly) unsigned long ownerGroupID;
 
+@property (nonatomic, readonly) NSString *ownerUserName;
+
+@property (nonatomic, readonly) NSString *ownerGroupName;
+
 /** Returns the file permissions in symbolic notation. E.g. drwxr-xr-x */
 @property (nonatomic, readonly) NSString *permissions;
 

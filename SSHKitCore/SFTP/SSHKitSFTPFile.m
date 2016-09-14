@@ -475,13 +475,19 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (NSString *)kindOfFile {
-    if (! self.filename) {
-        return @"";
+    NSString *kind = @"";
+    if (self.isDirectory) {
+        kind = @"Folder";
+    }
+    if (!self.filename) {
+        return kind;
     }
     NSString *extension = [self.filename pathExtension];
     CFStringRef typeForExt = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,(__bridge CFStringRef)extension , NULL);
-    
-    return (__bridge_transfer NSString *)UTTypeCopyDescription(typeForExt);
+    if (typeForExt) {
+        kind = (__bridge_transfer NSString *)UTTypeCopyDescription(typeForExt);
+    }
+    return kind;
 }
 
 - (void)close {
