@@ -365,7 +365,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (nbytes < 0) {
         // finish or fail
         self.stage = SSHKitFileStageNone;
-        NSError *error = nil;  // TODO
+        NSError *error = self.sftp.libsshSFTPError;
         self.fileTransferFailBlock(error);
         free(buffer);
         return;
