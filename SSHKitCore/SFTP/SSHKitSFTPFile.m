@@ -303,6 +303,19 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 #pragma mark - read/write file
 
+- (void)doFileTransferFail:(NSError *)error {
+    // if not in transfer mode, ignore it.
+    if (self.stage == SSHKitFileStageNone) {
+        return;
+    }
+    self.stage = SSHKitFileStageNone;
+    if (!error) {
+        error = self.sftp.libsshSFTPError;
+    }
+    self.fileTransferFailBlock(error);
+
+}
+
 - (void)asyncReadFile:(unsigned long long)offset
         readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
@@ -364,9 +377,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     isFinished |= nbytes == 0;
     if (nbytes < 0) {
         // finish or fail
-        self.stage = SSHKitFileStageNone;
-        NSError *error = self.sftp.libsshSFTPError;
-        self.fileTransferFailBlock(error);
+        [self doFileTransferFail:nil];
         free(buffer);
         return;
     }
@@ -398,9 +409,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
     if (_asyncRequest < 0) {
         // finish or fail
-        self.stage = SSHKitFileStageNone;
-        NSError *error = self.sftp.libsshSFTPError;
-        self.fileTransferFailBlock(error);
+        [self doFileTransferFail:nil];
         return;
     }
 }

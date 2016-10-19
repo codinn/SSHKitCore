@@ -129,6 +129,15 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     return YES;
 }
 
+- (void)doCloseWithError:(NSError *)error {
+    [super doCloseWithError:error];
+    // file will remove from remoteFiles in loop
+    NSMutableArray *templateRemoteFiles = [self.remoteFiles copy];
+    for (SSHKitSFTPFile *file in templateRemoteFiles) {
+        [file doFileTransferFail:nil];
+    }
+}
+
 #pragma mark - SFTP API
 
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes {

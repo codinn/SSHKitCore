@@ -134,5 +134,6 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 - (void)didReceiveData:(NSData *)data;
 - (NSError *)updateStat;
 - (BOOL)isExist;
+- (void)doFileTransferFail:(NSError *)error;
 
 @end
