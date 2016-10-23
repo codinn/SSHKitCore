@@ -506,6 +506,10 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (void)close {
+    if (!self.sftp.session.isConnected) {
+        // if not connected, ignore it.
+        return;
+    }
     __weak SSHKitSFTPFile *weakSelf = self;
     if (self.rawDirectory != nil) {
         [self.sftp.session dispatchAsyncOnSessionQueue:^{
