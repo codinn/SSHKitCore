@@ -78,6 +78,12 @@ typedef NS_ENUM(NSInteger, SSHKitSFTPErrorCode) {
     SSHKitSFTPErrorCodeNoMedia = 13,
 };
 
+typedef NS_ENUM(NSUInteger, SSHKitSFTPIsFileExist) {
+    SSHKitSFTPIsFileExistNo = 0,
+    SSHKitSFTPIsFileExistFile,
+    SSHKitSFTPIsFileExistDirectory,
+};
+
 typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
 
 /* All implementations MUST be able to process packets with an

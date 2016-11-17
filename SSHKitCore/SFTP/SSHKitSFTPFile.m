@@ -526,11 +526,15 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
 }
 
-- (BOOL)isExist {
-    BOOL exist = YES;
+- (SSHKitSFTPIsFileExist)isExist {
+    SSHKitSFTPIsFileExist exist = SSHKitSFTPIsFileExistNo;
     NSError *error = [self updateStat];
     if (error && (error.code == SSHKitSFTPErrorCodeNoSuchFile || error.code == SSHKitSFTPErrorCodeEOF)) {
         return NO;
+    }
+    exist = SSHKitSFTPIsFileExistFile;
+    if (self.isDirectory) {
+        exist = SSHKitSFTPIsFileExistDirectory;
     }
     [self close];
     return exist;

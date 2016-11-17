@@ -144,10 +144,10 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     sftp_attributes_free(attributes);
 }
 
-- (BOOL)isFileExist:(NSString *)path {
+- (SSHKitSFTPIsFileExist)isFileExist:(NSString *)path {
     SSHKitSFTPFile* file = [[SSHKitSFTPFile alloc]init:self path:path isDirectory:NO];
     // TODO handle error
-    __block BOOL isExist;
+    __block SSHKitSFTPIsFileExist isExist;
     [self.session dispatchSyncOnSessionQueue:^{
         isExist = [file isExist];
     }];

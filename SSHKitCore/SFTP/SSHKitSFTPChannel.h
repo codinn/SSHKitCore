@@ -19,7 +19,7 @@
 @property (nonatomic) NSMutableArray *remoteFiles;
 
 + (void)freeSFTPAttributes:(sshkit_sftp_attributes)attributes;
-- (BOOL)isFileExist:(NSString *)path;
+- (SSHKitSFTPIsFileExist)isFileExist:(NSString *)path;
 
 - (NSString *)canonicalizePath:(NSString *)path errorPtr:(NSError **)errorPtr;
 - (NSError *)chmod:(NSString *)filePath mode:(unsigned long)mode;
