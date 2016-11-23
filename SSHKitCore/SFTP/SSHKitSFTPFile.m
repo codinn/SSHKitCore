@@ -513,12 +513,14 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     __weak SSHKitSFTPFile *weakSelf = self;
     if (self.rawDirectory != nil) {
         [self.sftp.session dispatchAsyncOnSessionQueue:^{
-            sftp_closedir(weakSelf.rawDirectory);
+            __weak SSHKitSFTPFile *strongSelf = weakSelf;
+            sftp_closedir(strongSelf.rawDirectory);
         }];
     }
     if (self.rawFile != nil) {
         [self.sftp.session dispatchAsyncOnSessionQueue:^{
-            sftp_close(weakSelf.rawFile);
+            __weak SSHKitSFTPFile *strongSelf = weakSelf;
+            sftp_close(strongSelf.rawFile);
         }];
     }
     if (self.sftp) {
