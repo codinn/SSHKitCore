@@ -511,18 +511,20 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         return;
     }
     __weak SSHKitSFTPFile *weakSelf = self;
-    if (self.rawDirectory != nil) {
-        [self.sftp.session dispatchAsyncOnSessionQueue:^{
-            __strong SSHKitSFTPFile *strongSelf = weakSelf;
+    [self.sftp.session dispatchAsyncOnSessionQueue:^{
+        __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        if (strongSelf.rawDirectory) {
             sftp_closedir(strongSelf.rawDirectory);
-        }];
-    }
-    if (self.rawFile != nil) {
-        [self.sftp.session dispatchAsyncOnSessionQueue:^{
-            __strong SSHKitSFTPFile *strongSelf = weakSelf;
+            strongSelf->_rawDirectory = nil;
+        }
+    }];
+    [self.sftp.session dispatchAsyncOnSessionQueue:^{
+        __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        if (strongSelf.rawFile) {
             sftp_close(strongSelf.rawFile);
-        }];
-    }
+            strongSelf->_rawFile = nil;
+        }
+    }];
     if (self.sftp) {
         [self.sftp.remoteFiles removeObject:self];
     }
