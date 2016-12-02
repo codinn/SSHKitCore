@@ -133,7 +133,7 @@ typedef NS_ENUM(NSInteger, SSHKitChannelStage) {
 - (NSError *)openFile:(int)accessType mode:(unsigned long)mode;
 - (void)didReceiveData:(NSData *)data;
 - (NSError *)updateStat;
-- (BOOL)isExist;
+- (SSHKitSFTPIsFileExist)isExist;
 - (void)doFileTransferFail:(NSError *)error;
 
 @end

@@ -76,10 +76,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 + (instancetype)openDirectory:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path errorPtr:(NSError **)errorPtr {
+    
     SSHKitSFTPFile* directory = [SSHKitSFTPFile initDirectory:sftpChannel path:path];
     __block NSError *error;
 
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        error = [SSHKitSFTPFile returnErrorIfNotConnected:sftpChannel.session];
+        if (error) {
+            return_from_block;
+        }
+
         error = [directory open];
         if (errorPtr) {
             *errorPtr = error;
@@ -98,6 +104,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     __block NSError *error;
 
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        error = [SSHKitSFTPFile returnErrorIfNotConnected:sftpChannel.session];
+        if (error) {
+            return_from_block;
+        }
+
         error = [file open];
         if (errorPtr) {
             *errorPtr = error;
@@ -116,6 +127,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     __block NSError *error;
 
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        error = [SSHKitSFTPFile returnErrorIfNotConnected:sftpChannel.session];
+        if (error) {
+            return_from_block;
+        }
+
         error = [file openFile:accessType mode:mode];
         if (errorPtr) {
             *errorPtr = error;
@@ -132,8 +148,13 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 + (instancetype)openFileForWrite:(SSHKitSFTPChannel *)sftpChannel path:(NSString *)path shouldResume:(BOOL)shouldResume mode:(unsigned long)mode errorPtr:(NSError **)errorPtr {
     SSHKitSFTPFile* file = [SSHKitSFTPFile initFile:sftpChannel path:path];
     __block NSError *error;
-
+    
     [sftpChannel.session dispatchSyncOnSessionQueue:^{
+        error = [SSHKitSFTPFile returnErrorIfNotConnected:sftpChannel.session];
+        if (error) {
+            return_from_block;
+        }
+
         error = [file openFileForWrite:shouldResume mode:mode];
         if (errorPtr) {
             *errorPtr = error;
@@ -151,10 +172,22 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 - (NSError *)openDirectory {
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         strongSelf->_rawDirectory = sftp_opendir(strongSelf.sftp.rawSFTPSession, [strongSelf.fullFilename UTF8String]);
     }];
+
+    if (error) {
+        return error;
+    }
+
     if (self.rawDirectory == NULL) {
         return self.sftp.libsshSFTPError;
     }
@@ -162,12 +195,28 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 }
 
 - (NSError *)updateStat {
+    if (!self.sftp.session.isConnected) {
+        return [NSError errorWithDomain:SSHKitLibsshSFTPErrorDomain
+                                        code:SSHKitSFTPErrorCodeGenericFailure
+                                    userInfo: @{ NSLocalizedDescriptionKey : @"Session not connected" }];
+    }
     __block sftp_attributes file_attributes = NULL;
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+
     [self.sftp.session dispatchSyncOnSessionQueue:^{
-        // file_attributes = sftp_stat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         file_attributes = sftp_lstat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
     }];
+
+    if (error) {
+        return error;
+    }
+
     if (file_attributes == NULL) {
         return self.sftp.session.libsshError;
     }
@@ -179,7 +228,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (NSError *)updateSymlinkTargetStat {
     __block sftp_attributes file_attributes = NULL;
     __weak SSHKitSFTPFile *weakSelf = self;
-    NSError *error;
+    __block NSError *error;
     NSString *symlinkTargetPath = [self.sftp readlink:self.fullFilename errorPtr:&error];
     if (error) {
         return error;
@@ -191,8 +240,18 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
     
     [self.sftp.session dispatchSyncOnSessionQueue:^{
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         file_attributes = sftp_stat(weakSelf.sftp.rawSFTPSession, [weakSelf.fullFilename UTF8String]);
     }];
+
+    if (error) {
+        return error;
+    }
+
     if (file_attributes == NULL) {
         return self.sftp.session.libsshError;
     }
@@ -255,10 +314,21 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     // TODO create file
     // http://api.libssh.org/master/group__libssh__sftp.html#gab95cb5fe091efcc49dfa7729e4d48010
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         strongSelf->_rawFile = sftp_open(strongSelf.sftp.rawSFTPSession, [strongSelf.fullFilename UTF8String], accessType, mode);
     }];
+
+    if (error) {
+        return error;
+    }
 
     if (_rawFile == NULL) {
         return self.sftp.session.libsshError;
@@ -273,24 +343,44 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 - (void)seek64:(unsigned long long)offset {
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+
     [self.sftp.session dispatchSyncOnSessionQueue:^{
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         sftp_seek64(weakSelf.rawFile, offset);
     }];
 }
 
 - (void)asyncReadBegin {
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         __strong SSHKitSFTPFile *strongSelf = weakSelf;
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         strongSelf->_asyncRequest = sftp_async_read_begin(strongSelf.rawFile, MAX_XFER_BUF_SIZE);
     }];
 }
 
 -(long)sftpWrite:(const void *)buffer size:(long)size errorPtr:(NSError **)errorPtr{
-    __block long writeLength;
+    __block long writeLength = 0;
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
     
     [self.sftp.session dispatchSyncOnSessionQueue:^{
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         writeLength = sftp_write(weakSelf.rawFile, buffer, size);
     }];
     
@@ -351,9 +441,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
     // [self dispatchSyncOnSessionQueue:
     // `sftp_async_read
-    __block int result;
+    __block int result = -1;
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+
     [self.sftp.session dispatchSyncOnSessionQueue:^{
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+
         result = sftp_async_read(weakSelf.rawFile, buffer, MAX_XFER_BUF_SIZE, asyncRequest);
     }];
     
@@ -452,10 +549,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (void)didReceiveData:(NSData *)data {
     // TODO call asyncRead on data arraived
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+
     if (self.stage == SSHKitFileStageReadingFile) {
         // 16397 - 16384
         [self.sftp.session dispatchSyncOnSessionQueue:^{
             __strong SSHKitSFTPFile *strongSelf = weakSelf;
+            error = [weakSelf returnErrorIfNotConnected];
+            if (error) {
+                return_from_block;
+            }
             [strongSelf _asyncReadFile];
         }];
     }
@@ -560,8 +663,13 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (SSHKitSFTPFile *)readDirectory {
     __block sftp_attributes attributes = nil;
     __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
     
     [self.sftp.session dispatchSyncOnSessionQueue:^{
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
         attributes = sftp_readdir(weakSelf.sftp.rawSFTPSession, weakSelf.rawDirectory);
     }];
     
@@ -717,6 +825,19 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
             break;
     }
     _stage = stage;
+}
+
++ (NSError *)returnErrorIfNotConnected:(SSHKitSession *)session {
+    if (session.isConnected) {
+        return nil;
+    }
+    return [NSError errorWithDomain:SSHKitLibsshSFTPErrorDomain
+                               code:SSHKitSFTPErrorCodeGenericFailure
+                           userInfo: @{ NSLocalizedDescriptionKey : @"Session not connected" }];
+}
+
+- (NSError *)returnErrorIfNotConnected {
+    return [SSHKitSFTPFile returnErrorIfNotConnected:self.sftp.session];
 }
 
 @end
