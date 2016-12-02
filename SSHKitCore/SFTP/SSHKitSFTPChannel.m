@@ -132,10 +132,10 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 - (void)doCloseWithError:(NSError *)error {
     // file will remove from remoteFiles in loop
     // close file and other function
-    NSMutableArray *templateRemoteFiles = [self.remoteFiles copy];
+    /*NSMutableArray *templateRemoteFiles = [self.remoteFiles copy];
     for (SSHKitSFTPFile *file in templateRemoteFiles) {
         [file doFileTransferFail:error];
-    }
+    }*/
     
     // close channel
     [super doCloseWithError:error];
