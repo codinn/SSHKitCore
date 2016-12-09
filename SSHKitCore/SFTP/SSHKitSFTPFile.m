@@ -376,6 +376,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     __block NSError *error;
     
     [self.sftp.session dispatchSyncOnSessionQueue:^{
+        // ssh_set_blocking(weakSelf.sftp.session.rawSession, 1);
+        sftp_file_set_blocking(weakSelf.rawFile);
         error = [weakSelf returnErrorIfNotConnected];
         if (error) {
             return_from_block;

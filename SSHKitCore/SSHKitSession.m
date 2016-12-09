@@ -146,6 +146,19 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
 	}
 }
 
+- (void) setBlocking:(BOOL)blocking {
+    _blocking = blocking;
+    
+    __weak SSHKitSession *weakSelf = self;
+    [self dispatchAsyncOnSessionQueue:^{
+        if (blocking) {
+            ssh_set_blocking(_rawSession, 1);
+        } else {
+            ssh_set_blocking(_rawSession, 0);
+        }
+    }];
+}
+
 // -----------------------------------------------------------------------------
 #pragma mark Connecting
 // -----------------------------------------------------------------------------
@@ -346,7 +359,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     }
     
     // set to non-blocking mode
-    ssh_set_blocking(_rawSession, 0);
+    // ssh_set_blocking(_rawSession, 0);
+    self.blocking = NO;
     
     return YES;
 }

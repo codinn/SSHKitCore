@@ -75,6 +75,8 @@
 @property (nonatomic, readonly, getter = isConnected) BOOL connected;
 @property (nonatomic, readonly, getter = isDisconnected) BOOL disconnected;
 
+@property (nonatomic, getter = isBlocking) BOOL blocking;
+
 // -----------------------------------------------------------------------------
 #pragma mark Connecting
 // -----------------------------------------------------------------------------
