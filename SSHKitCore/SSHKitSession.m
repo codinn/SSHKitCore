@@ -427,7 +427,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     NSArray *channels = [_channels copy];
     for (SSHKitChannel* channel in channels) {
-        [channel doCloseWithError:nil];
+        [channel doCloseWithError:error];
     }
     
     [_channels removeAllObjects];
