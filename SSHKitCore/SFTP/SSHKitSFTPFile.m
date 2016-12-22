@@ -555,7 +555,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
     if (self.stage == SSHKitFileStageReadingFile) {
         // 16397 - 16384
-        [self.sftp.session dispatchSyncOnSessionQueue:^{
+        [self.sftp.session dispatchAsyncOnSessionQueue:^{
             __strong SSHKitSFTPFile *strongSelf = weakSelf;
             error = [weakSelf returnErrorIfNotConnected];
             if (error) {
