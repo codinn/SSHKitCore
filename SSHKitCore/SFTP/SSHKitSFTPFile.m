@@ -334,7 +334,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         return self.sftp.session.libsshError;
     }
     [self.sftp.session dispatchSyncOnSessionQueue:^{
-        sftp_file_set_nonblocking(weakSelf.rawFile);
+        // sftp_file_set_nonblocking(weakSelf.rawFile);
     }];
     return nil;
 }
@@ -387,13 +387,50 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }];
     
     if (writeLength < 0) {
-        *errorPtr = self.sftp.libsshSFTPError;
+        if (errorPtr) {
+            if (error) {
+                *errorPtr = error;
+            } else {
+                *errorPtr = self.sftp.libsshSFTPError;
+            }
+        }
     }
     
     return writeLength;
 }
 
 #pragma mark - read/write file
+
+- (int)read:(char *)buffer errorPtr:(NSError **)errorPtr {
+    // [self dispatchSyncOnSessionQueue:
+    // `sftp_async_read
+    __block int result = -1;
+    __weak SSHKitSFTPFile *weakSelf = self;
+    __block NSError *error;
+    
+    [self.sftp.session dispatchSyncOnSessionQueue:^{
+        error = [weakSelf returnErrorIfNotConnected];
+        if (error) {
+            return_from_block;
+        }
+        
+        result = sftp_read(weakSelf.rawFile, buffer, MAX_XFER_BUF_SIZE);
+    }];
+    
+    if (result < 0 && result != -2) {
+        // Received a too big DATA packet from sftp server: 751 and asked for 8
+        // printf("%d: %d\n", [self.sftp getLastSFTPError], result);
+        if (errorPtr) {
+            if (error) {
+                *errorPtr = error;
+            } else {
+                *errorPtr = self.sftp.libsshSFTPError;
+            }
+        }
+    }
+
+    return result;
+}
 
 - (void)doFileTransferFail:(NSError *)error {
     __weak SSHKitSFTPFile *weakSelf = self;
