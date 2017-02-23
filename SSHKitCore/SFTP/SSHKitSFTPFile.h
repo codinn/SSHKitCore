@@ -77,7 +77,7 @@
 - (void)close;
 - (NSArray *)listDirectory:(SSHKitSFTPListDirFilter)filter;
 - (void)seek64:(unsigned long long)offset;
-- (int)read:(char *)buffer errorPtr:(NSError **)errorPtr;
+- (long)read:(char *)buffer errorPtr:(NSError **)errorPtr;
 - (void)asyncReadFile:(unsigned long long)offset
         readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock

@@ -10,6 +10,8 @@
 #import "SSHKitCore+Protected.h"
 #import <sys/stat.h>
 
+#define CONCURRENT_REQ_COUNT 16
+
 typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     SSHKitFileStageNone = 0,
     SSHKitFileStageReadingFile,
@@ -18,10 +20,8 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 @interface SSHKitSFTPFile () {
     dispatch_group_t _readChunkGroup;
     unsigned long long _totalBytes;
-    int _asyncRequest;
     dispatch_queue_t _readChunkQueue;
-    int _readedpackageLen;
-    int _againCount;
+    NSMutableArray *_requests;
 }
 
 @property (nonatomic, readwrite) BOOL isDirectory;
@@ -51,6 +51,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     // https://github.com/dleehr/DLSFTPClient/blob/master/
     if ((self = [super init])) {
         _readChunkGroup = dispatch_group_create();
+        _requests = [@[]mutableCopy];
         _readChunkQueue = dispatch_queue_create("com.codinn.readchunk", DISPATCH_QUEUE_SERIAL);
         self.isDirectory = isDirectory;
         self.fullFilename = path;
@@ -333,9 +334,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (_rawFile == NULL) {
         return self.sftp.session.libsshError;
     }
-    [self.sftp.session dispatchSyncOnSessionQueue:^{
-        // sftp_file_set_nonblocking(weakSelf.rawFile);
-    }];
     return nil;
 }
 
@@ -355,9 +353,10 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }];
 }
 
-- (void)asyncReadBegin {
+- (int)asyncReadBegin:(NSError **)errorPtr {
     __weak SSHKitSFTPFile *weakSelf = self;
     __block NSError *error;
+    __block int requestNo = 0;
 
     [self.sftp.session dispatchSyncOnSessionQueue:^{
         __strong SSHKitSFTPFile *strongSelf = weakSelf;
@@ -366,8 +365,20 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
             return_from_block;
         }
 
-        strongSelf->_asyncRequest = sftp_async_read_begin(strongSelf.rawFile, MAX_XFER_BUF_SIZE);
+        requestNo = sftp_async_read_begin(strongSelf.rawFile, MAX_XFER_BUF_SIZE);
     }];
+
+    if (requestNo <= 0) {
+        if (errorPtr) {
+            if (error) {
+                *errorPtr = error;
+            } else {
+                *errorPtr = self.sftp.libsshSFTPError;
+            }
+        }
+    }
+
+    return requestNo;
 }
 
 -(long)sftpWrite:(const void *)buffer size:(long)size errorPtr:(NSError **)errorPtr{
@@ -401,10 +412,10 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 #pragma mark - read/write file
 
-- (int)read:(char *)buffer errorPtr:(NSError **)errorPtr {
+- (long)read:(char *)buffer errorPtr:(NSError **)errorPtr {
     // [self dispatchSyncOnSessionQueue:
     // `sftp_async_read
-    __block int result = -1;
+    __block long result = -1;
     __weak SSHKitSFTPFile *weakSelf = self;
     __block NSError *error;
     
@@ -452,32 +463,130 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }];
 }
 
+- (void)asyncBeginReadChunk {
+    NSError *error;
+    
+    self.stage = SSHKitFileStageReadingFile;
+    [_requests removeAllObjects];
+    
+    unsigned long long beginReadBytes = _totalBytes;
+    for (int i = 0; i < CONCURRENT_REQ_COUNT; i++) {
+        if (beginReadBytes >= self.fileSize.unsignedLongLongValue) {
+            return;
+        }
+        if (self.stage != SSHKitFileStageReadingFile) {
+            return;
+        }
+        
+        int requestNo = [self asyncReadBegin:&error];
+        if (error) {
+            [self doFileTransferFail:error];
+            return;
+        }
+        [_requests addObject:@(requestNo)];
+        beginReadBytes += MAX_XFER_BUF_SIZE;
+    }
+}
+
+- (BOOL)asyncReadChunk:(NSError **)errorPtr {
+    BOOL isFinished = NO;
+    NSError *error;
+    
+    for (NSNumber *_requestNo in _requests) {
+        if (self.stage != SSHKitFileStageReadingFile) {
+            return NO;
+        }
+        
+        int requestNo = _requestNo.intValue;
+        char *buffer = malloc(sizeof(char) * MAX_XFER_BUF_SIZE);
+        int readBytes = [self asyncRead:requestNo buffer:buffer errorPtr:&error];
+        
+        if (error) {
+            [self doFileTransferFail:error];
+            if (errorPtr) {
+                *errorPtr = error;
+            }
+            free(buffer);
+            return false;
+        }
+        
+        if (readBytes > 0) {
+            _totalBytes += readBytes;
+            self.progressBlock(readBytes, _totalBytes, self.fileSize.longLongValue);
+            self.readFileBlock(buffer, readBytes);
+        }
+        
+        if (readBytes == 0) {  // finished?
+            free(buffer);
+            isFinished = YES;
+        }
+        
+        if (_totalBytes == self.fileSize.longLongValue) {
+            isFinished = YES;
+        }
+        
+        if (isFinished) {
+            return isFinished;
+        }
+    }
+    
+    return isFinished;
+}
+
 - (void)asyncReadFile:(unsigned long long)offset
         readFileBlock:(SSHKitSFTPClientReadFileBlock)readFileBlock
         progressBlock:(SSHKitSFTPClientProgressBlock)progressBlock
         fileTransferSuccessBlock:(SSHKitSFTPClientSuccessBlock)fileTransferSuccessBlock
         fileTransferFailBlock:(SSHKitSFTPClientFailureBlock)fileTransferFailBlock {
-    _againCount = 0;
-    _readedpackageLen = 0;
-    _totalBytes = 0;
+    _totalBytes = offset;
+
     self.readFileBlock = readFileBlock;
     self.progressBlock = progressBlock;
     self.fileTransferFailBlock = fileTransferFailBlock;
     self.fileTransferSuccessBlock = fileTransferSuccessBlock;
+
     if (offset > 0) {
         [self seek64:offset];
     }
-    [self asyncReadBegin];
-    if (_asyncRequest) {
-        self.stage = SSHKitFileStageReadingFile;
-    }
+    
+    __weak SSHKitSFTPFile *weakSelf = self;
+    
+        [self.sftp.session dispatchAsyncOnSessionQueue:^{
+            BOOL isFinished = NO;
+            NSError *error;
+            while (!isFinished) {
+                @autoreleasepool {
+                    weakSelf.stage = SSHKitFileStageReadingFile;
+                    
+                    [weakSelf asyncBeginReadChunk];
+                    if (weakSelf.stage != SSHKitFileStageReadingFile) {
+                        return;
+                    }
+                    
+                    isFinished = [weakSelf asyncReadChunk:&error];
+                    if (weakSelf.stage != SSHKitFileStageReadingFile) {
+                        return;
+                    }
+                    
+                    if (isFinished) {
+                        weakSelf.stage = SSHKitFileStageNone;
+                        weakSelf.fileTransferSuccessBlock();
+                    }
+                    
+                    if (error) {  // finished and fail.
+                        isFinished = YES;
+                        weakSelf.stage = SSHKitFileStageNone;
+                    }
+                }
+            }
+        }];
 }
 
 - (void)cancelAsyncReadFile {
     self.stage = SSHKitFileStageNone;
 }
 
-- (int)_asyncRead:(int)asyncRequest buffer:(char *)buffer {
+- (int)asyncRead:(int)asyncRequest buffer:(char *)buffer errorPtr:(NSError **)errorPtr {
     // [self dispatchSyncOnSessionQueue:
     // `sftp_async_read
     __block int result = -1;
@@ -494,67 +603,16 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }];
     
     if (result < 0 && result != -2) {
-        // Received a too big DATA packet from sftp server: 751 and asked for 8
-        // printf("%d: %d\n", [self.sftp getLastSFTPError], result);
+        if (errorPtr) {
+            if (error) {
+                *errorPtr = error;
+            } else {
+                *errorPtr = self.sftp.libsshSFTPError;
+            }
+        }
     }
+    
     return result;
-}
-
-- (void)_asyncReadFile {
-    // self.stage = SSHKitFileStageReadingFile;
-    int nbytes;
-    // char buffer[MAX_XFER_BUF_SIZE];  // how to free this array?
-    char *buffer = malloc(sizeof(char) * MAX_XFER_BUF_SIZE);
-    // long counter = 0L;
-    nbytes = [self _asyncRead:_asyncRequest buffer:buffer];
-    if (nbytes == SSHKit_SSH_AGAIN) {
-        _againCount += 1;
-        // NSLog(@"SSHKit_SSH_AGAIN");
-        free(buffer);
-        return;
-    }
-    _totalBytes += nbytes;
-    // NSLog(@"AGAIN: %d;  _asyncRequest: %d; len: %d; total: %llu", _againCount, _asyncRequest, nbytes, _totalBytes);
-    _againCount = 0;
-    BOOL isFinished = _totalBytes == self.fileSize.longLongValue;
-    isFinished |= nbytes == 0;
-    if (nbytes < 0) {
-        // finish or fail
-        [self doFileTransferFail:nil];
-        free(buffer);
-        return;
-    }
-    self.readFileBlock(buffer, nbytes);
-    self.progressBlock(nbytes, _totalBytes, self.fileSize.longLongValue);
-    if (isFinished) {
-        // finish or fail
-        self.stage = SSHKitFileStageNone;
-        // SSHKitSFTPFile *file, NSDate *startTime, NSDate *finishTime)
-        self.fileTransferSuccessBlock();
-        // TODO FIXME
-        // free(buffer);
-        return;
-    }
-    _readedpackageLen += nbytes;
-    if (_readedpackageLen < MAX_XFER_BUF_SIZE && _totalBytes < self.fileSize.longLongValue) {  // if not all data readed
-        // NSLog(@"not all data readed.");
-        return;
-    }
-    _readedpackageLen = 0;
-    // FIXME HOW TO FREE BUFFER
-    // free(buffer);
-    [self asyncReadBegin];
-    if (_asyncRequest == 0) {
-        // finish or fail
-        self.stage = SSHKitFileStageNone;
-        self.fileTransferSuccessBlock();
-        return;
-    }
-    if (_asyncRequest < 0) {
-        // finish or fail
-        [self doFileTransferFail:nil];
-        return;
-    }
 }
 
 -(long)write:(const void *)buffer size:(long)size errorPtr:(NSError **)errorPtr {
@@ -583,24 +641,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     }
     
     return totoalWriteLength;
-}
-
-- (void)didReceiveData:(NSData *)data {
-    // TODO call asyncRead on data arraived
-    __weak SSHKitSFTPFile *weakSelf = self;
-    __block NSError *error;
-
-    if (self.stage == SSHKitFileStageReadingFile) {
-        // 16397 - 16384
-        [self.sftp.session dispatchAsyncOnSessionQueue:^{
-            __strong SSHKitSFTPFile *strongSelf = weakSelf;
-            error = [weakSelf returnErrorIfNotConnected];
-            if (error) {
-                return_from_block;
-            }
-            [strongSelf _asyncReadFile];
-        }];
-    }
 }
 
 #pragma mark - file information
@@ -853,6 +893,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         _stage = stage;
         return;
     }
+    if (_stage == stage) {
+        return;
+    }
     switch (stage) {
         case SSHKitFileStageReadingFile:
             [self.sftp.remoteFiles addObject:self];
@@ -878,5 +921,9 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 - (NSError *)returnErrorIfNotConnected {
     return [SSHKitSFTPFile returnErrorIfNotConnected:self.sftp.session];
 }
+
+- (void)didReceiveData:(NSData *)data {
+}
+
 
 @end
