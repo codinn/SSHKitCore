@@ -492,13 +492,14 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     BOOL isFinished = NO;
     NSError *error;
     
+    char *buffer = malloc(sizeof(char) * MAX_XFER_BUF_SIZE);
     for (NSNumber *_requestNo in _requests) {
         if (self.stage != SSHKitFileStageReadingFile) {
+            free(buffer);
             return NO;
         }
         
         int requestNo = _requestNo.intValue;
-        char *buffer = malloc(sizeof(char) * MAX_XFER_BUF_SIZE);
         int readBytes = [self asyncRead:requestNo buffer:buffer errorPtr:&error];
         
         if (error) {
@@ -517,7 +518,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         }
         
         if (readBytes == 0) {  // finished?
-            free(buffer);
             isFinished = YES;
         }
         
@@ -526,10 +526,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         }
         
         if (isFinished) {
+            free(buffer);
             return isFinished;
         }
     }
     
+    free(buffer);
     return isFinished;
 }
 
@@ -552,8 +554,12 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     __weak SSHKitSFTPFile *weakSelf = self;
     
         [self.sftp.session dispatchAsyncOnSessionQueue:^{
+            __strong SSHKitSFTPFile *strongSelf = weakSelf;
+            
             BOOL isFinished = NO;
             NSError *error;
+            NSDate *startTime = [NSDate date];
+            
             while (!isFinished) {
                 @autoreleasepool {
                     weakSelf.stage = SSHKitFileStageReadingFile;
@@ -579,6 +585,13 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
                     }
                 }
             }
+            
+            NSDate *finishTime = [NSDate date];
+            NSTimeInterval usedTime = [finishTime timeIntervalSinceDate:startTime];
+            long long speed = strongSelf->_totalBytes / usedTime;
+            NSString *formatedSpeed = [NSByteCountFormatter stringFromByteCount:speed countStyle:NSByteCountFormatterCountStyleDecimal];
+            NSString *formatedFileSize = [NSByteCountFormatter stringFromByteCount:strongSelf->_totalBytes countStyle:NSByteCountFormatterCountStyleDecimal];
+            NSLog(@"SSHKitCore download succ: size %@, time(sec) %f, speed %@", formatedFileSize, usedTime, formatedSpeed);
         }];
 }
 
