@@ -10,7 +10,7 @@
 #import "SSHKitCoreCommon.h"
 #import "SSHKitChannel.h"
 
-#define MAX_XFER_BUF_SIZE 16384-13
+#define MAX_XFER_BUF_SIZE 32758  // 16384-13
 
 @class SSHKitSFTPChannel;
 

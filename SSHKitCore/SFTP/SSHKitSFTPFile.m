@@ -21,7 +21,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     dispatch_group_t _readChunkGroup;
     unsigned long long _totalBytes;
     dispatch_queue_t _readChunkQueue;
-    NSMutableArray *_requests;
+    int _requestIds[CONCURRENT_REQ_COUNT];
 }
 
 @property (nonatomic, readwrite) BOOL isDirectory;
@@ -51,7 +51,6 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     // https://github.com/dleehr/DLSFTPClient/blob/master/
     if ((self = [super init])) {
         _readChunkGroup = dispatch_group_create();
-        _requests = [@[]mutableCopy];
         _readChunkQueue = dispatch_queue_create("com.codinn.readchunk", DISPATCH_QUEUE_SERIAL);
         self.isDirectory = isDirectory;
         self.fullFilename = path;
@@ -275,6 +274,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     if (error) {
         return error;
     }
+    
     // if updateStat not exec
     if (self.permissions == nil) {
         error = [self updateStat];
@@ -465,15 +465,18 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
 
 - (void)asyncBeginReadChunk {
     NSError *error;
+    for (int i=0; i<CONCURRENT_REQ_COUNT; ++i){
+        _requestIds[i] = 0;
+    }
     
     self.stage = SSHKitFileStageReadingFile;
-    [_requests removeAllObjects];
     
     unsigned long long beginReadBytes = _totalBytes;
     for (int i = 0; i < CONCURRENT_REQ_COUNT; i++) {
         if (beginReadBytes >= self.fileSize.unsignedLongLongValue) {
             return;
         }
+        
         if (self.stage != SSHKitFileStageReadingFile) {
             return;
         }
@@ -483,56 +486,80 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
             [self doFileTransferFail:error];
             return;
         }
-        [_requests addObject:@(requestNo)];
+        _requestIds[i] = requestNo;
         beginReadBytes += MAX_XFER_BUF_SIZE;
     }
 }
 
-- (BOOL)asyncReadChunk:(NSError **)errorPtr {
+- (void)asyncReadChunk:(NSError **)errorPtr {
     BOOL isFinished = NO;
     NSError *error;
     
     char *buffer = malloc(sizeof(char) * MAX_XFER_BUF_SIZE);
-    for (NSNumber *_requestNo in _requests) {
-        if (self.stage != SSHKitFileStageReadingFile) {
-            free(buffer);
-            return NO;
-        }
-        
-        int requestNo = _requestNo.intValue;
-        int readBytes = [self asyncRead:requestNo buffer:buffer errorPtr:&error];
-        
-        if (error) {
-            [self doFileTransferFail:error];
-            if (errorPtr) {
-                *errorPtr = error;
+    int i = 0;
+    
+    NSDate *lastUpdatedOn = [NSDate date];
+    int readedBytesAfterLastUpdate = 0;
+    
+    while(_totalBytes < self.fileSize.unsignedLongLongValue){
+        @autoreleasepool {
+            if (self.stage != SSHKitFileStageReadingFile) {
+                free(buffer);
+                self.progressBlock(readedBytesAfterLastUpdate, _totalBytes, self.fileSize.longLongValue);
+                return;
             }
-            free(buffer);
-            return false;
-        }
-        
-        if (readBytes > 0) {
-            _totalBytes += readBytes;
-            self.progressBlock(readBytes, _totalBytes, self.fileSize.longLongValue);
-            self.readFileBlock(buffer, readBytes);
-        }
-        
-        if (readBytes == 0) {  // finished?
-            isFinished = YES;
-        }
-        
-        if (_totalBytes == self.fileSize.longLongValue) {
-            isFinished = YES;
-        }
-        
-        if (isFinished) {
-            free(buffer);
-            return isFinished;
+            int requestNo = _requestIds[i];
+            int readBytes = [self asyncRead:requestNo buffer:buffer errorPtr:&error];
+            
+            if (!error) {
+                _requestIds[i] = [self asyncReadBegin:&error];
+            }
+            
+            if (error) {
+                [self doFileTransferFail:error];
+                if (errorPtr) {
+                    *errorPtr = error;
+                }
+                free(buffer);
+                self.progressBlock(readedBytesAfterLastUpdate, _totalBytes, self.fileSize.longLongValue);
+                return;
+            }
+            
+            if (readBytes > 0) {
+                _totalBytes += readBytes;
+                readedBytesAfterLastUpdate += readBytes;
+                
+                if ([lastUpdatedOn timeIntervalSinceNow] <= -0.1) {
+                    self.progressBlock(readedBytesAfterLastUpdate, _totalBytes, self.fileSize.longLongValue);
+                    lastUpdatedOn = [NSDate date];
+                    readedBytesAfterLastUpdate = 0;
+                }
+                
+                self.readFileBlock(buffer, readBytes);
+            }
+            
+            if (readBytes == 0) {  // finished?
+                isFinished = YES;
+            }
+            
+            if (_totalBytes == self.fileSize.longLongValue) {
+                self.fileTransferSuccessBlock();
+                isFinished = YES;
+            }
+            
+            if (isFinished) {
+                free(buffer);
+                self.progressBlock(readedBytesAfterLastUpdate, _totalBytes, self.fileSize.longLongValue);
+                return;
+            }
+            
+            i = (i+1) % CONCURRENT_REQ_COUNT;
         }
     }
     
     free(buffer);
-    return isFinished;
+    self.progressBlock(readedBytesAfterLastUpdate, _totalBytes, self.fileSize.longLongValue);
+    return;
 }
 
 - (void)asyncReadFile:(unsigned long long)offset
@@ -556,35 +583,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         [self.sftp.session dispatchAsyncOnSessionQueue:^{
             __strong SSHKitSFTPFile *strongSelf = weakSelf;
             
-            BOOL isFinished = NO;
             NSError *error;
             NSDate *startTime = [NSDate date];
             
-            while (!isFinished) {
-                @autoreleasepool {
-                    weakSelf.stage = SSHKitFileStageReadingFile;
-                    
-                    [weakSelf asyncBeginReadChunk];
-                    if (weakSelf.stage != SSHKitFileStageReadingFile) {
-                        return;
-                    }
-                    
-                    isFinished = [weakSelf asyncReadChunk:&error];
-                    if (weakSelf.stage != SSHKitFileStageReadingFile) {
-                        return;
-                    }
-                    
-                    if (isFinished) {
-                        weakSelf.stage = SSHKitFileStageNone;
-                        weakSelf.fileTransferSuccessBlock();
-                    }
-                    
-                    if (error) {  // finished and fail.
-                        isFinished = YES;
-                        weakSelf.stage = SSHKitFileStageNone;
-                    }
-                }
-            }
+            [weakSelf asyncBeginReadChunk];
+            [weakSelf asyncReadChunk:&error];
             
             NSDate *finishTime = [NSDate date];
             NSTimeInterval usedTime = [finishTime timeIntervalSinceDate:startTime];
