@@ -501,6 +501,11 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
     NSDate *lastUpdatedOn = [NSDate date];
     int readedBytesAfterLastUpdate = 0;
     
+    if (_totalBytes == self.fileSize.longLongValue) {
+        self.fileTransferSuccessBlock();
+        isFinished = YES;
+    }
+    
     while(_totalBytes < self.fileSize.unsignedLongLongValue){
         @autoreleasepool {
             if (self.stage != SSHKitFileStageReadingFile) {
