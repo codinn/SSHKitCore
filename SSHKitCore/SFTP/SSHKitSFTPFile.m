@@ -368,7 +368,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
         requestNo = sftp_async_read_begin(strongSelf.rawFile, MAX_XFER_BUF_SIZE);
     }];
 
-    if (requestNo <= 0) {
+    if (requestNo < 0) {
         if (errorPtr) {
             if (error) {
                 *errorPtr = error;
@@ -459,7 +459,7 @@ typedef NS_ENUM(NSInteger, SSHKitFileStage)  {
             lastError = strongSelf.sftp.libsshSFTPError;
         }
         
-        self.fileTransferFailBlock(lastError);
+        strongSelf.fileTransferFailBlock(lastError);
     }];
 }
 
