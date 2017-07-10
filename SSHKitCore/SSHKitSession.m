@@ -151,10 +151,11 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     __weak SSHKitSession *weakSelf = self;
     [self dispatchAsyncOnSessionQueue:^{
+        __strong SSHKitSession *strongSelf = weakSelf;
         if (blocking) {
-            ssh_set_blocking(_rawSession, 1);
+            ssh_set_blocking(strongSelf->_rawSession, 1);
         } else {
-            ssh_set_blocking(_rawSession, 0);
+            ssh_set_blocking(strongSelf->_rawSession, 0);
         }
     }];
 }
