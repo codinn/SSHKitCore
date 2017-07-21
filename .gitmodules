@@ -3,5 +3,5 @@
 	url = https://github.com/AlwaysRightInstitute/SwiftSockets
 [submodule "libssh"]
 	path = libssh
-	url = https://github.com/codinn/libssh.git
+	url = https://git.libssh.org/projects/libssh.git
 	branch = v0-7
