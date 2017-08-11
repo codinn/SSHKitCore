@@ -9,6 +9,7 @@
 #import "SSHKitShellChannel.h"
 #import "SSHKitSession.h"
 #import "SSHKitCore+Protected.h"
+#include <termios.h>
 
 typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     SessionChannelReqNone = 0,  // session channel has not been opened yet
@@ -81,7 +82,13 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 }
 
 - (void)_requestPty {
-    int result = ssh_channel_request_pty_size(self.rawChannel, _terminalType.UTF8String, (int)_columns, (int)_rows);
+    struct termios tios;
+    tios.c_iflag = TTYDEF_IFLAG;
+    tios.c_oflag = TTYDEF_OFLAG;
+    tios.c_cflag = TTYDEF_CFLAG;
+    tios.c_lflag = TTYDEF_LFLAG;
+    int result = ssh_channel_request_pty_size_modes(self.rawChannel, _terminalType.UTF8String, (int)_columns, (int)_rows, &tios);
+  
     
     switch (result) {
         case SSH_AGAIN:
