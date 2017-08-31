@@ -68,6 +68,8 @@
 /** Advanced options */
 @property (nonatomic, readonly) NSDictionary    *options;
 
+@property (nonatomic, readwrite) SSHKitLogHandler logHandler;
+
 /**
  A Boolean value indicating whether the session connected successfully
  (read-only).
