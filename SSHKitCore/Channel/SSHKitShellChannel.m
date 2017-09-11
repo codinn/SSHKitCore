@@ -83,7 +83,7 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
 
 - (void)_requestPty {
     struct termios tios;
-    tios.c_iflag = TTYDEF_IFLAG;
+    tios.c_iflag = TTYDEF_IFLAG | IUTF8;
     tios.c_oflag = TTYDEF_OFLAG;
     tios.c_cflag = TTYDEF_CFLAG;
     tios.c_lflag = TTYDEF_LFLAG;
