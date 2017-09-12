@@ -63,7 +63,7 @@ NSString * const kVTKitHostKeyAlgorithmsKey = @"VTKitHostKeyAlgorithmsKey";
 NSString * const kVTKitMACAlgorithmsKey     = @"VTKitMACAlgorithmsKey";
 NSString * const kVTKitKeyExchangeAlgorithmsKey = @"VTKitKeyExchangeAlgorithmsKey";
 NSString * const kVTKitServerAliveCountMaxKey   = @"VTKitServerAliveCountMaxKey";
-
+NSString * const kVTKitDebugLevelKey            = @"VTKitDebugLevelKey";
 
 #pragma mark - Libssh logging
 
@@ -77,8 +77,17 @@ static void raw_session_log_callback(int priority, const char *function, const c
     block(priority, functionName, messageString);
 }
 
-void VTKitRegisterLogCallback(NSInteger level, SSHKitLogHandler block) {
-    ssh_set_log_callback(raw_session_log_callback);
-    ssh_set_log_userdata((__bridge void *)(block));
-    ssh_set_log_level((int)level);
+void SSHKitRegisterLogCallback(NSInteger level, SSHKitLogHandler block, dispatch_queue_t queue) {
+    ssh_set_log_callback_dispatch(raw_session_log_callback, queue);
+    ssh_set_log_userdata_dispatch((__bridge_retained void *)(block), queue);
+    ssh_set_log_level_dispatch((int)level, queue);
+}
+
+void SSHKitUnregisterLogCallback(dispatch_queue_t queue) {
+    // transfer object to ARC
+    SSHKitLogHandler handler = (__bridge_transfer SSHKitLogHandler)ssh_get_log_userdata();
+    
+    if (handler) {
+        ssh_set_log_userdata_dispatch(NULL, queue);
+    }
 }

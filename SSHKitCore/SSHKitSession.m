@@ -42,6 +42,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     dispatch_block_t    _authBlock;
     
     void *_isOnSessionQueueKey;
+    
+    int _verbosity;
 }
 
 @property (nonatomic, readwrite)  SSHKitSessionStage stage;
@@ -76,6 +78,7 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
         self.stage = SSHKitSessionStageNotConnected;
         _channels = [@[] mutableCopy];
         _forwardRequests = [@[] mutableCopy];
+        _verbosity = SSH_LOG_NOLOG;
         
 		self.delegate = aDelegate;
 		
@@ -292,6 +295,17 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     
     _rawSession = ssh_new();
     
+    // debug level
+    NSNumber *debugLevel = self.options[kVTKitDebugLevelKey];
+    if (debugLevel) {
+        _verbosity = debugLevel.intValue;
+        
+        if (_verbosity > SSH_LOG_NOLOG && _logHandler) {
+            SSHKitRegisterLogCallback(_verbosity, _logHandler, self.sessionQueue);
+        }
+    }
+    SET_SSH_OPTIONS(SSH_OPTIONS_LOG_VERBOSITY, &_verbosity);
+    
     if (!_rawSession) {
         [self _doDisconnectWithError:[NSError errorWithDomain:SSHKitCoreErrorDomain code:SSHKitErrorStop userInfo:@{ NSLocalizedDescriptionKey : @"Failed to create SSH session" }]];
         return NO;
@@ -350,13 +364,6 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     if (hostKeys.length) {
         SET_SSH_OPTIONS(SSH_OPTIONS_HOSTKEYS, hostKeys.UTF8String);
     }
-    
-#if DEBUG
-    int verbosity = SSH_LOG_FUNCTIONS;
-#else
-    int verbosity = SSH_LOG_NOLOG;
-#endif
-    SET_SSH_OPTIONS(SSH_OPTIONS_LOG_VERBOSITY, &verbosity);
     
     if (_timeout > 0) {
         SET_SSH_OPTIONS(SSH_OPTIONS_TIMEOUT, &_timeout);
@@ -444,6 +451,8 @@ typedef NS_ENUM(NSInteger, SSHKitSessionStage) {
     _rawSession = NULL;
     
     [self _cancelSocketReadSource];
+    
+    SSHKitUnregisterLogCallback(_sessionQueue);
     
     if (_delegateFlags.didDisconnectWithError) {
         [self.delegate session:self didDisconnectWithError:error];

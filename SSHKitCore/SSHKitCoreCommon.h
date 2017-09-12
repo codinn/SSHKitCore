@@ -115,6 +115,7 @@ extern NSString * const kVTKitHostKeyAlgorithmsKey;
 extern NSString * const kVTKitMACAlgorithmsKey;
 extern NSString * const kVTKitKeyExchangeAlgorithmsKey;
 extern NSString * const kVTKitServerAliveCountMaxKey;   // <=0 will disable keepalive mech.
+extern NSString * const kVTKitDebugLevelKey;
 
 // default preferred ciphers order
 extern NSString * const kVTKitDefaultEncryptionCiphers;
@@ -140,9 +141,9 @@ extern NSString * const kVTKitDefaultKeyExchangeAlgorithms;
  *
  * This problem leads you MUST register log callback in every possible threads to make sure logging functional, otherwise you are at risk of crash.
  *
- * This make libssh logging worthless, so actually VTKitRegisterLogCallback is not used in SSHKitCore.
+ * This make libssh logging worthless, so actually SSHKitRegisterLogCallback is not used in SSHKitCore.
  */
-typedef NSArray *(^ SSHKitLogHandler)(NSInteger priority, NSString *function, NSString *message);
+typedef void (^ SSHKitLogHandler)(NSInteger priority, NSString *function, NSString *message);
 
 /** Level
  No logging at all
@@ -160,4 +161,5 @@ typedef NSArray *(^ SSHKitLogHandler)(NSInteger priority, NSString *function, NS
  Get trace output, packet information
     SSH_LOG_TRACE 4
 */
-void VTKitRegisterLogCallback(NSInteger level, SSHKitLogHandler block);
+void SSHKitRegisterLogCallback(NSInteger level, SSHKitLogHandler block, dispatch_queue_t queue);
+void SSHKitUnregisterLogCallback(dispatch_queue_t queue);

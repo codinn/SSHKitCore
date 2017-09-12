@@ -119,7 +119,6 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     struct termios tios = [self termio_build_termdata:YES];
     int result = ssh_channel_request_pty_size_modes(self.rawChannel, _terminalType.UTF8String, (int)_columns, (int)_rows, &tios);
   
-    
     switch (result) {
         case SSH_AGAIN:
             // try next time
