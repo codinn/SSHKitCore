@@ -81,12 +81,42 @@ typedef NS_ENUM(NSUInteger, SessionChannelReqState) {
     }
 }
 
+- (struct termios)termio_build_termdata:(BOOL) isUTF8 {
+    struct termios term = { 0 };
+    
+    // UTF-8 input will be added on demand.
+    term.c_iflag = TTYDEF_IFLAG | (isUTF8 ? IUTF8 : 0);
+    term.c_oflag = TTYDEF_OFLAG;
+    term.c_cflag = TTYDEF_CFLAG;
+    term.c_lflag = TTYDEF_LFLAG;
+    
+    term.c_cc[VEOF]    = CEOF;
+    term.c_cc[VEOL]    = CEOL;
+    term.c_cc[VEOL2]   = CEOL;
+    term.c_cc[VERASE]  = CERASE;           // DEL
+    term.c_cc[VWERASE] = CWERASE;
+    term.c_cc[VKILL]   = CKILL;
+    term.c_cc[VREPRINT] = CREPRINT;
+    term.c_cc[VINTR]   = CINTR;
+    term.c_cc[VQUIT]   = CQUIT;           // Control+backslash
+    term.c_cc[VSUSP]   = CSUSP;
+    term.c_cc[VDSUSP]  = CDSUSP;
+    term.c_cc[VSTART]  = CSTART;
+    term.c_cc[VSTOP]   = CSTOP;
+    term.c_cc[VLNEXT]  = CLNEXT;
+    term.c_cc[VDISCARD] = CDISCARD;
+    term.c_cc[VMIN]    = CMIN;
+    term.c_cc[VTIME]   = CTIME;
+    term.c_cc[VSTATUS] = CSTATUS;
+    
+    term.c_ispeed = B38400;
+    term.c_ospeed = B38400;
+    
+    return term;
+}
+
 - (void)_requestPty {
-    struct termios tios;
-    tios.c_iflag = TTYDEF_IFLAG;
-    tios.c_oflag = TTYDEF_OFLAG;
-    tios.c_cflag = TTYDEF_CFLAG;
-    tios.c_lflag = TTYDEF_LFLAG;
+    struct termios tios = [self termio_build_termdata:YES];
     int result = ssh_channel_request_pty_size_modes(self.rawChannel, _terminalType.UTF8String, (int)_columns, (int)_rows, &tios);
   
     
