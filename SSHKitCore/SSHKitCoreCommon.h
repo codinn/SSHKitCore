@@ -93,7 +93,7 @@ typedef struct sftp_attributes_struct* sshkit_sftp_attributes;
  */
 #define SSHKIT_CORE_SSH_MAX_PAYLOAD 16384 // 16K should appropriate for both channel and sftp
 
-typedef NSString *(^ SSHKitAskPassBlock)();
+typedef NSString *(^ SSHKitAskPassBlock)(void);
 typedef NSArray *(^ SSHKitAskInteractiveInfoBlock)(NSInteger, NSString *, NSString *, NSArray *);
 
 typedef void (^ SSHKitListeningRequestCompletionBlock)(BOOL success, uint16_t boundPort, NSError *error);
